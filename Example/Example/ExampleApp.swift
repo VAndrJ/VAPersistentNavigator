@@ -16,7 +16,7 @@ struct ExampleApp: App {
     init() {
         let storage = DefaultsNavigatorStorage()
         self.navigatorStorage = storage
-        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator()))
+        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(root: .root)))
     }
 
     var body: some Scene {

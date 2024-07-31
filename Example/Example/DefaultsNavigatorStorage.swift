@@ -22,7 +22,7 @@ class DefaultsNavigatorStorage: NavigatorStorage {
         defaults.set(try? encoder.encode(navigator), forKey: key)
     }
 
-    func getNavigator() -> Navigator<Destination> {
-        defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) } ?? .init(root: .root)
+    func getNavigator() -> Navigator<Destination>? {
+        defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) }
     }
 }
