@@ -8,32 +8,44 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Storage: NavigatorStorage>: View where Content: View, Storage.Destination == Destination {
+public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Storage: NavigatorStorage, S: Scheduler>: View where Content: View, Storage.Destination == Destination {
+    private let navigator: Navigator<Destination>
+    private let storage: Storage
+    private let interval: S.SchedulerTimeType.Stride
+    private let scheduler: S
+    private let options: S.SchedulerOptions?
     @ViewBuilder private let content: () -> Content
-    @State private var bag: Set<AnyCancellable> = []
+    @State private var storageCancellable: AnyCancellable?
 
-    public init<S>(
+    public init(
         navigator: Navigator<Destination>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,
         options: S.SchedulerOptions? = nil,
         @ViewBuilder content: @escaping () -> Content
-    ) where S: Scheduler {
+    ) {
+        self.navigator = navigator
+        self.storage = storage
+        self.interval = interval
+        self.scheduler = scheduler
+        self.options = options
         self.content = content
-
-        navigator.storeSubj
-            .debounce(for: interval, scheduler: scheduler)
-            .sink {
-                #if DEBUG
-                print("Navigation storing...")
-                #endif
-                storage.store(navigator: navigator)
-            }
-            .store(in: &bag)
     }
 
     public var body: some View {
         content()
+            .onAppear {
+                guard storageCancellable == nil else { return }
+
+                storageCancellable = navigator.storeSubj
+                    .debounce(for: interval, scheduler: scheduler, options: options)
+                    .sink {
+                        #if DEBUG
+                        print("Navigation storing...")
+                        #endif
+                        storage.store(navigator: navigator)
+                    }
+            }
     }
 }
