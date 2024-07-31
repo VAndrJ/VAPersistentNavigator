@@ -8,7 +8,8 @@
 import Foundation
 
 public protocol NavigatorStorage {
+    associatedtype Destination: Codable & Hashable
 
-    func store(navigator: Navigator)
-    func getNavigator() -> Navigator
+    func store(navigator: Navigator<Destination>)
+    func getNavigator() -> Navigator<Destination>
 }

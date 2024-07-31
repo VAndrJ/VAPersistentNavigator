@@ -8,20 +8,20 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorScreenFactoryView<Content>: View where Content: View {
-    private let navigator: Navigator
+public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashable>: View where Content: View {
+    private let navigator: Navigator<Destination>
     private let rootReplaceAnimation: Animation?
-    @ViewBuilder private  let buildView: (NavigatorDestination, Navigator) -> Content
+    @ViewBuilder private  let buildView: (Destination, Navigator<Destination>) -> Content
     @State private var isAppeared = false
-    @State private var destinations: [NavigatorDestination]
-    @State private var root: NavigatorDestination
+    @State private var destinations: [Destination]
+    @State private var root: Destination
     @State private var isFullScreenCoverPresented = false
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator,
+        navigator: Navigator<Destination>,
         rootReplaceAnimation: Animation? = .default,
-        @ViewBuilder buildView: @escaping (NavigatorDestination, Navigator) -> Content
+        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination>) -> Content
     ) {
         self.rootReplaceAnimation = rootReplaceAnimation
         self.buildView = buildView
@@ -45,7 +45,7 @@ public struct NavigatorScreenFactoryView<Content>: View where Content: View {
         case .flow:
             NavigationStack(path: $destinations) {
                 buildView(root, navigator)
-                    .navigationDestination(for: NavigatorDestination.self) {
+                    .navigationDestination(for: Destination.self) {
                         buildView($0, navigator)
                     }
             }
@@ -96,9 +96,9 @@ public struct NavigatorScreenFactoryView<Content>: View where Content: View {
 
 extension View {
 
-    func synchronize(
+    func synchronize<Destination: Codable & Hashable>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator?, Never>,
+        with subject: CurrentValueSubject<Navigator<Destination>?, Never>,
         isAppeared: Binding<Bool>,
         presentation: NavigatorPresentation
     ) -> some View {
@@ -143,10 +143,10 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier: ViewModifier {
+struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isAppeared: Bool
-    let subject: CurrentValueSubject<Navigator?, Never>
+    let subject: CurrentValueSubject<Navigator<Destination>?, Never>
     let presentation: NavigatorPresentation
 
     func body(content: Content) -> some View {
@@ -201,12 +201,12 @@ extension Binding where Value == Bool {
     }
 }
 
-struct NavigatorTabView<Content: View>: View {
-    let navigator: Navigator
+struct NavigatorTabView<Content: View, Destination: Codable & Hashable>: View {
+    let navigator: Navigator<Destination>
     @ViewBuilder let content: () -> Content
     @State var selection: Int?
 
-    init(navigator: Navigator, @ViewBuilder content: @escaping () -> Content) {
+    init(navigator: Navigator<Destination>, @ViewBuilder content: @escaping () -> Content) {
         self.selection = navigator.selectedTabSubj.value
         self.navigator = navigator
         self.content = content

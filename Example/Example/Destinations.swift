@@ -6,7 +6,22 @@
 //
 
 import Foundation
-import VAPersistentNavigator
+
+class NavigatorDestination: Codable, Hashable {
+    static func == (lhs: NavigatorDestination, rhs: NavigatorDestination) -> Bool {
+        lhs.id == rhs.id
+    }
+
+    var id: UUID
+
+    init(id: UUID = .init()) {
+        self.id = id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+}
 
 final class EmptyDestination: NavigatorDestination {}
 

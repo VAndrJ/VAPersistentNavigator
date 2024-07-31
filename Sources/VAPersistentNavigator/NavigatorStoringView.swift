@@ -8,22 +8,18 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorStoringView<Content>: View where Content: View {
-    private let navigator: Navigator
-    private let storage: any NavigatorStorage
+public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Storage: NavigatorStorage>: View where Content: View, Storage.Destination == Destination {
     @ViewBuilder private let content: () -> Content
     @State private var bag: Set<AnyCancellable> = []
 
     public init<S>(
-        navigator: Navigator,
-        storage: any NavigatorStorage,
+        navigator: Navigator<Destination>,
+        storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,
         options: S.SchedulerOptions? = nil,
         @ViewBuilder content: @escaping () -> Content
     ) where S: Scheduler {
-        self.navigator = navigator
-        self.storage = storage
         self.content = content
 
         navigator.storeSubj

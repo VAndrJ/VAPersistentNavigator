@@ -10,7 +10,7 @@ import VAPersistentNavigator
 
 @main
 struct ExampleApp: App {
-    let navigatorStorage: any NavigatorStorage
+    let navigatorStorage: DefaultsNavigatorStorage
     @StateObject var viewModel: TestStateNavRestoreAppViewModel
 
     init() {
@@ -28,15 +28,15 @@ struct ExampleApp: App {
 }
 
 class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator
+    @Published var navigator: Navigator<NavigatorDestination>
 
-    init(navigator: Navigator) {
+    init(navigator: Navigator<NavigatorDestination>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator) {
+    func replaceNavigator(_ navigator: Navigator<NavigatorDestination>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -48,9 +48,9 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView: View {
-    let navigatorStorage: any NavigatorStorage
-    let navigator: Navigator
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == NavigatorDestination {
+    let navigatorStorage: Storage
+    let navigator: Navigator<NavigatorDestination>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, scheduler: DispatchQueue.main) {
