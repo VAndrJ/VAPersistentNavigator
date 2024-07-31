@@ -18,11 +18,11 @@ class DefaultsNavigatorStorage: NavigatorStorage {
         self.defaults = defaults
     }
 
-    func store(navigator: Navigator) {
+    func store(navigator: Navigator<Destination>) {
         defaults.set(try? encoder.encode(navigator), forKey: key)
     }
 
-    func getNavigator() -> Navigator {
-        defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) } ?? .init(root: RootDestination())
+    func getNavigator() -> Navigator<Destination> {
+        defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) } ?? .init(root: .root)
     }
 }

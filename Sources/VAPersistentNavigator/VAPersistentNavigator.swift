@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public class Navigator: Codable, Identifiable {
+public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
     public private(set) var id = UUID()
 
     public var onReplaceWindow: ((Navigator) -> Void)? {
@@ -23,8 +23,8 @@ public class Navigator: Codable, Identifiable {
     }
     private var _onReplaceWindow: ((Navigator) -> Void)?
 
-    public var root: NavigatorDestination { rootSubj.value }
-    let rootSubj: CurrentValueSubject<NavigatorDestination, Never>
+    public var root: Destination { rootSubj.value }
+    let rootSubj: CurrentValueSubject<Destination, Never>
 
     public var currentTab: Int? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
@@ -41,7 +41,7 @@ public class Navigator: Codable, Identifiable {
     private(set) var tabItem: NavigatorTabItem?
 
     let storeSubj = PassthroughSubject<Void, Never>()
-    let destinationsSubj: CurrentValueSubject<[NavigatorDestination], Never>
+    let destinationsSubj: CurrentValueSubject<[Destination], Never>
     let childSubj: CurrentValueSubject<Navigator?, Never>
     let kind: NavigatorKind
     let presentation: NavigatorPresentation
@@ -51,8 +51,8 @@ public class Navigator: Codable, Identifiable {
     private var bag: Set<AnyCancellable> = []
 
     public init(
-        root: NavigatorDestination,
-        destinations: [NavigatorDestination] = [],
+        root: Destination,
+        destinations: [Destination] = [],
         kind: NavigatorKind = .flow,
         tabItem: NavigatorTabItem? = nil,
         tabs: [Navigator] = [],
@@ -71,7 +71,7 @@ public class Navigator: Codable, Identifiable {
         rebind()
     }
 
-    public func push(destination: NavigatorDestination) {
+    public func push(destination: Destination) {
         var destinationsValue = destinationsSubj.value
         destinationsValue.append(destination)
         destinationsSubj.send(destinationsValue)
@@ -88,7 +88,7 @@ public class Navigator: Codable, Identifiable {
         rebindChild()
     }
 
-    public func replace(root: NavigatorDestination) {
+    public func replace(root: Destination) {
         self.rootSubj.send(root)
     }
 
@@ -143,8 +143,8 @@ public class Navigator: Codable, Identifiable {
 
     public required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.rootSubj = .init(try container.decode(NavigatorDestination.self, forKey: .root))
-        self.destinationsSubj = .init(try container.decode([NavigatorDestination].self, forKey: .destinations))
+        self.rootSubj = .init(try container.decode(Destination.self, forKey: .root))
+        self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
         self.childSubj = .init(try? container.decode(Navigator.self, forKey: .navigator))
         self.tabItem = try? container.decode(NavigatorTabItem.self, forKey: .tabItem)
         self.selectedTabSubj = .init(try? container.decode(Int.self, forKey: .selectedTab))
