@@ -11,7 +11,7 @@ import Combine
 public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
     public private(set) var id = UUID()
 
-    public var onReplaceWindow: ((Navigator) -> Void)? {
+    public var onReplaceWindow: ((Navigator<Destination>) -> Void)? {
         get { parent == nil ? _onReplaceWindow : parent?.onReplaceWindow }
         set {
             if parent == nil {
@@ -21,7 +21,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
             }
         }
     }
-    private var _onReplaceWindow: ((Navigator) -> Void)?
+    private var _onReplaceWindow: ((Navigator<Destination>) -> Void)?
 
     public var root: Destination { rootSubj.value }
     let rootSubj: CurrentValueSubject<Destination, Never>
@@ -37,15 +37,15 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         }
     }
     let selectedTabSubj: CurrentValueSubject<Int?, Never>
-    let tabs: [Navigator]
+    let tabs: [Navigator<Destination>]
     private(set) var tabItem: NavigatorTabItem?
 
     let storeSubj = PassthroughSubject<Void, Never>()
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
-    let childSubj: CurrentValueSubject<Navigator?, Never>
+    let childSubj: CurrentValueSubject<Navigator<Destination>?, Never>
     let kind: NavigatorKind
     let presentation: NavigatorPresentation
-    private(set) weak var parent: Navigator?
+    private(set) weak var parent: Navigator<Destination>?
 
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
@@ -55,7 +55,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         destinations: [Destination] = [],
         kind: NavigatorKind = .flow,
         tabItem: NavigatorTabItem? = nil,
-        tabs: [Navigator] = [],
+        tabs: [Navigator<Destination>] = [],
         selectedTab: Int = 0,
         presentation: NavigatorPresentation = .sheet
     ) {
@@ -83,7 +83,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         destinationsSubj.send(destinationsValue)
     }
 
-    public func present(_ child: Navigator?) {
+    public func present(_ child: Navigator<Destination>?) {
         self.childSubj.send(child)
         rebindChild()
     }
@@ -97,7 +97,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
     }
 
     public func closeToRoot() {
-        var firstNavigator: Navigator? = self
+        var firstNavigator: Navigator<Destination>? = self
         while firstNavigator?.parent != nil {
             firstNavigator = firstNavigator?.parent
         }
@@ -145,7 +145,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.rootSubj = .init(try container.decode(Destination.self, forKey: .root))
         self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
-        self.childSubj = .init(try? container.decode(Navigator.self, forKey: .navigator))
+        self.childSubj = .init(try? container.decode(Navigator<Destination>.self, forKey: .navigator))
         self.tabItem = try? container.decode(NavigatorTabItem.self, forKey: .tabItem)
         self.selectedTabSubj = .init(try? container.decode(Int.self, forKey: .selectedTab))
         self.kind = try container.decode(NavigatorKind.self, forKey: .kind)
