@@ -64,9 +64,9 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         navigation: .init(
                             replaceRoot: { navigator.replace(root: .otherRoot) },
                             replaceWindowWithTabView: {
-                                navigator.onReplaceWindow?(Navigator(root: .empty, kind: .tabView, tabs: [
-                                    Navigator(root: .tab1, tabItem: .init(title: "Tab 1", image: "pencil.circle", tag: 0)),
-                                    Navigator(root: .tab2, tabItem: .init(title: "Tab 2", image: "square.and.pencil.circle", tag: 1)),
+                                navigator.onReplaceWindow?(.init(root: .empty, kind: .tabView, tabs: [
+                                    .init(root: .tab1, tabItem: .init(title: "Tab 1", image: "pencil.circle", tag: 0)),
+                                    .init(root: .tab2, tabItem: .init(title: "Tab 2", image: "square.and.pencil.circle", tag: 1)),
                                 ]))
                             },
                             next: { navigator.push(destination: .main) }
@@ -79,12 +79,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     ))
                 case .root1:
                     Root1View(context: .init(
-                        present: { navigator.present(Navigator(root: .root2)) },
+                        present: { navigator.present(.init(root: .root2)) },
                         dismiss: { navigator.dismissTop() }
                     ))
                 case .root2:
                     Root2View(context: .init(
-                        present: { navigator.present(Navigator(root: .root3)) },
+                        present: { navigator.present(.init(root: .root3)) },
                         dismiss: { navigator.dismissTop() }
                     ))
                 case .root3:
@@ -106,13 +106,13 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             isTabChangeAvailable: navigator.currentTab != nil
                         ),
                         navigation: .init(
-                            present: { navigator.present(Navigator(root: .root1)) },
-                            fullScreenCover: { navigator.present(Navigator(root: .root1, presentation: .fullScreenCover)) },
+                            present: { navigator.present(.init(root: .root1)) },
+                            fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
                             reset: { navigator.onReplaceWindow?(.init(root: .root)) },
                             presentTabs: {
-                                navigator.present(Navigator(root: .empty, kind: .tabView, tabs: [
-                                    Navigator(root: .tab1, tabItem: .init(title: "Tab 3", image: "pencil.circle", tag: 0)),
-                                    Navigator(root: .tab2, tabItem: .init(title: "Tab 4", image: "square.and.pencil.circle", tag: 1)),
+                                navigator.present(.init(root: .empty, kind: .tabView, tabs: [
+                                    .init(root: .tab1, tabItem: .init(title: "Tab 3", image: "pencil.circle", tag: 0)),
+                                    .init(root: .tab2, tabItem: .init(title: "Tab 4", image: "square.and.pencil.circle", tag: 1)),
                                 ]))
                             },
                             changeTabs: {
@@ -315,6 +315,6 @@ struct DetailView: View {
 #Preview {
     WindowView(
         navigatorStorage: DefaultsNavigatorStorage(),
-        navigator: Navigator(root: .root)
+        navigator: .init(root: .root)
     )
 }
