@@ -160,16 +160,15 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         bag.forEach { $0.cancel() }
         bag = []
 
-        destinationsSubj
-            .map { _ in }
-            .sink(receiveValue: storeSubj.send)
-            .store(in: &bag)
-        rootSubj
-            .map { _ in }
-            .sink(receiveValue: storeSubj.send)
-            .store(in: &bag)
-        selectedTabSubj
-            .map { _ in }
+        Publishers
+            .Merge3(
+                destinationsSubj
+                    .map { _ in },
+                rootSubj
+                    .map { _ in },
+                selectedTabSubj
+                    .map { _ in }
+            )
             .sink(receiveValue: storeSubj.send)
             .store(in: &bag)
         tabs.forEach { child in
@@ -188,6 +187,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
             child.parent = self
             childCancellable = child.storeSubj
                 .sink(receiveValue: storeSubj.send)
+            storeSubj.send(())
         } else {
             childCancellable = nil
         }
