@@ -57,17 +57,17 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `popToRoot`.
 
-- `replace(root:)`: Replaces the root view in `NavigationStack`.
+- `replace(root:)`. Replaces the root view in `NavigationStack`.
 
-- `present`: `sheet` and `fullScreenCover`.
+- `present`. `sheet` and `fullScreenCover`.
 
-- `dismissTop`: Dismisses the presented `sheet` or `fullScreenCover`.
+- `dismissTop`. Dismisses the presented `sheet` or `fullScreenCover`.
 
-- `closeToInitial`: Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
+- `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
-- `onReplaceWindow`: Callback to replace the initial `View` with a new one.
+- `onReplaceWindow`. Callback to replace the initial `View` with a new one.
 
-- `currentTab`: Variable to get and change the current tab in `TabView`.
+- `currentTab`. Variable to get and change the current tab in `TabView`.
 
 
 ## TBD
