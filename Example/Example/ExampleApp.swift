@@ -89,7 +89,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     ))
                 case .root3:
                     Root3View(context: .init(
-                        closeToRoot: { navigator.closeToRoot() },
+                        closeToInitial: { navigator.closeToInitial() },
                         dismiss: { navigator.dismissTop() }
                     ))
                 case .tab1:
@@ -229,7 +229,7 @@ struct Root2View: View {
 
 struct Root3View: View {
     struct Context {
-        let closeToRoot: () -> Void
+        let closeToInitial: () -> Void
         let dismiss: () -> Void
     }
 
@@ -238,7 +238,7 @@ struct Root3View: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Root3")
-            Button("Close to root", action: context.closeToRoot)
+            Button("Close to initial", action: context.closeToInitial)
             Button("Dismiss", action: context.dismiss)
         }
     }
