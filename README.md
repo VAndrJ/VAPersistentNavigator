@@ -41,7 +41,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                 case .more:
                     MoreView()
                 }
-            }
+            })
         }
     }
 }
