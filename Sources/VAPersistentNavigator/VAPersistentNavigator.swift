@@ -83,6 +83,10 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         destinationsSubj.send(destinationsValue)
     }
 
+    public func popToRoot() {
+        destinationsSubj.send([])
+    }
+
     public func present(_ child: Navigator<Destination>?) {
         childSubj.send(child)
     }
@@ -104,11 +108,11 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         switch firstNavigator?.kind {
         case .tabView:
             firstNavigator?.tabs.forEach {
-                $0.destinationsSubj.send([])
+                $0.popToRoot()
                 $0.present(nil)
             }
         case .flow:
-            firstNavigator?.destinationsSubj.send([])
+            firstNavigator?.popToRoot()
             firstNavigator?.present(nil)
         case .none:
             break
