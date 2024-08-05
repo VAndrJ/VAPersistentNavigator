@@ -84,8 +84,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
     }
 
     public func present(_ child: Navigator<Destination>?) {
-        self.childSubj.send(child)
-        rebindChild()
+        childSubj.send(child)
     }
 
     public func replace(root: Destination) {
@@ -177,19 +176,22 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
                 .sink(receiveValue: storeSubj.send)
                 .store(in: &bag)
         }
-
-        rebindChild()
+        childSubj
+            .sink { [weak self] in
+                self?.rebindChild(child: $0)
+            }
+            .store(in: &bag)
     }
 
-    private func rebindChild() {
+    private func rebindChild(child: Navigator?) {
         childCancellable?.cancel()
         if let child = childSubj.value {
             child.parent = self
             childCancellable = child.storeSubj
                 .sink(receiveValue: storeSubj.send)
-            storeSubj.send(())
         } else {
             childCancellable = nil
         }
+        storeSubj.send(())
     }
 }
