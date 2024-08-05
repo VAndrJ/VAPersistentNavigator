@@ -6,16 +6,19 @@
 //
 
 import SwiftUI
+import Combine
 
-struct NavigatorTabView<Content: View, Destination: Codable & Hashable>: View {
-    let navigator: Navigator<Destination>
-    @ViewBuilder let content: () -> Content
+struct NavigatorTabView<Content: View, SelectionValue: Codable & Hashable>: View {
+    private let selectedTabSubj: CurrentValueSubject<SelectionValue?, Never>
+    @ViewBuilder private let content: () -> Content
+    @State private var selection: SelectionValue?
 
-    @State private var selection: Int?
-
-    init(navigator: Navigator<Destination>, @ViewBuilder content: @escaping () -> Content) {
-        self.selection = navigator.selectedTabSubj.value
-        self.navigator = navigator
+    init(
+        selectedTabSubj: CurrentValueSubject<SelectionValue?, Never>,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.selection = selectedTabSubj.value
+        self.selectedTabSubj = selectedTabSubj
         self.content = content
     }
 
@@ -23,6 +26,6 @@ struct NavigatorTabView<Content: View, Destination: Codable & Hashable>: View {
         TabView(selection: $selection) {
             content()
         }
-        .synchronize($selection, with: navigator.selectedTabSubj)
+        .synchronize($selection, with: selectedTabSubj)
     }
 }

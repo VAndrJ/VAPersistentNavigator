@@ -33,7 +33,7 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
     public var body: some View {
         switch navigator.kind {
         case .tabView:
-            NavigatorTabView(navigator: navigator) {
+            NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
                     NavigatorScreenFactoryView(navigator: tab, buildView: buildView)
                         .tabItem {
