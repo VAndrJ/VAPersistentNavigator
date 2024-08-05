@@ -95,7 +95,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         parent?.present(nil)
     }
 
-    public func closeToRoot() {
+    public func closeToInitial() {
         var firstNavigator: Navigator<Destination>? = self
         while firstNavigator?.parent != nil {
             firstNavigator = firstNavigator?.parent
