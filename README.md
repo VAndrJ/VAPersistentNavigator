@@ -55,6 +55,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `pop`.
 
+- `popToRoot`.
+
 - `replace(root:)`: Replaces the root view in `NavigationStack`.
 
 - `present`: `sheet` and `fullScreenCover`.
@@ -69,9 +71,6 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 
 ## TBD
-
-
-- Pop to root.
 
 - Split.
 
