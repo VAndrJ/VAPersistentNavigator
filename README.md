@@ -10,14 +10,72 @@
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20watchOS%20%7C%20tvOS%20%7C%20macOS%20%7C%20macCatalyst-lightgray.svg?style=flat)](https://developer.apple.com/discover)
 
 
-SwiftUI navigation with persistence.
+## SwiftUI navigation with persistence.
 
 
-TBD:
+To save the current state in applications using SwiftUI, there are various mechanisms, for example, `@SceneStorage`. However, due to the tight coupling to `View`, this complicates the possibility of separating the logic of navigation and state saving. Additionally, due to SwiftUI bugs, the built-in mechanisms do not work in some cases and lead to various issues.
 
-- Documentation
+For navigation, use `Navigator` with `NavigatorScreenFactoryView`, which synchronizes the state of the navigator and navigation.
 
-- Extended example
+To store the current navigation state, simply use any storage that implements the `NavigatorStorage` protocol. It doesn't matter if it's UserDefaults, a file, or encrypted storage. 
+
+Wrap everything in a `NavigatorStoringView`, which will save the current navigation state whenever any changes occur.
+
+
+## Example
+
+
+```swift
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination {
+    let navigatorStorage: Storage
+    let navigator: Navigator<Destination>
+
+    var body: some View {
+        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, scheduler: DispatchQueue.main) {
+            NavigatorScreenFactoryView(navigator: navigator, buildView: { destination, navigator in
+                switch destination {
+                case .root:
+                    RootView()
+                case .details:
+                    DetailsView()
+                case .more:
+                    MoreView()
+                }
+            }
+        }
+    }
+}
+```
+
+
+## Implemented
+
+
+- `push`. Using `NavigationStack`.
+
+- `pop`.
+
+- `replace(root:)`: Replaces the root view in `NavigationStack`.
+
+- `present`: `sheet` and `fullScreenCover`.
+
+- `dismissTop`: Dismisses the presented `sheet` or `fullScreenCover`.
+
+- `closeToInitial`: Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
+
+- `onReplaceWindow`: Callback to replace the initial `View` with a new one.
+
+- `currentTab`: Variable to get and change the current tab in `TabView`.
+
+
+## TBD
+
+
+- Pop to root.
+
+- Split.
+
+- Tests.
 
 
 ## Author
