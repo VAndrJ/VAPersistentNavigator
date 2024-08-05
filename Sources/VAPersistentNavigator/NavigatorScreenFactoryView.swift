@@ -126,17 +126,25 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             content
                 .onChange(of: binding) { _, value in
+                    guard subject.value != value else { return }
+
                     subject.send(value)
                 }
                 .onReceive(subject) { value in
+                    guard binding != value else { return }
+
                     binding = value
                 }
         } else {
             content
                 .onChange(of: binding) { value in
+                    guard subject.value != value else { return }
+                    
                     subject.send(value)
                 }
                 .onReceive(subject) { value in
+                    guard binding != value else { return }
+
                     binding = value
                 }
         }
