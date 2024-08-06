@@ -127,6 +127,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                         selectedTab: .second(.second)
                                     ))
                                 },
+                                popToMain: { navigator.pop(to: .main) },
                                 changeTabs: {
                                     switch navigator.currentTab {
                                     case let .first(tabView):
@@ -330,6 +331,7 @@ struct DetailView: View {
             let fullScreenCover: () -> Void
             let reset: () -> Void
             let presentTabs: () -> Void
+            let popToMain: () -> Void
             let changeTabs: () -> Void
         }
 
@@ -347,6 +349,7 @@ struct DetailView: View {
             Button("Reset navigator to root", action: context.navigation.reset)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Present tabs", action: context.navigation.presentTabs)
+            Button("Pop to Main", action: context.navigation.popToMain)
             Button("Change tab if available", action: context.navigation.changeTabs)
                 .disabled(!context.related.isTabChangeAvailable)
         }

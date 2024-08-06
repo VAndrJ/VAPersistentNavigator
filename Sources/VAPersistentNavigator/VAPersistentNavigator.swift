@@ -85,6 +85,19 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         destinationsSubj.send(destinationsValue)
     }
 
+    @discardableResult
+    public func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
+        var destinationsValue = destinationsSubj.value
+        if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
+            destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+            destinationsSubj.send(destinationsValue)
+
+            return true
+        } else {
+            return false
+        }
+    }
+
     public func popToRoot() {
         destinationsSubj.send([])
     }
