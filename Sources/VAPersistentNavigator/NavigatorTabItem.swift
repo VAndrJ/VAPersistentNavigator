@@ -7,15 +7,15 @@
 
 import Foundation
 
-public struct NavigatorTabItem: Codable, Hashable {
+public struct NavigatorTabItem<Tag: Codable & Hashable>: Codable, Hashable {
     public var title: String
     public var image: String
-    public var tag: Int
+    public var tag: Tag
 
     public init(
         title: String,
         image: String,
-        tag: Int
+        tag: Tag
     ) {
         self.title = title
         self.image = image

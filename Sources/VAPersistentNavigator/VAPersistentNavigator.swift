@@ -38,7 +38,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
     }
     let selectedTabSubj: CurrentValueSubject<Int?, Never>
     let tabs: [Navigator<Destination>]
-    private(set) var tabItem: NavigatorTabItem?
+    private(set) var tabItem: NavigatorTabItem<Int>?
 
     let storeSubj = PassthroughSubject<Void, Never>()
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
@@ -54,7 +54,7 @@ public class Navigator<Destination: Codable & Hashable>: Codable, Identifiable {
         root: Destination,
         destinations: [Destination] = [],
         kind: NavigatorKind = .flow,
-        tabItem: NavigatorTabItem? = nil,
+        tabItem: NavigatorTabItem<Int>? = nil,
         tabs: [Navigator<Destination>] = [],
         selectedTab: Int = 0,
         presentation: NavigatorPresentation = .sheet
