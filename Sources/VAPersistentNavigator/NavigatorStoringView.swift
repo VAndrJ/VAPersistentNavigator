@@ -8,8 +8,8 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Storage: NavigatorStorage, S: Scheduler>: View where Content: View, Storage.Destination == Destination {
-    private let navigator: Navigator<Destination>
+public struct NavigatorStoringView<Content, Destination: Codable & Hashable, TabItemTag: Codable & Hashable, Storage: NavigatorStorage, S: Scheduler>: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag {
+    private let navigator: Navigator<Destination, TabItemTag>
     private let storage: Storage
     private let interval: S.SchedulerTimeType.Stride
     private let scheduler: S
@@ -18,7 +18,7 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Sto
     @State private var storageCancellable: AnyCancellable?
 
     public init(
-        navigator: Navigator<Destination>,
+        navigator: Navigator<Destination, TabItemTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,

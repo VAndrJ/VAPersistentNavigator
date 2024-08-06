@@ -28,15 +28,15 @@ struct ExampleApp: App {
 }
 
 class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination>
+    @Published var navigator: Navigator<Destination, TabViewTag>
 
-    init(navigator: Navigator<Destination>) {
+    init(navigator: Navigator<Destination, TabViewTag>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination>) {
+    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -48,9 +48,9 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination>
+    let navigator: Navigator<Destination, TabViewTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
@@ -64,10 +64,15 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         navigation: .init(
                             replaceRoot: { navigator.replace(root: .otherRoot) },
                             replaceWindowWithTabView: {
-                                navigator.onReplaceWindow?(.init(root: .empty, kind: .tabView, tabs: [
-                                    .init(root: .tab1, tabItem: .init(title: "Tab 1", image: "pencil.circle", tag: 0)),
-                                    .init(root: .tab2, tabItem: .init(title: "Tab 2", image: "square.and.pencil.circle", tag: 1)),
-                                ]))
+                                navigator.onReplaceWindow?(.init(
+                                    root: .empty,
+                                    kind: .tabView,
+                                    tabs: [
+                                        .init(root: .tab1, tabItem: .init(title: "Tab 1", image: "pencil.circle", tag: .first)),
+                                        .init(root: .tab2, tabItem: .init(title: "Tab 2", image: "square.and.pencil.circle", tag: .second)),
+                                    ],
+                                    selectedTab: .first
+                                ))
                             },
                             next: { navigator.push(destination: .main) }
                         )
@@ -110,16 +115,24 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
                             reset: { navigator.onReplaceWindow?(.init(root: .root)) },
                             presentTabs: {
-                                navigator.present(.init(root: .empty, kind: .tabView, tabs: [
-                                    .init(root: .tab1, tabItem: .init(title: "Tab 3", image: "pencil.circle", tag: 0)),
-                                    .init(root: .tab2, tabItem: .init(title: "Tab 4", image: "square.and.pencil.circle", tag: 1)),
-                                ]))
+                                navigator.present(.init(
+                                    root: .empty,
+                                    kind: .tabView,
+                                    tabs: [
+                                        .init(root: .tab1, tabItem: .init(title: "Tab 3", image: "pencil.circle", tag: .first)),
+                                        .init(root: .tab2, tabItem: .init(title: "Tab 4", image: "square.and.pencil.circle", tag: .second)),
+                                    ],
+                                    selectedTab: .second
+                                ))
                             },
                             changeTabs: {
-                                if navigator.currentTab == 0 {
-                                    navigator.currentTab = 1
-                                } else if navigator.currentTab == 1 {
-                                    navigator.currentTab = 0
+                                switch navigator.currentTab {
+                                case .first:
+                                    navigator.currentTab = .second
+                                case .second:
+                                    navigator.currentTab = .first
+                                case .none:
+                                    break
                                 }
                             }
                         )

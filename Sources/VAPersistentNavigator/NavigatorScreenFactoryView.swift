@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashable>: View where Content: View {
-    private let navigator: Navigator<Destination>
+public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: View where Content: View {
+    private let navigator: Navigator<Destination, TabItemTag>
     private let rootReplaceAnimation: Animation?
-    @ViewBuilder private  let buildView: (Destination, Navigator<Destination>) -> Content
+    @ViewBuilder private  let buildView: (Destination, Navigator<Destination, TabItemTag>) -> Content
     @State private var isAppeared = false
     @State private var destinations: [Destination]
     @State private var root: Destination
@@ -18,9 +18,9 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator<Destination>,
+        navigator: Navigator<Destination, TabItemTag>,
         rootReplaceAnimation: Animation? = .default,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination>) -> Content
+        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag>) -> Content
     ) {
         self.rootReplaceAnimation = rootReplaceAnimation
         self.buildView = buildView

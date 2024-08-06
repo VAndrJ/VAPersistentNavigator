@@ -10,9 +10,9 @@ import Combine
 
 extension View {
 
-    func synchronize<Destination: Codable & Hashable>(
+    func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator<Destination>?, Never>,
+        with subject: CurrentValueSubject<Navigator<Destination, TabItemTag>?, Never>,
         isAppeared: Binding<Bool>,
         presentation: NavigatorPresentation
     ) -> some View {
@@ -65,10 +65,10 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable>: ViewModifier {
+struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isAppeared: Bool
-    let subject: CurrentValueSubject<Navigator<Destination>?, Never>
+    let subject: CurrentValueSubject<Navigator<Destination, TabItemTag>?, Never>
     let presentation: NavigatorPresentation
 
     func body(content: Content) -> some View {
