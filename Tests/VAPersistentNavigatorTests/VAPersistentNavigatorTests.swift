@@ -5,7 +5,8 @@ import Testing
 @Suite("Navigator Tests")
 struct NavigatorTests {
     
-    @Test func navigator() {
+    @Test("Test Navigator initial state")
+    func navigator() {
         let expectedId = UUID()
         let expectedRoot: MockDestination = .first
         let sut = Navigator<MockDestination, MockTabTag>(id: expectedId, root: expectedRoot)
@@ -23,10 +24,20 @@ struct NavigatorTests {
         #expect(nil == sut.onReplaceInitialNavigator)
     }
 
-    @Test func navigator_InitialDestinations() {
+    @Test("Initially set destinations")
+    func navigator_InitialDestinations() {
         let expectedDestinations: [MockDestination] = [.second, .third, .fourth]
         let sut = Navigator<MockDestination, MockTabTag>(root: .first, destinations: expectedDestinations)
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
+
+    @Test("Destination should be appended after push")
+    func navigator_Push_DestinationsArray() {
+        let expectedDestination: MockDestination = .second
+        let sut = Navigator<MockDestination, MockTabTag>(root: .first)
+        sut.push(destination: expectedDestination)
+
+        #expect([expectedDestination] == sut.destinationsSubj.value)
     }
 }
