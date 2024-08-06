@@ -54,13 +54,14 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
+    // TODO: - Use Either for root?
     public init(
         id: UUID = .init(),
-        root: Destination,
+        root: Destination, // ignored when kind == .tabView
         destinations: [Destination] = [],
-        kind: NavigatorKind = .flow,
         presentation: NavigatorPresentation = .sheet,
         tabItem: TabItemTag? = nil,
+        kind: NavigatorKind = .flow,
         tabs: [Navigator] = [],
         selectedTab: TabItemTag? = nil
     ) {

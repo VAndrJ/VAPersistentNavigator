@@ -123,7 +123,6 @@ struct NavigatorTabs {
             selectedTab: .first
         )
 
-
         #expect([tab1Navigator, tab2Navigator] == sut.tabs)
     }
 }
