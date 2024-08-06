@@ -1,8 +1,25 @@
+import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
-// TODO: -
+@Suite("Navigator Tests")
+struct NavigatorTests {
+    
+    @Test func navigator() {
+        let expectedId = UUID()
+        let expectedRoot: MockDestination = .first
+        let sut = Navigator<MockDestination, MockTabTag>(id: expectedId, root: expectedRoot)
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+        #expect(expectedId == sut.id)
+        #expect(expectedRoot == sut.root)
+        #expect(sut.destinationsSubj.value.isEmpty)
+        #expect(.flow == sut.kind)
+        #expect(.sheet == sut.presentation)
+        #expect(nil == sut.tabItem)
+        #expect(sut.tabs.isEmpty)
+        #expect(nil == sut.currentTab)
+        #expect(nil == sut.parent)
+        #expect(nil == sut.childSubj.value)
+        #expect(nil == sut.onReplaceInitialNavigator)
+    }
 }
