@@ -112,4 +112,18 @@ struct NavigatorTabs {
         #expect(expectedTag == sut.tabItem)
     }
 
+    @Test("Tab view kind")
+    func navigator_TabView() {
+        let tab1Navigator = TestNavigator(root: .first, tabItem: .first)
+        let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
+        let sut = TestNavigator(
+            root: .empty,
+            kind: .tabView,
+            tabs: [tab1Navigator, tab2Navigator],
+            selectedTab: .first
+        )
+
+
+        #expect([tab1Navigator, tab2Navigator] == sut.tabs)
+    }
 }
