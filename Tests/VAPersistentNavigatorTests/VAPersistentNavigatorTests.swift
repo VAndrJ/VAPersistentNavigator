@@ -59,4 +59,16 @@ struct NavigatorTests {
 
         #expect(sut.destinationsSubj.value.isEmpty)
     }
+
+    @Test("Destinations should be substracted to first specified")
+    func navigator_PopToDestinationFirst_DestinationsArray() {
+        let expectedDestination: MockDestination = .second
+        let initialDestinations: [MockDestination] = [expectedDestination, .third, .fourth, expectedDestination, .third]
+        let expectedIndex = initialDestinations.firstIndex(of: expectedDestination)! + 1
+        let expectedDestinations = initialDestinations.removingSubrange(from: expectedIndex)
+        let sut = Navigator<MockDestination, MockTabTag>(root: .first, destinations: initialDestinations)
+        sut.pop(to: expectedDestination)
+
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
 }

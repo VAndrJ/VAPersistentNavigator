@@ -19,3 +19,13 @@ enum MockTabTag: Codable, Hashable {
     case first
     case second
 }
+
+extension Array {
+
+    func removingSubrange(from index: Int) -> Array {
+        var mutableArray = self
+        mutableArray.removeSubrange(index..<count)
+
+        return mutableArray
+    }
+}
