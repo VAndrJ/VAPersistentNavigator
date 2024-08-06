@@ -40,4 +40,14 @@ struct NavigatorTests {
 
         #expect([expectedDestination] == sut.destinationsSubj.value)
     }
+
+    @Test("Destination should be substracted after pop")
+    func navigator_Pop_DestinationsArray() {
+        let initialDestinations: [MockDestination] = [.second, .third, .fourth]
+        let expectedDestinations = Array(initialDestinations.dropLast())
+        let sut = Navigator<MockDestination, MockTabTag>(root: .first, destinations: initialDestinations)
+        sut.pop()
+
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
 }
