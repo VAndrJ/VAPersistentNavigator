@@ -22,4 +22,11 @@ struct NavigatorTests {
         #expect(nil == sut.childSubj.value)
         #expect(nil == sut.onReplaceInitialNavigator)
     }
+
+    @Test func navigator_InitialDestinations() {
+        let expectedDestinations: [MockDestination] = [.second, .third, .fourth]
+        let sut = Navigator<MockDestination, MockTabTag>(root: .first, destinations: expectedDestinations)
+
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
 }
