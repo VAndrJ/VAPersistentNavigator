@@ -21,6 +21,16 @@ enum Destination: Codable, Hashable {
 }
 
 enum TabViewTag: Codable, Hashable {
-    case first
-    case second
+    enum FirstTabView: Codable, Hashable {
+        case first
+        case second
+    }
+
+    enum SecondTabView: Codable, Hashable {
+        case first
+        case second
+    }
+
+    case first(FirstTabView)
+    case second(SecondTabView)
 }
