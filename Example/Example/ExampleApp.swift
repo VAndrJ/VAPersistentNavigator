@@ -42,7 +42,7 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 
     private func bindReplacement() {
-        navigator.onReplaceWindow = { [weak self] in
+        navigator.onReplaceInitialNavigator = { [weak self] in
             self?.replaceNavigator($0)
         }
     }
@@ -62,11 +62,11 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     switch destination {
                     case .root:
                         RootView(context: .init(
-                            related: .init(isReplacementAvailable: navigator.onReplaceWindow != nil),
+                            related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
                             navigation: .init(
                                 replaceRoot: { navigator.replace(root: .otherRoot) },
                                 replaceWindowWithTabView: {
-                                    navigator.onReplaceWindow?(.init(
+                                    navigator.onReplaceInitialNavigator?(.init(
                                         root: .empty,
                                         kind: .tabView,
                                         tabs: [
@@ -109,13 +109,13 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         DetailView(context: .init(
                             related: .init(
                                 number: number,
-                                isReplacementAvailable: navigator.onReplaceWindow != nil,
+                                isReplacementAvailable: navigator.onReplaceInitialNavigator != nil,
                                 isTabChangeAvailable: navigator.currentTab != nil
                             ),
                             navigation: .init(
                                 present: { navigator.present(.init(root: .root1)) },
                                 fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
-                                reset: { navigator.onReplaceWindow?(.init(root: .root)) },
+                                reset: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
                                 presentTabs: {
                                     navigator.present(.init(
                                         root: .empty,

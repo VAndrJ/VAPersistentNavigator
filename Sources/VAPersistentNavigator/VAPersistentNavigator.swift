@@ -11,17 +11,17 @@ import Combine
 public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable {
     public private(set) var id = UUID()
 
-    public var onReplaceWindow: ((Navigator) -> Void)? {
-        get { parent == nil ? _onReplaceWindow : parent?.onReplaceWindow }
+    public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
+        get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
-                _onReplaceWindow = newValue
+                _onReplaceInitialNavigator = newValue
             } else {
-                parent?.onReplaceWindow = newValue
+                parent?.onReplaceInitialNavigator = newValue
             }
         }
     }
-    private var _onReplaceWindow: ((Navigator) -> Void)?
+    private var _onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)?
 
     public var root: Destination { rootSubj.value }
     let rootSubj: CurrentValueSubject<Destination, Never>

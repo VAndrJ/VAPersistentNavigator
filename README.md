@@ -75,7 +75,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
-- `onReplaceWindow`. Callback to replace the initial `View` with a new one.
+- `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
 
 - `currentTab`. Variable to get and change the current tab in `TabView`.
 
