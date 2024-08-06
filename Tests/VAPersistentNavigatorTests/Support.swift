@@ -9,6 +9,7 @@ import Testing
 @testable import VAPersistentNavigator
 
 enum MockDestination: Codable, Hashable {
+    case empty
     case first
     case second
     case third
