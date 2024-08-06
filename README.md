@@ -65,6 +65,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `pop`.
 
+- `pop(to:)`. Pops to the specified `Destination`.
+
 - `popToRoot`.
 
 - `replace(root:)`. Replaces the root view in `NavigationStack`.
@@ -82,9 +84,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 ## TBD
 
-- Split.
+
+- Documentation.
 
 - Tests.
+
+- Split.
 
 
 ## Author
