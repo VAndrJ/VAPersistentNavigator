@@ -2,10 +2,10 @@ import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
-@Suite("Navigator Tests")
-struct NavigatorTests {
-    
-    @Test("Test Navigator initial state")
+@Suite("Navigator initial")
+struct NavigatorInitial {
+
+    @Test("Initial state")
     func navigator() {
         let expectedId = UUID()
         let expectedRoot: MockDestination = .first
@@ -31,6 +31,10 @@ struct NavigatorTests {
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
+}
+
+@Suite("Navigator push and pop")
+struct NavigatorStack {
 
     @Test("Destination should be appended after push")
     func navigator_Push_DestinationsArray() {
@@ -94,3 +98,4 @@ struct NavigatorTests {
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 }
+
