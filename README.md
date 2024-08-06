@@ -45,7 +45,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     }
                 },
                 buildTab: { tag in
-                    switch tabView {
+                    switch tag {
                         case .first: Label("Tab 1", systemImage: "pencil.circle")
                         case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
                         case .none: EmptyView()
