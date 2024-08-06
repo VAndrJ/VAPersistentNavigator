@@ -8,7 +8,11 @@
 import Foundation
 import Combine
 
-public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable {
+public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
+    public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
+        lhs.id == rhs.id
+    }
+
     public private(set) var id: UUID
 
     public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
