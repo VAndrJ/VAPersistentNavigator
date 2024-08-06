@@ -91,8 +91,11 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         childSubj.send(child)
     }
 
-    public func replace(root: Destination) {
-        self.rootSubj.send(root)
+    public func replace(root: Destination, isPopToRoot: Bool = true) {
+        if isPopToRoot {
+            popToRoot()
+        }
+        rootSubj.send(root)
     }
 
     public func dismissTop() {
