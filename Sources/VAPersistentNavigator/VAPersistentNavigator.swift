@@ -37,7 +37,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         }
     }
     let selectedTabSubj: CurrentValueSubject<TabItemTag?, Never>
-    private(set) var tabItem: NavigatorTabItem<TabItemTag>?
+    private(set) var tabItem: TabItemTag?
     let tabs: [Navigator]
 
     let storeSubj = PassthroughSubject<Void, Never>()
@@ -54,10 +54,10 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         root: Destination,
         destinations: [Destination] = [],
         kind: NavigatorKind = .flow,
-        tabItem: NavigatorTabItem<TabItemTag>? = nil,
+        presentation: NavigatorPresentation = .sheet,
+        tabItem: TabItemTag? = nil,
         tabs: [Navigator] = [],
-        selectedTab: TabItemTag? = nil,
-        presentation: NavigatorPresentation = .sheet
+        selectedTab: TabItemTag? = nil
     ) {
         self.rootSubj = .init(root)
         self.destinationsSubj = .init(destinations)
@@ -149,7 +149,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         self.rootSubj = .init(try container.decode(Destination.self, forKey: .root))
         self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
         self.childSubj = .init(try container.decodeIfPresent(Navigator.self, forKey: .navigator))
-        self.tabItem = try container.decodeIfPresent(NavigatorTabItem.self, forKey: .tabItem)
+        self.tabItem = try container.decodeIfPresent(TabItemTag.self, forKey: .tabItem)
         self.selectedTabSubj = .init(try container.decodeIfPresent(TabItemTag.self, forKey: .selectedTab))
         self.kind = try container.decode(NavigatorKind.self, forKey: .kind)
         self.id = try container.decode(UUID.self, forKey: .id)

@@ -7,10 +7,11 @@
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: View where Content: View {
+public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: View {
     private let navigator: Navigator<Destination, TabItemTag>
     private let rootReplaceAnimation: Animation?
-    @ViewBuilder private  let buildView: (Destination, Navigator<Destination, TabItemTag>) -> Content
+    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag>) -> Content
+    @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
     @State private var isAppeared = false
     @State private var destinations: [Destination]
     @State private var root: Destination
@@ -20,13 +21,15 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
     public init(
         navigator: Navigator<Destination, TabItemTag>,
         rootReplaceAnimation: Animation? = .default,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag>) -> Content
+        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag>) -> Content,
+        @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem
     ) {
         self.rootReplaceAnimation = rootReplaceAnimation
         self.buildView = buildView
         self.root = navigator.rootSubj.value
         self.destinations = navigator.destinationsSubj.value
         self.navigator = navigator
+        self.buildTab = buildTab
     }
 
     public var body: some View {
@@ -34,11 +37,11 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
-                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView, buildTab: buildTab)
                         .tabItem {
-                            Label(tab.tabItem?.title ?? "", systemImage: tab.tabItem?.image ?? "")
+                            buildTab(tab.tabItem)
                         }
-                        .tag(tab.tabItem?.tag)
+                        .tag(tab.tabItem)
                 }
             }
         case .flow:
@@ -80,13 +83,13 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
             #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(navigator: child, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
                 }
             }
             #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(navigator: child, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
                 }
             }
         }
