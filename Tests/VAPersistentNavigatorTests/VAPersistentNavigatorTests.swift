@@ -50,4 +50,13 @@ struct NavigatorTests {
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
+
+    @Test("Destination should be empty after pop to root")
+    func navigator_PopToRoot_DestinationsArray() {
+        let initialDestinations: [MockDestination] = [.second, .third, .fourth]
+        let sut = Navigator<MockDestination, MockTabTag>(root: .first, destinations: initialDestinations)
+        sut.popToRoot()
+
+        #expect(sut.destinationsSubj.value.isEmpty)
+    }
 }
