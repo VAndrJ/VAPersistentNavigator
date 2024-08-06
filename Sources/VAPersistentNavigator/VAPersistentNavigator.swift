@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable {
-    public private(set) var id = UUID()
+    public private(set) var id: UUID
 
     public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
@@ -51,6 +51,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
     private var bag: Set<AnyCancellable> = []
 
     public init(
+        id: UUID = .init(),
         root: Destination,
         destinations: [Destination] = [],
         kind: NavigatorKind = .flow,
@@ -59,6 +60,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         tabs: [Navigator] = [],
         selectedTab: TabItemTag? = nil
     ) {
+        self.id = id
         self.rootSubj = .init(root)
         self.destinationsSubj = .init(destinations)
         self.tabItem = tabItem
