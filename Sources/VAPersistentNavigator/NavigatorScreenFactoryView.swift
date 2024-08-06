@@ -6,12 +6,12 @@
 //
 
 import SwiftUI
-import Combine
 
-public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashable>: View where Content: View {
-    private let navigator: Navigator<Destination>
+public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: View {
+    private let navigator: Navigator<Destination, TabItemTag>
     private let rootReplaceAnimation: Animation?
-    @ViewBuilder private  let buildView: (Destination, Navigator<Destination>) -> Content
+    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag>) -> Content
+    @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
     @State private var isAppeared = false
     @State private var destinations: [Destination]
     @State private var root: Destination
@@ -19,27 +19,29 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator<Destination>,
+        navigator: Navigator<Destination, TabItemTag>,
         rootReplaceAnimation: Animation? = .default,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination>) -> Content
+        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag>) -> Content,
+        @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem
     ) {
         self.rootReplaceAnimation = rootReplaceAnimation
         self.buildView = buildView
         self.root = navigator.rootSubj.value
         self.destinations = navigator.destinationsSubj.value
         self.navigator = navigator
+        self.buildTab = buildTab
     }
 
     public var body: some View {
         switch navigator.kind {
         case .tabView:
-            NavigatorTabView(navigator: navigator) {
+            NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
-                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView, buildTab: buildTab)
                         .tabItem {
-                            Label(tab.tabItem?.title ?? "", systemImage: tab.tabItem?.image ?? "")
+                            buildTab(tab.tabItem)
                         }
-                        .tag(tab.tabItem?.tag)
+                        .tag(tab.tabItem)
                 }
             }
         case .flow:
@@ -81,149 +83,15 @@ public struct NavigatorScreenFactoryView<Content, Destination: Codable & Hashabl
             #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(navigator: child, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
                 }
             }
             #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(navigator: child, buildView: buildView)
+                    NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
                 }
             }
         }
-    }
-}
-
-extension View {
-
-    func synchronize<Destination: Codable & Hashable>(
-        _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator<Destination>?, Never>,
-        isAppeared: Binding<Bool>,
-        presentation: NavigatorPresentation
-    ) -> some View {
-        self.modifier(SynchronizingNavigatorPresentationViewModifier(
-            binding: binding,
-            isAppeared: isAppeared,
-            subject: subject,
-            presentation: presentation
-        ))
-    }
-
-    func synchronize<T: Equatable>(
-        _ binding: Binding<T>,
-        with subject: CurrentValueSubject<T, Never>
-    ) -> some View {
-        self.modifier(SynchronizingViewModifier(binding: binding, subject: subject))
-    }
-}
-
-struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
-    @Binding var binding: T
-    let subject: CurrentValueSubject<T, Never>
-
-    func body(content: Content) -> some View {
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            content
-                .onChange(of: binding) { _, value in
-                    guard subject.value != value else { return }
-
-                    subject.send(value)
-                }
-                .onReceive(subject) { value in
-                    guard binding != value else { return }
-
-                    binding = value
-                }
-        } else {
-            content
-                .onChange(of: binding) { value in
-                    guard subject.value != value else { return }
-                    
-                    subject.send(value)
-                }
-                .onReceive(subject) { value in
-                    guard binding != value else { return }
-
-                    binding = value
-                }
-        }
-    }
-}
-
-struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable>: ViewModifier {
-    @Binding var binding: Bool
-    @Binding var isAppeared: Bool
-    let subject: CurrentValueSubject<Navigator<Destination>?, Never>
-    let presentation: NavigatorPresentation
-
-    func body(content: Content) -> some View {
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            content
-                .onReceive(subject) { value in
-                    binding = value?.presentation == presentation && isAppeared
-                }
-                .onChange(of: isAppeared) { _, value in
-                    binding = subject.value?.presentation == presentation && value
-                }
-                .onChange(of: binding) { _, value in
-                    if !value {
-                        subject.send(nil)
-                    }
-                }
-        } else {
-            content
-                .onReceive(subject) { value in
-                    binding = value?.presentation == presentation && isAppeared
-                }
-                .onChange(of: isAppeared) { value in
-                    binding = subject.value?.presentation == presentation && value
-                }
-                .onChange(of: binding) { value in
-                    if !value {
-                        subject.send(nil)
-                    }
-                }
-        }
-    }
-}
-
-extension Binding where Value == Bool {
-
-    static func && (_ lhs: Binding<Bool>, _ rhs: Binding<Bool>) -> Binding<Bool> {
-        Binding<Bool>(
-            get: { lhs.wrappedValue && rhs.wrappedValue },
-            set: { lhs.wrappedValue = $0 }
-        )
-    }
-
-    static func &&<T>(_ lhs: Binding<T?>, _ rhs: Binding<Bool>) -> Binding<Bool> {
-        Binding<Bool>(
-            get: { lhs.wrappedValue != nil && rhs.wrappedValue },
-            set: { value in
-                if !value {
-                    lhs.wrappedValue = nil
-                }
-            }
-        )
-    }
-}
-
-struct NavigatorTabView<Content: View, Destination: Codable & Hashable>: View {
-    let navigator: Navigator<Destination>
-    @ViewBuilder let content: () -> Content
-    @State var selection: Int?
-
-    init(navigator: Navigator<Destination>, @ViewBuilder content: @escaping () -> Content) {
-        self.selection = navigator.selectedTabSubj.value
-        self.navigator = navigator
-        self.content = content
-    }
-
-    var body: some View {
-        TabView(selection: $selection) {
-            content()
-        }
-        .synchronize($selection, with: navigator.selectedTabSubj)
     }
 }

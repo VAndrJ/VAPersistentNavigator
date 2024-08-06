@@ -28,15 +28,15 @@ struct ExampleApp: App {
 }
 
 class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination>
+    @Published var navigator: Navigator<Destination, TabViewTag>
 
-    init(navigator: Navigator<Destination>) {
+    init(navigator: Navigator<Destination, TabViewTag>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination>) {
+    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -48,86 +48,127 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination>
+    let navigator: Navigator<Destination, TabViewTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
-            NavigatorScreenFactoryView(navigator: navigator, buildView: { destination, navigator in
-                let _ = { print("navigationDestination:", destination) }()
+            NavigatorScreenFactoryView(
+                navigator: navigator,
+                buildView: { destination, navigator in
+                    let _ = { print("navigationDestination:", destination) }()
 
-                switch destination {
-                case .root:
-                    RootView(context: .init(
-                        related: .init(isReplacementAvailable: navigator.onReplaceWindow != nil),
-                        navigation: .init(
-                            replaceRoot: { navigator.replace(root: .otherRoot) },
-                            replaceWindowWithTabView: {
-                                navigator.onReplaceWindow?(.init(root: .empty, kind: .tabView, tabs: [
-                                    .init(root: .tab1, tabItem: .init(title: "Tab 1", image: "pencil.circle", tag: 0)),
-                                    .init(root: .tab2, tabItem: .init(title: "Tab 2", image: "square.and.pencil.circle", tag: 1)),
-                                ]))
-                            },
+                    switch destination {
+                    case .root:
+                        RootView(context: .init(
+                            related: .init(isReplacementAvailable: navigator.onReplaceWindow != nil),
+                            navigation: .init(
+                                replaceRoot: { navigator.replace(root: .otherRoot) },
+                                replaceWindowWithTabView: {
+                                    navigator.onReplaceWindow?(.init(
+                                        root: .empty,
+                                        kind: .tabView,
+                                        tabs: [
+                                            .init(root: .tab1, tabItem: .first(.first)),
+                                            .init(root: .tab2, tabItem: .first(.second)),
+                                        ],
+                                        selectedTab: .first(.first)
+                                    ))
+                                },
+                                next: { navigator.push(destination: .main) }
+                            )
+                        ))
+                    case .otherRoot:
+                        OtherRootView(context: .init(
+                            replaceRoot: { navigator.replace(root: .root) },
                             next: { navigator.push(destination: .main) }
-                        )
-                    ))
-                case .otherRoot:
-                    OtherRootView(context: .init(
-                        replaceRoot: { navigator.replace(root: .root) },
-                        next: { navigator.push(destination: .main) }
-                    ))
-                case .root1:
-                    Root1View(context: .init(
-                        present: { navigator.present(.init(root: .root2)) },
-                        dismiss: { navigator.dismissTop() }
-                    ))
-                case .root2:
-                    Root2View(context: .init(
-                        present: { navigator.present(.init(root: .root3)) },
-                        dismiss: { navigator.dismissTop() }
-                    ))
-                case .root3:
-                    Root3View(context: .init(
-                        closeToInitial: { navigator.closeToInitial() },
-                        dismiss: { navigator.dismissTop() }
-                    ))
-                case .tab1:
-                    Tab1View(context: .init(next: { navigator.push(destination: .main) }))
-                case .tab2:
-                    Tab2View(context: .init(next: { navigator.push(destination: .main) }))
-                case .main:
-                    MainView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
-                case let .detail(number):
-                    DetailView(context: .init(
-                        related: .init(
-                            number: number,
-                            isReplacementAvailable: navigator.onReplaceWindow != nil,
-                            isTabChangeAvailable: navigator.currentTab != nil
-                        ),
-                        navigation: .init(
-                            present: { navigator.present(.init(root: .root1)) },
-                            fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
-                            reset: { navigator.onReplaceWindow?(.init(root: .root)) },
-                            presentTabs: {
-                                navigator.present(.init(root: .empty, kind: .tabView, tabs: [
-                                    .init(root: .tab1, tabItem: .init(title: "Tab 3", image: "pencil.circle", tag: 0)),
-                                    .init(root: .tab2, tabItem: .init(title: "Tab 4", image: "square.and.pencil.circle", tag: 1)),
-                                ]))
-                            },
-                            changeTabs: {
-                                if navigator.currentTab == 0 {
-                                    navigator.currentTab = 1
-                                } else if navigator.currentTab == 1 {
-                                    navigator.currentTab = 0
+                        ))
+                    case .root1:
+                        Root1View(context: .init(
+                            present: { navigator.present(.init(root: .root2)) },
+                            dismiss: { navigator.dismissTop() }
+                        ))
+                    case .root2:
+                        Root2View(context: .init(
+                            present: { navigator.present(.init(root: .root3)) },
+                            dismiss: { navigator.dismissTop() }
+                        ))
+                    case .root3:
+                        Root3View(context: .init(
+                            closeToInitial: { navigator.closeToInitial() },
+                            dismiss: { navigator.dismissTop() }
+                        ))
+                    case .tab1:
+                        Tab1View(context: .init(next: { navigator.push(destination: .main) }))
+                    case .tab2:
+                        Tab2View(context: .init(next: { navigator.push(destination: .main) }))
+                    case .main:
+                        MainView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
+                    case let .detail(number):
+                        DetailView(context: .init(
+                            related: .init(
+                                number: number,
+                                isReplacementAvailable: navigator.onReplaceWindow != nil,
+                                isTabChangeAvailable: navigator.currentTab != nil
+                            ),
+                            navigation: .init(
+                                present: { navigator.present(.init(root: .root1)) },
+                                fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
+                                reset: { navigator.onReplaceWindow?(.init(root: .root)) },
+                                presentTabs: {
+                                    navigator.present(.init(
+                                        root: .empty,
+                                        kind: .tabView,
+                                        tabs: [
+                                            .init(root: .tab1, tabItem: .second(.first)),
+                                            .init(root: .tab2, tabItem: .second(.second)),
+                                        ],
+                                        selectedTab: .second(.second)
+                                    ))
+                                },
+                                changeTabs: {
+                                    switch navigator.currentTab {
+                                    case let .first(tabView):
+                                        switch tabView {
+                                        case .first:
+                                            navigator.currentTab = .first(.second)
+                                        case .second:
+                                            navigator.currentTab = .first(.first)
+                                        }
+                                    case let .second(tabView):
+                                        switch tabView {
+                                        case .first:
+                                            navigator.currentTab = .second(.second)
+                                        case .second:
+                                            navigator.currentTab = .second(.first)
+                                        }
+                                    case .none:
+                                        break
+                                    }
                                 }
-                            }
-                        )
-                    ))
-                case .empty:
-                    EmptyView()
+                            )
+                        ))
+                    case .empty:
+                        EmptyView()
+                    }
+                },
+                buildTab: { tag in
+                    switch tag {
+                    case let .first(tabView):
+                        switch tabView {
+                        case .first: Label("Tab 1 1", systemImage: "pencil.circle")
+                        case .second: Label("Tab 1 2", systemImage: "square.and.pencil.circle")
+                        }
+                    case let .second(tabView):
+                        switch tabView {
+                        case .first: Label("Tab 2 1", systemImage: "pencil.circle")
+                        case .second: Label("Tab 2 2", systemImage: "square.and.pencil.circle")
+                        }
+                    case .none: EmptyView()
+                    }
                 }
-            })
+            )
         }
     }
 }

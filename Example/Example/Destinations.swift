@@ -19,3 +19,18 @@ enum Destination: Codable, Hashable {
     case main
     case detail(number: Int)
 }
+
+enum TabViewTag: Codable, Hashable {
+    enum FirstTabView: Codable, Hashable {
+        case first
+        case second
+    }
+
+    enum SecondTabView: Codable, Hashable {
+        case first
+        case second
+    }
+
+    case first(FirstTabView)
+    case second(SecondTabView)
+}

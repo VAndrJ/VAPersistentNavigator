@@ -26,22 +26,32 @@ Wrap everything in a `NavigatorStoringView`, which will save the current navigat
 
 
 ```swift
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination>
+    let navigator: Navigator<Destination, TabViewTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, scheduler: DispatchQueue.main) {
-            NavigatorScreenFactoryView(navigator: navigator, buildView: { destination, navigator in
-                switch destination {
-                case .root:
-                    RootView()
-                case .details:
-                    DetailsView()
-                case .more:
-                    MoreView()
+            NavigatorScreenFactoryView(
+                navigator: navigator, 
+                buildView: { destination, navigator in
+                    switch destination {
+                    case .root:
+                        RootView()
+                    case .details:
+                        DetailsView()
+                    case .more:
+                        MoreView()
+                    }
+                },
+                buildTab: { tag in
+                    switch tabView {
+                        case .first: Label("Tab 1", systemImage: "pencil.circle")
+                        case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
+                        case .none: EmptyView()
+                    }
                 }
-            }
+            )
         }
     }
 }
@@ -55,23 +65,22 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `pop`.
 
-- `replace(root:)`: Replaces the root view in `NavigationStack`.
+- `popToRoot`.
 
-- `present`: `sheet` and `fullScreenCover`.
+- `replace(root:)`. Replaces the root view in `NavigationStack`.
 
-- `dismissTop`: Dismisses the presented `sheet` or `fullScreenCover`.
+- `present`. `sheet` and `fullScreenCover`.
 
-- `closeToInitial`: Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
+- `dismissTop`. Dismisses the presented `sheet` or `fullScreenCover`.
 
-- `onReplaceWindow`: Callback to replace the initial `View` with a new one.
+- `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
-- `currentTab`: Variable to get and change the current tab in `TabView`.
+- `onReplaceWindow`. Callback to replace the initial `View` with a new one.
+
+- `currentTab`. Variable to get and change the current tab in `TabView`.
 
 
 ## TBD
-
-
-- Pop to root.
 
 - Split.
 

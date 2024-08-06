@@ -9,7 +9,8 @@ import Foundation
 
 public protocol NavigatorStorage {
     associatedtype Destination: Codable & Hashable
+    associatedtype TabItemTag: Codable & Hashable
 
-    func store(navigator: Navigator<Destination>)
-    func getNavigator() -> Navigator<Destination>?
+    func store(navigator: Navigator<Destination, TabItemTag>)
+    func getNavigator() -> Navigator<Destination, TabItemTag>?
 }
