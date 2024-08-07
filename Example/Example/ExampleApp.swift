@@ -28,15 +28,15 @@ struct ExampleApp: App {
 }
 
 class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination, TabViewTag>
+    @Published var navigator: Navigator<Destination, TabViewTag, SheetTag>
 
-    init(navigator: Navigator<Destination, TabViewTag>) {
+    init(navigator: Navigator<Destination, TabViewTag, SheetTag>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag>) {
+    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -48,9 +48,9 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabViewTag>
+    let navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
@@ -84,7 +84,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         ))
                     case .root1:
                         Root1View(context: .init(
-                            present: { navigator.present(.init(root: .root2)) },
+                            present: { navigator.present(.init(root: .root2, presentation: .sheet(tag: .first))) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .root2:
@@ -163,6 +163,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         case .second: Label("Tab 2 2", systemImage: "square.and.pencil.circle")
                         }
                     case .none: EmptyView()
+                    }
+                },
+                getDetents: { tag in
+                    switch tag {
+                    case .first: ([.medium, .large], .visible)
+                    case .none: nil
                     }
                 }
             )

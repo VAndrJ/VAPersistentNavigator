@@ -18,11 +18,11 @@ class DefaultsNavigatorStorage: NavigatorStorage {
         self.defaults = defaults
     }
 
-    func store(navigator: Navigator<Destination, TabViewTag>) {
+    func store(navigator: Navigator<Destination, TabViewTag, SheetTag>) {
         defaults.set(try? encoder.encode(navigator), forKey: key)
     }
 
-    func getNavigator() -> Navigator<Destination, TabViewTag>? {
+    func getNavigator() -> Navigator<Destination, TabViewTag, SheetTag>? {
         defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) }
     }
 }

@@ -34,3 +34,7 @@ enum TabViewTag: Codable, Hashable {
     case first(FirstTabView)
     case second(SecondTabView)
 }
+
+enum SheetTag: Codable, Hashable {
+    case first
+}
