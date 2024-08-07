@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
+public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id
     }
@@ -27,8 +27,8 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
     }
     private var _onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)?
 
-    public var root: Destination { rootSubj.value }
-    let rootSubj: CurrentValueSubject<Destination, Never>
+    public var root: Destination? { rootSubj.value }
+    let rootSubj: CurrentValueSubject<Destination?, Never>
 
     public var currentTab: TabItemTag? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
@@ -54,10 +54,46 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
-    // TODO: - Use Either for root?
-    public init(
+    public convenience init(
         id: UUID = .init(),
-        root: Destination, // ignored when kind == .tabView
+        root: Destination,
+        destinations: [Destination] = [],
+        presentation: NavigatorPresentation = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: root,
+            destinations: destinations,
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .flow,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
+
+    public convenience init(
+        id: UUID = .init(),
+        tabs: [Navigator] = [],
+        presentation: NavigatorPresentation = .sheet,
+        selectedTab: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: nil,
+            destinations: [],
+            presentation: presentation,
+            tabItem: nil,
+            kind: .tabView,
+            tabs: tabs,
+            selectedTab: selectedTab
+        )
+    }
+
+    init(
+        id: UUID = .init(),
+        root: Destination?, // ignored when kind == .tabView
         destinations: [Destination] = [],
         presentation: NavigatorPresentation = .sheet,
         tabItem: TabItemTag? = nil,
@@ -156,7 +192,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(rootSubj.value, forKey: .root)
+        try container.encodeIfPresent(rootSubj.value, forKey: .root)
         try container.encode(destinationsSubj.value, forKey: .destinations)
         try container.encodeIfPresent(childSubj.value, forKey: .navigator)
         try container.encodeIfPresent(tabItem, forKey: .tabItem)
@@ -169,7 +205,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
 
     public required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.rootSubj = .init(try container.decode(Destination.self, forKey: .root))
+        self.rootSubj = .init(try container.decodeIfPresent(Destination.self, forKey: .root))
         self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
         self.childSubj = .init(try container.decodeIfPresent(Navigator.self, forKey: .navigator))
         self.tabItem = try container.decodeIfPresent(TabItemTag.self, forKey: .tabItem)
