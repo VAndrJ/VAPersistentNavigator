@@ -67,8 +67,6 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                 replaceRoot: { navigator.replace(root: .otherRoot) },
                                 replaceWindowWithTabView: {
                                     navigator.onReplaceInitialNavigator?(.init(
-                                        root: .empty,
-                                        kind: .tabView,
                                         tabs: [
                                             .init(root: .tab1, tabItem: .first(.first)),
                                             .init(root: .tab2, tabItem: .first(.second)),
@@ -118,8 +116,6 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                 reset: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
                                 presentTabs: {
                                     navigator.present(.init(
-                                        root: .empty,
-                                        kind: .tabView,
                                         tabs: [
                                             .init(root: .tab1, tabItem: .second(.first)),
                                             .init(root: .tab2, tabItem: .second(.second)),
