@@ -73,8 +73,9 @@ struct NavigatorStack {
         let expectedIndex = initialDestinations.firstIndex(of: expectedDestination)! + 1
         let expectedDestinations = initialDestinations.removingSubrange(from: expectedIndex)
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
-        sut.pop(to: expectedDestination)
+        let result = sut.pop(to: expectedDestination)
 
+        #expect(true == result)
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
@@ -85,8 +86,9 @@ struct NavigatorStack {
         let expectedIndex = initialDestinations.lastIndex(of: expectedDestination)! + 1
         let expectedDestinations = initialDestinations.removingSubrange(from: expectedIndex)
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
-        sut.pop(to: expectedDestination, isFirst: false)
+        let result = sut.pop(to: expectedDestination, isFirst: false)
 
+        #expect(true == result)
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
@@ -95,8 +97,9 @@ struct NavigatorStack {
         let expectedDestination: MockDestination = .second
         let expectedDestinations: [MockDestination] = [.third, .fourth, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
-        sut.pop(to: expectedDestination, isFirst: false)
+        let result = sut.pop(to: expectedDestination, isFirst: false)
 
+        #expect(false == result)
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 }
@@ -116,13 +119,46 @@ struct NavigatorTabs {
     func navigator_TabView() {
         let tab1Navigator = TestNavigator(root: .first, tabItem: .first)
         let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
+        let expecgedTab = MockTabTag.second
         let sut = TestNavigator(
             root: .empty,
             kind: .tabView,
             tabs: [tab1Navigator, tab2Navigator],
-            selectedTab: .first
+            selectedTab: expecgedTab
         )
 
+        #expect(.tabView == sut.kind)
         #expect([tab1Navigator, tab2Navigator] == sut.tabs)
+        #expect(expecgedTab == sut.currentTab)
+        #expect(expecgedTab == tab1Navigator.currentTab)
+        #expect(expecgedTab == tab2Navigator.currentTab)
+    }
+
+    @Test("Tab view tab selection")
+    func navigator_TabView_Selection() {
+        let tab1Navigator = TestNavigator(root: .first, tabItem: .first)
+        let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
+        let initialTab = MockTabTag.first
+        let expecgedTab = MockTabTag.second
+        let sut = TestNavigator(
+            root: .empty,
+            kind: .tabView,
+            tabs: [tab1Navigator, tab2Navigator],
+            selectedTab: initialTab
+        )
+
+        #expect(initialTab == sut.currentTab)
+
+        sut.currentTab = expecgedTab
+
+        #expect(expecgedTab == sut.currentTab)
+
+        tab1Navigator.currentTab = initialTab
+
+        #expect(initialTab == sut.currentTab)
+
+        tab2Navigator.currentTab = expecgedTab
+
+        #expect(expecgedTab == sut.currentTab)
     }
 }
