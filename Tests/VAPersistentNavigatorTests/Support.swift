@@ -30,3 +30,18 @@ extension Array {
         return mutableArray
     }
 }
+
+class MockNavigatorStorage: NavigatorStorage {
+    typealias Destination = MockDestination
+    typealias TabItemTag = MockTabTag
+
+    var navigator: Navigator<Destination, TabItemTag>?
+
+    func store(navigator: Navigator<Destination, TabItemTag>) {
+        self.navigator = navigator
+    }
+    
+    func getNavigator() -> Navigator<Destination, TabItemTag>? {
+        navigator
+    }
+}
