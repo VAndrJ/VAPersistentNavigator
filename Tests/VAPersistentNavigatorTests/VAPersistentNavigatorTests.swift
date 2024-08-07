@@ -202,4 +202,17 @@ struct NavigatorPresentation {
 
         #expect(nil == sut.childSubj.value)
     }
+
+    @Test("Dismiss top specified Destination")
+    func navigator_Dismiss_ToDestination() {
+        let expectedDestination: MockDestination = .first
+        let sut = TestNavigator(root: expectedDestination)
+        let expected = TestNavigator(root: .second)
+        let top = TestNavigator(root: .third)
+        sut.present(expected)
+        expected.present(top)
+        top.dismiss(to: expectedDestination)
+
+        #expect(nil == sut.childSubj.value)
+    }
 }
