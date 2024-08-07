@@ -211,9 +211,23 @@ struct NavigatorPresentation {
         let top = TestNavigator(root: .third)
         sut.present(expected)
         expected.present(top)
-        top.dismiss(to: expectedDestination)
+        let result = top.dismiss(to: expectedDestination)
 
+        #expect(result == true)
         #expect(nil == sut.childSubj.value)
+    }
+
+    @Test("Dismiss top specified Destination")
+    func navigator_Dismiss_ToDestinationFailure() {
+        let sut = TestNavigator(root: .first)
+        let expected = TestNavigator(root: .second)
+        let top = TestNavigator(root: .third)
+        sut.present(expected)
+        expected.present(top)
+        let result = top.dismiss(to: .fourth)
+
+        #expect(result == false)
+        #expect(nil != sut.childSubj.value)
     }
 
     @Test("Dismiss top specified id")
@@ -225,8 +239,9 @@ struct NavigatorPresentation {
         let top = TestNavigator(root: .third)
         sut.present(expected)
         expected.present(top)
-        top.dismiss(to: id)
+        let result = top.dismiss(to: id)
 
+        #expect(result == true)
         #expect(nil == sut.childSubj.value)
     }
 }
