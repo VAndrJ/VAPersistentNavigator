@@ -15,11 +15,11 @@ struct NavigatorInitial {
 
         #expect(expectedId == sut.id)
         #expect(expectedRoot == sut.root)
-        #expect(sut.destinationsSubj.value.isEmpty)
+        #expect(true == sut.destinationsSubj.value.isEmpty)
         #expect(.flow == sut.kind)
         #expect(.sheet == sut.presentation)
         #expect(nil == sut.tabItem)
-        #expect(sut.tabs.isEmpty)
+        #expect(true == sut.tabs.isEmpty)
         #expect(nil == sut.currentTab)
         #expect(nil == sut.parent)
         #expect(nil == sut.childSubj.value)
@@ -256,5 +256,20 @@ struct NavigatorPresentation {
 
         #expect(result == false)
         #expect(nil != sut.childSubj.value)
+    }
+
+    @Test("Close to initial tab")
+    func navigator_CloseToInitial_Tab() {
+        let tab1 = TestNavigator(root: .first, destinations: [.third, .fourth], tabItem: .first)
+        let tab2 = TestNavigator(root: .second, tabItem: .second)
+        let sut = TestNavigator(tabs: [tab1, tab2])
+        let presented = TestNavigator(root: .second)
+        let top = TestNavigator(root: .third)
+        tab1.present(presented)
+        presented.present(top)
+        top.closeToInitial()
+
+        #expect(nil == tab1.childSubj.value)
+        #expect(true == tab1.destinationsSubj.value.isEmpty)
     }
 }
