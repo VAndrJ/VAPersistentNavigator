@@ -75,6 +75,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `dismissTop`. Dismisses the presented `sheet` or `fullScreenCover`.
 
+- `dismiss(to:)`. Dismisses presented `sheet`s or `fullScreenCover`s to specified `Destination` or `id`.
+
 - `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
 - `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
