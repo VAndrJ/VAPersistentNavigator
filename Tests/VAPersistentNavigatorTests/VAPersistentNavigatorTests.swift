@@ -258,6 +258,19 @@ struct NavigatorPresentation {
         #expect(nil != sut.childSubj.value)
     }
 
+    @Test("Close to initial")
+    func navigator_CloseToInitial() {
+        let sut = TestNavigator(root: .first, destinations: [.third, .fourth])
+        let presented = TestNavigator(root: .second)
+        let top = TestNavigator(root: .third)
+        sut.present(presented)
+        presented.present(top)
+        top.closeToInitial()
+
+        #expect(nil == sut.childSubj.value)
+        #expect(true == sut.destinationsSubj.value.isEmpty)
+    }
+
     @Test("Close to initial tab")
     func navigator_CloseToInitial_Tab() {
         let tab1 = TestNavigator(root: .first, destinations: [.third, .fourth], tabItem: .first)
