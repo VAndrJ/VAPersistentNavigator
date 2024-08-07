@@ -147,6 +147,38 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         childSubj.send(child)
     }
 
+    @discardableResult
+    public func dismiss(to destination: Destination) -> Bool {
+        var topNavigator: Navigator? = self
+        while topNavigator != nil {
+            if topNavigator?.root == destination {
+                topNavigator?.present(nil)
+
+                return true
+            }
+
+            topNavigator = topNavigator?.parent
+        }
+
+        return false
+    }
+
+    @discardableResult
+    public func dismiss(to id: UUID) -> Bool {
+        var topNavigator: Navigator? = self
+        while topNavigator != nil {
+            if topNavigator?.id == id {
+                topNavigator?.present(nil)
+
+                return true
+            }
+
+            topNavigator = topNavigator?.parent
+        }
+
+        return false
+    }
+
     public func replace(root: Destination, isPopToRoot: Bool = true) {
         if isPopToRoot {
             popToRoot()
