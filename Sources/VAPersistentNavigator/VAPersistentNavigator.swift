@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 
+/// A class representing a navigator that manages navigation states and presentations.
 public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id
@@ -15,6 +16,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     public private(set) var id: UUID
 
+    /// A closure that is called when the initial navigator needs to be replaced.
     public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
@@ -54,6 +56,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
+    /// Initializer for a `NavigationStack` navigator.
     public convenience init(
         id: UUID = .init(),
         root: Destination,
@@ -73,6 +76,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         )
     }
 
+    /// Initializer for a `TabView` navigator.
     public convenience init(
         id: UUID = .init(),
         tabs: [Navigator] = [],
@@ -114,18 +118,26 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         rebind()
     }
 
+    /// Pushes a new destination onto the navigation stack.
     public func push(destination: Destination) {
         var destinationsValue = destinationsSubj.value
         destinationsValue.append(destination)
         destinationsSubj.send(destinationsValue)
     }
 
+    /// Pops the top destination from the navigation stack.
     public func pop() {
         var destinationsValue = destinationsSubj.value
         _ = destinationsValue.popLast()
         destinationsSubj.send(destinationsValue)
     }
 
+    /// Pops the navigation stack to a specific destination.
+    ///
+    /// - Parameters:
+    ///   - destination: The destination to pop to.
+    ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
+    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
     public func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
@@ -139,14 +151,22 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         }
     }
 
+    /// Pops the navigation stack to the root destination.
     public func popToRoot() {
         destinationsSubj.send([])
     }
 
+    /// Presents a child navigator.
+    ///
+    /// - Parameter child: The child navigator to present.
     public func present(_ child: Navigator?) {
         childSubj.send(child)
     }
 
+    /// Dismisses to a specific destination.
+    ///
+    /// - Parameter destination: The destination to dismiss to.
+    /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     public func dismiss(to destination: Destination) -> Bool {
         var topNavigator: Navigator? = self
@@ -163,6 +183,10 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         return false
     }
 
+    /// Dismisses to a specific navigator by ID.
+    ///
+    /// - Parameter id: The ID of the navigator to dismiss to.
+    /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
     public func dismiss(to id: UUID) -> Bool {
         var topNavigator: Navigator? = self
@@ -179,6 +203,11 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         return false
     }
 
+    /// Replaces the root destination.
+    ///
+    /// - Parameters:
+    ///   - root: The new root destination.
+    ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     public func replace(root: Destination, isPopToRoot: Bool = true) {
         if isPopToRoot {
             popToRoot()
@@ -186,10 +215,12 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         rootSubj.send(root)
     }
 
+    /// Dismisses the current top navigator.
     public func dismissTop() {
         parent?.present(nil)
     }
 
+    /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
         var firstNavigator: Navigator? = self
         while firstNavigator?.parent != nil {
