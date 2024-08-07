@@ -121,8 +121,6 @@ struct NavigatorTabs {
         let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
         let expecgedTab = MockTabTag.second
         let sut = TestNavigator(
-            root: .empty,
-            kind: .tabView,
             tabs: [tab1Navigator, tab2Navigator],
             selectedTab: expecgedTab
         )
@@ -141,8 +139,6 @@ struct NavigatorTabs {
         let initialTab = MockTabTag.first
         let expecgedTab = MockTabTag.second
         let sut = TestNavigator(
-            root: .empty,
-            kind: .tabView,
             tabs: [tab1Navigator, tab2Navigator],
             selectedTab: initialTab
         )
@@ -160,5 +156,18 @@ struct NavigatorTabs {
         tab2Navigator.currentTab = expecgedTab
 
         #expect(expecgedTab == sut.currentTab)
+    }
+}
+
+@Suite("Navigator presentation")
+struct NavigatorPresentation {
+
+    @Test("Present sheet")
+    func navigator_Present() {
+        let sut = TestNavigator(root: .first)
+        let expected = TestNavigator(root: .second)
+        sut.present(expected)
+
+        #expect(expected == sut.childSubj.value)
     }
 }
