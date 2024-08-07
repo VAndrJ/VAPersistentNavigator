@@ -170,4 +170,14 @@ struct NavigatorPresentation {
 
         #expect(expected == sut.childSubj.value)
     }
+
+    @Test("Dismiss top presented sheet")
+    func navigator_Dismiss_TopSheet() {
+        let sut = TestNavigator(root: .first)
+        let expected = TestNavigator(root: .second)
+        sut.present(expected)
+        expected.dismissTop()
+
+        #expect(nil == sut.childSubj.value)
+    }
 }
