@@ -113,6 +113,17 @@ struct NavigatorStack {
         #expect(expectedRoot == sut.root)
         #expect(sut.destinationsSubj.value.isEmpty)
     }
+
+    @Test("Replace root view without pop")
+    func navigator_ReplaceRoot_WithoutPopToRoot() {
+        let expectedRoot: MockDestination = .fourth
+        let expectedDestinations: [MockDestination] = [.second, .third]
+        let sut = TestNavigator(root: .first, destinations: expectedDestinations)
+        sut.replace(root: expectedRoot, isPopToRoot: false)
+
+        #expect(expectedRoot == sut.root)
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
 }
 
 @Suite("Navigator tabs")
