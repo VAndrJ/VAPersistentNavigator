@@ -45,6 +45,20 @@ struct NavigatorInitial {
 
         #expect(nil != sut.onReplaceInitialNavigator)
     }
+
+    @Test("onReplaceInitialNavigator closure")
+    func navigator_onReplaceInitialNavigator_Parent() {
+        let sut = TestNavigator(root: .first)
+        let top = TestNavigator(root: .second)
+        sut.present(top)
+        let exected = TestNavigator(root: .third)
+        top.onReplaceInitialNavigator = {
+            #expect(exected == $0)
+        }
+        top.onReplaceInitialNavigator?(exected)
+
+        #expect(nil != sut.onReplaceInitialNavigator)
+    }
 }
 
 @Suite("Navigator push and pop")
