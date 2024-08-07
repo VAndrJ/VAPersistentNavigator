@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
-typealias TestNavigator = Navigator<MockDestination, MockTabTag>
+typealias TestNavigator = Navigator<MockDestination, MockTabTag, SheetTag>
 
 @Suite("Navigator initial")
 struct NavigatorInitial {
@@ -310,6 +310,7 @@ struct NavigatorPresentation {
 
         #expect(nil == tab1.childSubj.value)
         #expect(true == tab1.destinationsSubj.value.isEmpty)
+        #expect([tab1, tab2] == sut.tabs)
     }
 }
 

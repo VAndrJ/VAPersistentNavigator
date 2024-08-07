@@ -22,6 +22,11 @@ enum MockTabTag: Codable, Hashable {
     case second
 }
 
+enum SheetTag: Codable, Hashable {
+    case first
+    case second
+}
+
 extension Array {
 
     func removingSubrange(from index: Int) -> Array {
@@ -35,17 +40,18 @@ extension Array {
 class MockNavigatorStorage: NavigatorStorage {
     typealias Destination = MockDestination
     typealias TabItemTag = MockTabTag
+    typealias SheetItemTag = SheetTag
 
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
 
     var navigator: Data?
 
-    func store(navigator: Navigator<Destination, TabItemTag>) {
+    func store(navigator: Navigator<Destination, TabItemTag, SheetItemTag>) {
         self.navigator = try! encoder.encode(navigator)
     }
     
-    func getNavigator() -> Navigator<Destination, TabItemTag>? {
-        navigator.flatMap { try! decoder.decode(Navigator<Destination, TabItemTag>.self, from: $0) }
+    func getNavigator() -> Navigator<Destination, TabItemTag, SheetItemTag>? {
+        navigator.flatMap { try! decoder.decode(Navigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
     }
 }
