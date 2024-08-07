@@ -7,11 +7,12 @@
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: View {
-    private let navigator: Navigator<Destination, TabItemTag>
+public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: View {
+    private let navigator: Navigator<Destination, TabItemTag, SheetTag>
     private let rootReplaceAnimation: Animation?
-    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag>) -> Content
+    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content
     @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
+    private let getDetents: (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isAppeared = false
     @State private var destinations: [Destination]
     @State private var root: Destination?
@@ -19,10 +20,11 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator<Destination, TabItemTag>,
+        navigator: Navigator<Destination, TabItemTag, SheetTag>,
         rootReplaceAnimation: Animation? = .default,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag>) -> Content,
-        @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem
+        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content,
+        @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem,
+        getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) }
     ) {
         self.rootReplaceAnimation = rootReplaceAnimation
         self.buildView = buildView
@@ -30,6 +32,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
         self.destinations = navigator.destinationsSubj.value
         self.navigator = navigator
         self.buildTab = buildTab
+        self.getDetents = getDetents
     }
 
     public var body: some View {
@@ -37,7 +40,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
-                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView, buildTab: buildTab)
+                    NavigatorScreenFactoryView(navigator: tab, buildView: buildView, buildTab: buildTab, getDetents: getDetents)
                         .tabItem {
                             buildTab(tab.tabItem)
                         }
@@ -55,8 +58,8 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 .animation(rootReplaceAnimation, value: root)
                 .synchronize($root, with: navigator.rootSubj)
                 .synchronize($destinations, with: navigator.destinationsSubj)
-                .synchronize($isFullScreenCoverPresented, with: navigator.childSubj, isAppeared: $isAppeared, presentation: .fullScreenCover)
-                .synchronize($isSheetPresented, with: navigator.childSubj, isAppeared: $isAppeared, presentation: .sheet)
+                .synchronize($isFullScreenCoverPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: true)
+                .synchronize($isSheetPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: false)
                 .onAppear {
                     guard !isAppeared else { return }
 
@@ -84,13 +87,19 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 #if os(iOS) || os(watchOS) || os(tvOS)
                 .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                     if let child = navigator.childSubj.value {
-                        NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
+                        NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab, getDetents: getDetents)
                     }
                 }
                 #endif
                 .sheet(isPresented: $isSheetPresented) {
                     if let child = navigator.childSubj.value {
-                        NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab)
+                        if let detents = getDetents(child.presentation.sheetTag) {
+                            NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab, getDetents: getDetents)
+                                .presentationDetents(detents.detents)
+                                .presentationDragIndicator(detents.dragIndicatorVisibility)
+                        } else {
+                            NavigatorScreenFactoryView(navigator: child, buildView: buildView, buildTab: buildTab, getDetents: getDetents)
+                        }
                     }
                 }
             } else {

@@ -10,17 +10,17 @@ import Combine
 
 extension View {
 
-    func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>(
+    func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator<Destination, TabItemTag>?, Never>,
+        with subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>,
         isAppeared: Binding<Bool>,
-        presentation: NavigatorPresentation
+        isFullScreen: Bool
     ) -> some View {
         self.modifier(SynchronizingNavigatorPresentationViewModifier(
             binding: binding,
             isAppeared: isAppeared,
             subject: subject,
-            presentation: presentation
+            isFullScreen: isFullScreen
         ))
     }
 
@@ -65,20 +65,20 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: ViewModifier {
+struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isAppeared: Bool
-    let subject: CurrentValueSubject<Navigator<Destination, TabItemTag>?, Never>
-    let presentation: NavigatorPresentation
+    let subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>
+    let isFullScreen: Bool
 
     func body(content: Content) -> some View {
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             content
                 .onReceive(subject) { value in
-                    binding = value?.presentation == presentation && isAppeared
+                    binding = getIsPresented(presentation: value?.presentation) && isAppeared
                 }
                 .onChange(of: isAppeared) { _, value in
-                    binding = subject.value?.presentation == presentation && value
+                    binding = getIsPresented(presentation: subject.value?.presentation) && value
                 }
                 .onChange(of: binding) { _, value in
                     if !value {
@@ -88,16 +88,24 @@ struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Has
         } else {
             content
                 .onReceive(subject) { value in
-                    binding = value?.presentation == presentation && isAppeared
+                    binding = getIsPresented(presentation: value?.presentation) && isAppeared
                 }
                 .onChange(of: isAppeared) { value in
-                    binding = subject.value?.presentation == presentation && value
+                    binding = getIsPresented(presentation: subject.value?.presentation) && value
                 }
                 .onChange(of: binding) { value in
                     if !value {
                         subject.send(nil)
                     }
                 }
+        }
+    }
+
+    private func getIsPresented(presentation: NavigatorPresentation<SheetTag>?) -> Bool {
+        switch presentation {
+        case .fullScreenCover: isFullScreen
+        case .sheet(_): !isFullScreen
+        case .none: false
         }
     }
 }
