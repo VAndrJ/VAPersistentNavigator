@@ -5,6 +5,7 @@
 //  Created by VAndrJ on 8/6/24.
 //
 
+import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
@@ -35,13 +36,16 @@ class MockNavigatorStorage: NavigatorStorage {
     typealias Destination = MockDestination
     typealias TabItemTag = MockTabTag
 
-    var navigator: Navigator<Destination, TabItemTag>?
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+
+    var navigator: Data?
 
     func store(navigator: Navigator<Destination, TabItemTag>) {
-        self.navigator = navigator
+        self.navigator = try! encoder.encode(navigator)
     }
     
     func getNavigator() -> Navigator<Destination, TabItemTag>? {
-        navigator
+        navigator.flatMap { try! decoder.decode(Navigator<Destination, TabItemTag>.self, from: $0) }
     }
 }
