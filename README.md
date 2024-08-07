@@ -26,9 +26,9 @@ Wrap everything in a `NavigatorStoringView`, which will save the current navigat
 
 
 ```swift
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabViewTag>
+    let navigator: Navigator<Destination, TabItemTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, scheduler: DispatchQueue.main) {
@@ -49,6 +49,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         case .first: Label("Tab 1", systemImage: "pencil.circle")
                         case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
                         case .none: EmptyView()
+                    }
+                },
+                getDetents: { sheetTag in
+                    switch sheetTag {
+                    case .first: ([.medium, .large], .visible)
+                    case .none: nil
                     }
                 }
             )
