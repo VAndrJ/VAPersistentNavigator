@@ -312,3 +312,17 @@ struct NavigatorPresentation {
         #expect(true == tab1.destinationsSubj.value.isEmpty)
     }
 }
+
+@Suite("Navigator storing")
+struct NavigatorStoring {
+
+    @Test("Close to initial tab")
+    func navigator_StoringAndDeociding() {
+        let storage = MockNavigatorStorage()
+        let sut = TestNavigator(root: .first)
+        storage.store(navigator: sut)
+        let navigator = storage.getNavigator()
+        
+        #expect(navigator == sut)
+    }
+}
