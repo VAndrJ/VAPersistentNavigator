@@ -45,7 +45,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     }
                 },
                 buildTab: { tag in
-                    switch tabView {
+                    switch tag {
                         case .first: Label("Tab 1", systemImage: "pencil.circle")
                         case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
                         case .none: EmptyView()
@@ -65,6 +65,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `pop`.
 
+- `pop(to:)`. Pops to the specified `Destination`.
+
 - `popToRoot`.
 
 - `replace(root:)`. Replaces the root view in `NavigationStack`.
@@ -73,18 +75,23 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `dismissTop`. Dismisses the presented `sheet` or `fullScreenCover`.
 
+- `dismiss(to:)`. Dismisses presented `sheet`s or `fullScreenCover`s to specified `Destination` or `id`.
+
 - `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
-- `onReplaceWindow`. Callback to replace the initial `View` with a new one.
+- `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
 
 - `currentTab`. Variable to get and change the current tab in `TabView`.
 
 
 ## TBD
 
-- Split.
+
+- Documentation.
 
 - Tests.
+
+- Split.
 
 
 ## Author

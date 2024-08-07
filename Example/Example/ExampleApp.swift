@@ -42,7 +42,7 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 
     private func bindReplacement() {
-        navigator.onReplaceWindow = { [weak self] in
+        navigator.onReplaceInitialNavigator = { [weak self] in
             self?.replaceNavigator($0)
         }
     }
@@ -62,13 +62,11 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     switch destination {
                     case .root:
                         RootView(context: .init(
-                            related: .init(isReplacementAvailable: navigator.onReplaceWindow != nil),
+                            related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
                             navigation: .init(
                                 replaceRoot: { navigator.replace(root: .otherRoot) },
                                 replaceWindowWithTabView: {
-                                    navigator.onReplaceWindow?(.init(
-                                        root: .empty,
-                                        kind: .tabView,
+                                    navigator.onReplaceInitialNavigator?(.init(
                                         tabs: [
                                             .init(root: .tab1, tabItem: .first(.first)),
                                             .init(root: .tab2, tabItem: .first(.second)),
@@ -109,17 +107,15 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         DetailView(context: .init(
                             related: .init(
                                 number: number,
-                                isReplacementAvailable: navigator.onReplaceWindow != nil,
+                                isReplacementAvailable: navigator.onReplaceInitialNavigator != nil,
                                 isTabChangeAvailable: navigator.currentTab != nil
                             ),
                             navigation: .init(
                                 present: { navigator.present(.init(root: .root1)) },
                                 fullScreenCover: { navigator.present(.init(root: .root1, presentation: .fullScreenCover)) },
-                                reset: { navigator.onReplaceWindow?(.init(root: .root)) },
+                                reset: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
                                 presentTabs: {
                                     navigator.present(.init(
-                                        root: .empty,
-                                        kind: .tabView,
                                         tabs: [
                                             .init(root: .tab1, tabItem: .second(.first)),
                                             .init(root: .tab2, tabItem: .second(.second)),
@@ -127,6 +123,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                         selectedTab: .second(.second)
                                     ))
                                 },
+                                popToMain: { navigator.pop(to: .main) },
                                 changeTabs: {
                                     switch navigator.currentTab {
                                     case let .first(tabView):
@@ -330,6 +327,7 @@ struct DetailView: View {
             let fullScreenCover: () -> Void
             let reset: () -> Void
             let presentTabs: () -> Void
+            let popToMain: () -> Void
             let changeTabs: () -> Void
         }
 
@@ -347,6 +345,7 @@ struct DetailView: View {
             Button("Reset navigator to root", action: context.navigation.reset)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Present tabs", action: context.navigation.presentTabs)
+            Button("Pop to Main", action: context.navigation.popToMain)
             Button("Change tab if available", action: context.navigation.changeTabs)
                 .disabled(!context.related.isTabChangeAvailable)
         }

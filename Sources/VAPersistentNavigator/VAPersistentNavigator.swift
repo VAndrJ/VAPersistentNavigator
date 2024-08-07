@@ -8,23 +8,29 @@
 import Foundation
 import Combine
 
-public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable {
-    public private(set) var id = UUID()
+/// A class representing a navigator that manages navigation states and presentations.
+public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
+    public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
+        lhs.id == rhs.id
+    }
 
-    public var onReplaceWindow: ((Navigator) -> Void)? {
-        get { parent == nil ? _onReplaceWindow : parent?.onReplaceWindow }
+    public private(set) var id: UUID
+
+    /// A closure that is called when the initial navigator needs to be replaced.
+    public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
+        get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
-                _onReplaceWindow = newValue
+                _onReplaceInitialNavigator = newValue
             } else {
-                parent?.onReplaceWindow = newValue
+                parent?.onReplaceInitialNavigator = newValue
             }
         }
     }
-    private var _onReplaceWindow: ((Navigator) -> Void)?
+    private var _onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)?
 
-    public var root: Destination { rootSubj.value }
-    let rootSubj: CurrentValueSubject<Destination, Never>
+    public var root: Destination? { rootSubj.value }
+    let rootSubj: CurrentValueSubject<Destination?, Never>
 
     public var currentTab: TabItemTag? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
@@ -50,15 +56,56 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
-    public init(
+    /// Initializer for a `NavigationStack` navigator.
+    public convenience init(
+        id: UUID = .init(),
         root: Destination,
         destinations: [Destination] = [],
-        kind: NavigatorKind = .flow,
+        presentation: NavigatorPresentation = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: root,
+            destinations: destinations,
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .flow,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
+
+    /// Initializer for a `TabView` navigator.
+    public convenience init(
+        id: UUID = .init(),
+        tabs: [Navigator] = [],
+        presentation: NavigatorPresentation = .sheet,
+        selectedTab: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: nil,
+            destinations: [],
+            presentation: presentation,
+            tabItem: nil,
+            kind: .tabView,
+            tabs: tabs,
+            selectedTab: selectedTab
+        )
+    }
+
+    init(
+        id: UUID = .init(),
+        root: Destination?, // ignored when kind == .tabView
+        destinations: [Destination] = [],
         presentation: NavigatorPresentation = .sheet,
         tabItem: TabItemTag? = nil,
+        kind: NavigatorKind = .flow,
         tabs: [Navigator] = [],
         selectedTab: TabItemTag? = nil
     ) {
+        self.id = id
         self.rootSubj = .init(root)
         self.destinationsSubj = .init(destinations)
         self.tabItem = tabItem
@@ -71,34 +118,109 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
         rebind()
     }
 
+    /// Pushes a new destination onto the navigation stack.
     public func push(destination: Destination) {
         var destinationsValue = destinationsSubj.value
         destinationsValue.append(destination)
         destinationsSubj.send(destinationsValue)
     }
 
+    /// Pops the top destination from the navigation stack.
     public func pop() {
         var destinationsValue = destinationsSubj.value
         _ = destinationsValue.popLast()
         destinationsSubj.send(destinationsValue)
     }
 
+    /// Pops the navigation stack to a specific destination.
+    ///
+    /// - Parameters:
+    ///   - destination: The destination to pop to.
+    ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
+    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    @discardableResult
+    public func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
+        var destinationsValue = destinationsSubj.value
+        if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
+            destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+            destinationsSubj.send(destinationsValue)
+
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /// Pops the navigation stack to the root destination.
     public func popToRoot() {
         destinationsSubj.send([])
     }
 
+    /// Presents a child navigator.
+    ///
+    /// - Parameter child: The child navigator to present.
     public func present(_ child: Navigator?) {
         childSubj.send(child)
     }
 
-    public func replace(root: Destination) {
-        self.rootSubj.send(root)
+    /// Dismisses to a specific destination.
+    ///
+    /// - Parameter destination: The destination to dismiss to.
+    /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
+    @discardableResult
+    public func dismiss(to destination: Destination) -> Bool {
+        var topNavigator: Navigator? = self
+        while topNavigator != nil {
+            if topNavigator?.root == destination {
+                topNavigator?.present(nil)
+
+                return true
+            }
+
+            topNavigator = topNavigator?.parent
+        }
+
+        return false
     }
 
+    /// Dismisses to a specific navigator by ID.
+    ///
+    /// - Parameter id: The ID of the navigator to dismiss to.
+    /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
+    @discardableResult
+    public func dismiss(to id: UUID) -> Bool {
+        var topNavigator: Navigator? = self
+        while topNavigator != nil {
+            if topNavigator?.id == id {
+                topNavigator?.present(nil)
+
+                return true
+            }
+
+            topNavigator = topNavigator?.parent
+        }
+
+        return false
+    }
+
+    /// Replaces the root destination.
+    ///
+    /// - Parameters:
+    ///   - root: The new root destination.
+    ///   - isPopToRoot: If `true`, pops to the root before replacing it.
+    public func replace(root: Destination, isPopToRoot: Bool = true) {
+        if isPopToRoot {
+            popToRoot()
+        }
+        rootSubj.send(root)
+    }
+
+    /// Dismisses the current top navigator.
     public func dismissTop() {
         parent?.present(nil)
     }
 
+    /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
         var firstNavigator: Navigator? = self
         while firstNavigator?.parent != nil {
@@ -133,7 +255,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
 
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(rootSubj.value, forKey: .root)
+        try container.encodeIfPresent(rootSubj.value, forKey: .root)
         try container.encode(destinationsSubj.value, forKey: .destinations)
         try container.encodeIfPresent(childSubj.value, forKey: .navigator)
         try container.encodeIfPresent(tabItem, forKey: .tabItem)
@@ -146,7 +268,7 @@ public class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Ha
 
     public required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.rootSubj = .init(try container.decode(Destination.self, forKey: .root))
+        self.rootSubj = .init(try container.decodeIfPresent(Destination.self, forKey: .root))
         self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
         self.childSubj = .init(try container.decodeIfPresent(Navigator.self, forKey: .navigator))
         self.tabItem = try container.decodeIfPresent(TabItemTag.self, forKey: .tabItem)

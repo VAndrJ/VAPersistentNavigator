@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "8A14ED77-EB2A-40AE-8631-C47DB0D9270C",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "VAPersistentNavigator",
+          "name" : "VAPersistentNavigator"
+        }
+      ]
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "VAPersistentNavigatorTests",
+        "name" : "VAPersistentNavigatorTests"
+      }
+    }
+  ],
+  "version" : 1
+}
