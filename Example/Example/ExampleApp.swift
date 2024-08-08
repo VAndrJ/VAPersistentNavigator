@@ -74,7 +74,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                         selectedTab: .first(.first)
                                     ))
                                 },
-                                next: { navigator.push(destination: .main) }
+                                next: { navigator.push(destination: .main) },
+                                presentFeature: { navigator.present(.init(root: .feature(.root))) }
                             )
                         ))
                     case .otherRoot:
@@ -188,6 +189,7 @@ struct RootScreenView: View {
             let replaceRoot: () -> Void
             let replaceWindowWithTabView: () -> Void
             let next: () -> Void
+            let presentFeature: () -> Void
         }
 
         let related: Related
@@ -203,6 +205,7 @@ struct RootScreenView: View {
             Button("Replace wintdow with TabView", action: context.navigation.replaceWindowWithTabView)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Next", action: context.navigation.next)
+            Button(#"Present "Feature""#, action: context.navigation.presentFeature)
         }
     }
 }

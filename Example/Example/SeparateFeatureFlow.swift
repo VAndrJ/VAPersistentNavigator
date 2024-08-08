@@ -26,7 +26,7 @@ struct FeatureScreenFactoryView: View {
             ))
         case .details:
             FeatureDetailsScreenView(context: .init(
-                next: { navigator.present(.init(root: .feature(.details))) }
+                more: { navigator.present(.init(root: .feature(.more))) }
             ))
         case .more:
             FeatureMoreScreenView(context: .init(
@@ -53,7 +53,7 @@ struct FeatureRootScreenView: View {
 
 struct FeatureDetailsScreenView: View {
     struct Context {
-        let next: () -> Void
+        let more: () -> Void
     }
 
     let context: Context
@@ -61,7 +61,7 @@ struct FeatureDetailsScreenView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Some separete feature flow details")
-            Button("Next", action: context.next)
+            Button("More", action: context.more)
         }
     }
 }
