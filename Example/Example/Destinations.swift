@@ -18,6 +18,7 @@ enum Destination: Codable, Hashable {
     case tab2
     case main
     case detail(number: Int)
+    case feature(FeatureDestination)
 }
 
 enum TabViewTag: Codable, Hashable {
@@ -33,4 +34,8 @@ enum TabViewTag: Codable, Hashable {
 
     case first(FirstTabView)
     case second(SecondTabView)
+}
+
+enum SheetTag: Codable, Hashable {
+    case first
 }

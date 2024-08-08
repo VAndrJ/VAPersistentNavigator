@@ -11,13 +11,14 @@ import Foundation
 public protocol NavigatorStorage {
     associatedtype Destination: Codable & Hashable
     associatedtype TabItemTag: Codable & Hashable
+    associatedtype SheetTag: Codable & Hashable
 
     /// Stores the given navigator.
     ///
     /// - Parameter navigator: The `Navigator` to be stored.
-    func store(navigator: Navigator<Destination, TabItemTag>)
+    func store(navigator: Navigator<Destination, TabItemTag, SheetTag>)
     /// Retrieves the stored navigator.
     ///
     /// - Returns: The stored `Navigator`, or `nil` if no `Navigator` is stored.
-    func getNavigator() -> Navigator<Destination, TabItemTag>?
+    func getNavigator() -> Navigator<Destination, TabItemTag, SheetTag>?
 }

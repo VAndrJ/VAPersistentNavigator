@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 /// A class representing a navigator that manages navigation states and presentations.
-public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable>: Codable, Identifiable, Equatable {
+public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: Codable, Identifiable, Equatable {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id
     }
@@ -50,7 +50,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
     let childSubj: CurrentValueSubject<Navigator?, Never>
     let kind: NavigatorKind
-    let presentation: NavigatorPresentation
+    let presentation: NavigatorPresentation<SheetTag>
     private(set) weak var parent: Navigator?
 
     private var childCancellable: AnyCancellable?
@@ -61,7 +61,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         id: UUID = .init(),
         root: Destination,
         destinations: [Destination] = [],
-        presentation: NavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil
     ) {
         self.init(
@@ -80,7 +80,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     public convenience init(
         id: UUID = .init(),
         tabs: [Navigator] = [],
-        presentation: NavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation<SheetTag> = .sheet,
         selectedTab: TabItemTag? = nil
     ) {
         self.init(
@@ -99,7 +99,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         id: UUID = .init(),
         root: Destination?, // ignored when kind == .tabView
         destinations: [Destination] = [],
-        presentation: NavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil,
         kind: NavigatorKind = .flow,
         tabs: [Navigator] = [],

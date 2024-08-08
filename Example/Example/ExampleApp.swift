@@ -28,15 +28,15 @@ struct ExampleApp: App {
 }
 
 class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination, TabViewTag>
+    @Published var navigator: Navigator<Destination, TabViewTag, SheetTag>
 
-    init(navigator: Navigator<Destination, TabViewTag>) {
+    init(navigator: Navigator<Destination, TabViewTag, SheetTag>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag>) {
+    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -48,9 +48,9 @@ class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabViewTag>
+    let navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
@@ -61,7 +61,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
                     switch destination {
                     case .root:
-                        RootView(context: .init(
+                        RootScreenView(context: .init(
                             related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
                             navigation: .init(
                                 replaceRoot: { navigator.replace(root: .otherRoot) },
@@ -74,37 +74,38 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                         selectedTab: .first(.first)
                                     ))
                                 },
-                                next: { navigator.push(destination: .main) }
+                                next: { navigator.push(destination: .main) },
+                                presentFeature: { navigator.present(.init(root: .feature(.root))) }
                             )
                         ))
                     case .otherRoot:
-                        OtherRootView(context: .init(
+                        OtherRootScreenView(context: .init(
                             replaceRoot: { navigator.replace(root: .root) },
                             next: { navigator.push(destination: .main) }
                         ))
                     case .root1:
-                        Root1View(context: .init(
-                            present: { navigator.present(.init(root: .root2)) },
+                        Root1ScreenView(context: .init(
+                            present: { navigator.present(.init(root: .root2, presentation: .sheet(tag: .first))) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .root2:
-                        Root2View(context: .init(
+                        Root2ScreenView(context: .init(
                             present: { navigator.present(.init(root: .root3)) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .root3:
-                        Root3View(context: .init(
+                        Root3ScreenView(context: .init(
                             closeToInitial: { navigator.closeToInitial() },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .tab1:
-                        Tab1View(context: .init(next: { navigator.push(destination: .main) }))
+                        Tab1ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .tab2:
-                        Tab2View(context: .init(next: { navigator.push(destination: .main) }))
+                        Tab2ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .main:
-                        MainView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
+                        MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
                     case let .detail(number):
-                        DetailView(context: .init(
+                        DetailScreenView(context: .init(
                             related: .init(
                                 number: number,
                                 isReplacementAvailable: navigator.onReplaceInitialNavigator != nil,
@@ -146,6 +147,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                 }
                             )
                         ))
+                    case let .feature(destination):
+                        FeatureScreenFactoryView(navigator: navigator, destination: destination)
                     case .empty:
                         EmptyView()
                     }
@@ -164,13 +167,19 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         }
                     case .none: EmptyView()
                     }
+                },
+                getDetents: { tag in
+                    switch tag {
+                    case .first: ([.medium, .large], .visible)
+                    case .none: nil
+                    }
                 }
             )
         }
     }
 }
 
-struct RootView: View {
+struct RootScreenView: View {
     struct Context {
         struct Related {
             let isReplacementAvailable: Bool
@@ -180,6 +189,7 @@ struct RootView: View {
             let replaceRoot: () -> Void
             let replaceWindowWithTabView: () -> Void
             let next: () -> Void
+            let presentFeature: () -> Void
         }
 
         let related: Related
@@ -195,11 +205,12 @@ struct RootView: View {
             Button("Replace wintdow with TabView", action: context.navigation.replaceWindowWithTabView)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Next", action: context.navigation.next)
+            Button(#"Present "Feature""#, action: context.navigation.presentFeature)
         }
     }
 }
 
-struct Tab1View: View {
+struct Tab1ScreenView: View {
     struct Context {
         let next: () -> Void
     }
@@ -215,7 +226,7 @@ struct Tab1View: View {
     }
 }
 
-struct Tab2View: View {
+struct Tab2ScreenView: View {
     struct Context {
         let next: () -> Void
     }
@@ -231,7 +242,7 @@ struct Tab2View: View {
     }
 }
 
-struct Root1View: View {
+struct Root1ScreenView: View {
     struct Context {
         let present: () -> Void
         let dismiss: () -> Void
@@ -248,7 +259,7 @@ struct Root1View: View {
     }
 }
 
-struct Root2View: View {
+struct Root2ScreenView: View {
     struct Context {
         let present: () -> Void
         let dismiss: () -> Void
@@ -265,7 +276,7 @@ struct Root2View: View {
     }
 }
 
-struct Root3View: View {
+struct Root3ScreenView: View {
     struct Context {
         let closeToInitial: () -> Void
         let dismiss: () -> Void
@@ -282,7 +293,7 @@ struct Root3View: View {
     }
 }
 
-struct OtherRootView: View {
+struct OtherRootScreenView: View {
     struct Context {
         let replaceRoot: () -> Void
         let next: () -> Void
@@ -299,7 +310,7 @@ struct OtherRootView: View {
     }
 }
 
-struct MainView: View {
+struct MainScreenView: View {
     struct Context {
         let next: (Int) -> Void
     }
@@ -314,7 +325,7 @@ struct MainView: View {
     }
 }
 
-struct DetailView: View {
+struct DetailScreenView: View {
     struct Context {
         struct Related {
             let number: Int
