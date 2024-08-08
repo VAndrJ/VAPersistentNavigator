@@ -61,7 +61,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
                     switch destination {
                     case .root:
-                        RootView(context: .init(
+                        RootScreenView(context: .init(
                             related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
                             navigation: .init(
                                 replaceRoot: { navigator.replace(root: .otherRoot) },
@@ -78,33 +78,33 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             )
                         ))
                     case .otherRoot:
-                        OtherRootView(context: .init(
+                        OtherRootScreenView(context: .init(
                             replaceRoot: { navigator.replace(root: .root) },
                             next: { navigator.push(destination: .main) }
                         ))
                     case .root1:
-                        Root1View(context: .init(
+                        Root1ScreenView(context: .init(
                             present: { navigator.present(.init(root: .root2, presentation: .sheet(tag: .first))) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .root2:
-                        Root2View(context: .init(
+                        Root2ScreenView(context: .init(
                             present: { navigator.present(.init(root: .root3)) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .root3:
-                        Root3View(context: .init(
+                        Root3ScreenView(context: .init(
                             closeToInitial: { navigator.closeToInitial() },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .tab1:
-                        Tab1View(context: .init(next: { navigator.push(destination: .main) }))
+                        Tab1ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .tab2:
-                        Tab2View(context: .init(next: { navigator.push(destination: .main) }))
+                        Tab2ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .main:
-                        MainView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
+                        MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
                     case let .detail(number):
-                        DetailView(context: .init(
+                        DetailScreenView(context: .init(
                             related: .init(
                                 number: number,
                                 isReplacementAvailable: navigator.onReplaceInitialNavigator != nil,
@@ -146,6 +146,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                 }
                             )
                         ))
+                    case let .feature(destination):
+                        FeatureScreenFactoryView(navigator: navigator, destination: destination)
                     case .empty:
                         EmptyView()
                     }
@@ -176,7 +178,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     }
 }
 
-struct RootView: View {
+struct RootScreenView: View {
     struct Context {
         struct Related {
             let isReplacementAvailable: Bool
@@ -205,7 +207,7 @@ struct RootView: View {
     }
 }
 
-struct Tab1View: View {
+struct Tab1ScreenView: View {
     struct Context {
         let next: () -> Void
     }
@@ -221,7 +223,7 @@ struct Tab1View: View {
     }
 }
 
-struct Tab2View: View {
+struct Tab2ScreenView: View {
     struct Context {
         let next: () -> Void
     }
@@ -237,7 +239,7 @@ struct Tab2View: View {
     }
 }
 
-struct Root1View: View {
+struct Root1ScreenView: View {
     struct Context {
         let present: () -> Void
         let dismiss: () -> Void
@@ -254,7 +256,7 @@ struct Root1View: View {
     }
 }
 
-struct Root2View: View {
+struct Root2ScreenView: View {
     struct Context {
         let present: () -> Void
         let dismiss: () -> Void
@@ -271,7 +273,7 @@ struct Root2View: View {
     }
 }
 
-struct Root3View: View {
+struct Root3ScreenView: View {
     struct Context {
         let closeToInitial: () -> Void
         let dismiss: () -> Void
@@ -288,7 +290,7 @@ struct Root3View: View {
     }
 }
 
-struct OtherRootView: View {
+struct OtherRootScreenView: View {
     struct Context {
         let replaceRoot: () -> Void
         let next: () -> Void
@@ -305,7 +307,7 @@ struct OtherRootView: View {
     }
 }
 
-struct MainView: View {
+struct MainScreenView: View {
     struct Context {
         let next: (Int) -> Void
     }
@@ -320,7 +322,7 @@ struct MainView: View {
     }
 }
 
-struct DetailView: View {
+struct DetailScreenView: View {
     struct Context {
         struct Related {
             let number: Int

@@ -12,6 +12,7 @@
 		A392D6B52C5A0DCA00AD7933 /* Destinations.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392D6B22C5A0DCA00AD7933 /* Destinations.swift */; };
 		A392D6B62C5A0DCA00AD7933 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */; };
 		A392D6B72C5A0DCA00AD7933 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */; };
+		A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultsNavigatorStorage.swift; sourceTree = "<group>"; };
 		A392D6B22C5A0DCA00AD7933 /* Destinations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Destinations.swift; sourceTree = "<group>"; };
 		A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
+		A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeparateFeatureFlow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 			isa = PBXGroup;
 			children = (
 				A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */,
+				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A392D6B22C5A0DCA00AD7933 /* Destinations.swift */,
 				A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */,
 				A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */,
@@ -139,6 +142,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A392D6B42C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift in Sources */,
+				A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */,
 				A392D6B52C5A0DCA00AD7933 /* Destinations.swift in Sources */,
 				A392D6B62C5A0DCA00AD7933 /* ExampleApp.swift in Sources */,
 			);
