@@ -27,7 +27,7 @@ struct ExampleApp: App {
     }
 }
 
-class TestStateNavRestoreAppViewModel: ObservableObject {
+final class TestStateNavRestoreAppViewModel: ObservableObject {
     @Published var navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     init(navigator: Navigator<Destination, TabViewTag, SheetTag>) {

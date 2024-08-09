@@ -58,9 +58,9 @@
 			isa = PBXGroup;
 			children = (
 				A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */,
-				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A392D6B22C5A0DCA00AD7933 /* Destinations.swift */,
 				A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */,
+				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */,
 			);
 			path = Example;
