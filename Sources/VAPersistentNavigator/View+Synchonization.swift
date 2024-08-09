@@ -16,7 +16,7 @@ extension View {
         isAppeared: Binding<Bool>,
         isFullScreen: Bool
     ) -> some View {
-        self.modifier(SynchronizingNavigatorPresentationViewModifier(
+        modifier(SynchronizingNavigatorPresentationViewModifier(
             binding: binding,
             isAppeared: isAppeared,
             subject: subject,
@@ -28,7 +28,7 @@ extension View {
         _ binding: Binding<T>,
         with subject: CurrentValueSubject<T, Never>
     ) -> some View {
-        self.modifier(SynchronizingViewModifier(binding: binding, subject: subject))
+        modifier(SynchronizingViewModifier(binding: binding, subject: subject))
     }
 }
 
