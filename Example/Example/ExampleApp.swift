@@ -16,7 +16,7 @@ struct ExampleApp: App {
     init() {
         let storage = DefaultsNavigatorStorage()
         self.navigatorStorage = storage
-        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(root: .root)))
+        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(view: .greeting)))
     }
 
     var body: some Scene {
@@ -60,6 +60,18 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     let _ = { print("navigationDestination:", destination) }()
 
                     switch destination {
+                    case .greeting:
+                        GreetingScreenView(context: .init(
+                            start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
+                            hello: { navigator.replace(root: .hello) },
+                            nextToAssert: { navigator.push(destination: .main) }
+                        ))
+                    case .hello:
+                        HelloScreenView(context: .init(
+                            start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
+                            greeting: { navigator.replace(root: .greeting) },
+                            nextToAssert: { navigator.push(destination: .main) }
+                        ))
                     case .root:
                         RootScreenView(context: .init(
                             related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
@@ -179,6 +191,44 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     }
 }
 
+struct GreetingScreenView: View {
+    struct Context {
+        let start: () -> Void
+        let hello: () -> Void
+        let nextToAssert: () -> Void
+    }
+
+    let context: Context
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Hello, world!")
+            Button("Hello", action: context.hello)
+            Button("Start", action: context.start)
+            Button("Next to assert", action: context.nextToAssert)
+        }
+    }
+}
+
+struct HelloScreenView: View {
+    struct Context {
+        let start: () -> Void
+        let greeting: () -> Void
+        let nextToAssert: () -> Void
+    }
+
+    let context: Context
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Hello!")
+            Button("Hello", action: context.greeting)
+            Button("Start", action: context.start)
+            Button("Next to assert", action: context.nextToAssert)
+        }
+    }
+}
+
 struct RootScreenView: View {
     struct Context {
         struct Related {
@@ -207,6 +257,7 @@ struct RootScreenView: View {
             Button("Next", action: context.navigation.next)
             Button(#"Present "Feature""#, action: context.navigation.presentFeature)
         }
+        .navigationTitle("Root")
     }
 }
 
@@ -307,6 +358,7 @@ struct OtherRootScreenView: View {
             Button("Root", action: context.replaceRoot)
             Button("Next", action: context.next)
         }
+        .navigationTitle("Other Root")
     }
 }
 

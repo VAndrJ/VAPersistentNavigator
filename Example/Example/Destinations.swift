@@ -8,6 +8,8 @@
 import Foundation
 
 enum Destination: Codable, Hashable {
+    case greeting
+    case hello
     case empty
     case root
     case root1
