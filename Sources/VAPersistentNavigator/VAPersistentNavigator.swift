@@ -244,24 +244,33 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
-        var firstNavigator: Navigator? = self
-        while firstNavigator?.parent != nil {
-            firstNavigator = firstNavigator?.parent
+        var firstNavigator: Navigator! = self
+        while firstNavigator.parent != nil {
+            firstNavigator = firstNavigator.parent
         }
-
-        switch firstNavigator?.kind {
+        switch firstNavigator.kind {
         case .tabView:
-            firstNavigator?.tabs.forEach {
-                $0.present(nil)
-                $0.popToRoot()
+            firstNavigator.tabs.forEach {
+                dismissIfNeeded(in: $0)
+                popToRootIfNeeded(in: $0)
             }
         case .flow:
-            firstNavigator?.present(nil)
-            firstNavigator?.popToRoot()
+            dismissIfNeeded(in: firstNavigator)
+            popToRootIfNeeded(in: firstNavigator)
         case .singleView:
-            firstNavigator?.present(nil)
-        case .none:
-            break
+            dismissIfNeeded(in: firstNavigator)
+        }
+    }
+
+    private func popToRootIfNeeded(in navigator: Navigator) {
+        if !navigator.destinationsSubj.value.isEmpty {
+            navigator.popToRoot()
+        }
+    }
+
+    private func dismissIfNeeded(in navigator: Navigator) {
+        if navigator.childSubj.value != nil {
+            navigator.present(nil)
         }
     }
 
