@@ -4,6 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "FeaturePackage",
+    platforms: [.macOS(.v13), .iOS(.v16), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v13)],
     products: [
         .library(
             name: "FeaturePackage",
@@ -11,16 +12,12 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../../VAPersistentNavigator"),
+        .package(path: "../../../../../VAPersistentNavigator"),
     ],
     targets: [
         .target(
             name: "FeaturePackage",
-            dependencies: [.product(name: "VAPersistentNavigator", package: "VAPersistentNavigator")]
-        ),
-        .testTarget(
-            name: "FeaturePackageTests",
-            dependencies: ["FeaturePackage"]
+            dependencies: ["VAPersistentNavigator"]
         ),
     ]
 )

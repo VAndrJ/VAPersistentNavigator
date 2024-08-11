@@ -92,7 +92,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                     ))
                                 },
                                 next: { navigator.push(destination: .main) },
-                                presentFeature: { navigator.present(.init(root: .feature(.root))) }
+                                presentFeature: { navigator.present(.init(root: .feature(.root))) },
+                                presentPackageFeature: { navigator.present(.init(root: .featurePackage(.root))) }
                             )
                         ))
                     case .otherRoot:
@@ -165,7 +166,16 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             )
                         ))
                     case let .feature(destination):
-                        FeatureScreenFactoryView(navigator: navigator, destination: destination)
+                        FeatureScreenFactoryView(
+                            navigator: navigator,
+                            destination: destination
+                        )
+                    case let .featurePackage(destination):
+                        FeaturePackageScreenFactoryView(
+                            navigator: navigator,
+                            destination: destination,
+                            getOuterDestination: { .featurePackage($0) }
+                        )
                     case .empty:
                         EmptyView()
                     }
@@ -247,6 +257,7 @@ struct RootScreenView: View {
             let replaceWindowWithTabView: () -> Void
             let next: () -> Void
             let presentFeature: () -> Void
+            let presentPackageFeature: () -> Void
         }
 
         let related: Related
@@ -263,6 +274,7 @@ struct RootScreenView: View {
                 .disabled(!context.related.isReplacementAvailable)
             Button("Next", action: context.navigation.next)
             Button(#"Present "Feature""#, action: context.navigation.presentFeature)
+            Button(#"Present "Package Feature""#, action: context.navigation.presentPackageFeature)
         }
         .navigationTitle("Root")
     }
