@@ -27,7 +27,7 @@ struct NavigatorInitial {
     }
 
     @Test("Initially set destinations")
-    func navigator_InitialDestinations() {
+    func navigator_initialDestinations() {
         let expectedDestinations: [MockDestination] = [.second, .third, .fourth]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
 
@@ -46,8 +46,8 @@ struct NavigatorInitial {
         #expect(nil != sut.onReplaceInitialNavigator)
     }
 
-    @Test("onReplaceInitialNavigator closure")
-    func navigator_onReplaceInitialNavigator_Parent() {
+    @Test("onReplaceInitialNavigator closure parent call")
+    func navigator_onReplaceInitialNavigator_parent() {
         let sut = TestNavigator(root: .first)
         let top = TestNavigator(root: .second)
         sut.present(top)
@@ -65,7 +65,7 @@ struct NavigatorInitial {
 struct NavigatorStack {
 
     @Test("Destination should be appended after push")
-    func navigator_Push_DestinationsArray() {
+    func navigator_push_destinationsArray() {
         let expectedDestination: MockDestination = .second
         let sut = TestNavigator(root: .first)
         sut.push(destination: expectedDestination)
@@ -74,7 +74,7 @@ struct NavigatorStack {
     }
 
     @Test("Destination should be substracted after pop")
-    func navigator_Pop_DestinationsArray() {
+    func navigator_pop_destinationsArray() {
         let initialDestinations: [MockDestination] = [.second, .third, .fourth]
         let expectedDestinations = Array(initialDestinations.dropLast())
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
@@ -84,7 +84,7 @@ struct NavigatorStack {
     }
 
     @Test("Destination should be empty after pop to root")
-    func navigator_PopToRoot_DestinationsArray() {
+    func navigator_popToRoot_destinationsArray() {
         let initialDestinations: [MockDestination] = [.second, .third, .fourth]
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
         sut.popToRoot()
@@ -93,7 +93,7 @@ struct NavigatorStack {
     }
 
     @Test("Destinations should be substracted to first specified")
-    func navigator_PopToDestinationFirst_DestinationsArray() {
+    func navigator_popToDestinationFirst_destinationsArray() {
         let expectedDestination: MockDestination = .second
         let initialDestinations: [MockDestination] = [expectedDestination, .third, .fourth, expectedDestination, .third]
         let expectedIndex = initialDestinations.firstIndex(of: expectedDestination)! + 1
@@ -106,7 +106,7 @@ struct NavigatorStack {
     }
 
     @Test("Destinations should be substracted to last specified")
-    func navigator_PopToDestinationLast_DestinationsArray() {
+    func navigator_popToDestinationLast_destinationsArray() {
         let expectedDestination: MockDestination = .second
         let initialDestinations: [MockDestination] = [expectedDestination, .third, .fourth, expectedDestination, .third]
         let expectedIndex = initialDestinations.lastIndex(of: expectedDestination)! + 1
@@ -119,7 +119,7 @@ struct NavigatorStack {
     }
 
     @Test("Destinations should be unchanged")
-    func navigator_PopToDestination_NotExisting_DestinationsArray() {
+    func navigator_popToDestination_notExisting_destinationsArray() {
         let expectedDestination: MockDestination = .second
         let expectedDestinations: [MockDestination] = [.third, .fourth, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
@@ -130,7 +130,7 @@ struct NavigatorStack {
     }
 
     @Test("Replace root view")
-    func navigator_ReplaceRoot() {
+    func navigator_replaceRoot() {
         let expectedRoot: MockDestination = .fourth
         let expectedDestinations: [MockDestination] = [.second, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
@@ -141,7 +141,7 @@ struct NavigatorStack {
     }
 
     @Test("Replace root view without pop")
-    func navigator_ReplaceRoot_WithoutPopToRoot() {
+    func navigator_replaceRoot_withoutPopToRoot() {
         let expectedRoot: MockDestination = .fourth
         let expectedDestinations: [MockDestination] = [.second, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
@@ -156,7 +156,7 @@ struct NavigatorStack {
 struct NavigatorTabs {
 
     @Test("Tab item")
-    func navigator_TabItem() {
+    func navigator_tabItem() {
         let expectedTag: MockTabTag = .second
         let sut = TestNavigator(root: .first, tabItem: expectedTag)
 
@@ -164,7 +164,7 @@ struct NavigatorTabs {
     }
 
     @Test("Tab view kind")
-    func navigator_TabView() {
+    func navigator_tabView() {
         let tab1Navigator = TestNavigator(root: .first, tabItem: .first)
         let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
         let expecgedTab = MockTabTag.second
@@ -181,7 +181,7 @@ struct NavigatorTabs {
     }
 
     @Test("Tab view tab selection")
-    func navigator_TabView_Selection() {
+    func navigator_tabView_selection() {
         let tab1Navigator = TestNavigator(root: .first, tabItem: .first)
         let tab2Navigator = TestNavigator(root: .first, tabItem: .second)
         let initialTab = MockTabTag.first
@@ -211,7 +211,7 @@ struct NavigatorTabs {
 struct NavigatorPresentation {
 
     @Test("Present sheet")
-    func navigator_Present() {
+    func navigator_present() {
         let sut = TestNavigator(root: .first)
         let expected = TestNavigator(root: .second)
         sut.present(expected)
@@ -220,7 +220,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Dismiss top presented sheet")
-    func navigator_Dismiss_TopSheet() {
+    func navigator_dismiss_topSheet() {
         let sut = TestNavigator(root: .first)
         let expected = TestNavigator(root: .second)
         sut.present(expected)
@@ -229,8 +229,8 @@ struct NavigatorPresentation {
         #expect(nil == sut.childSubj.value)
     }
 
-    @Test("Dismiss top specified Destination")
-    func navigator_Dismiss_ToDestination() {
+    @Test("Dismiss to specified Destination")
+    func navigator_dismiss_toDestination() {
         let expectedDestination: MockDestination = .first
         let sut = TestNavigator(root: expectedDestination)
         let expected = TestNavigator(root: .second)
@@ -244,7 +244,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Dismiss top specified Destination failure")
-    func navigator_Dismiss_ToDestinationFailure() {
+    func navigator_dismiss_toDestinationFailure() {
         let sut = TestNavigator(root: .first)
         let expected = TestNavigator(root: .second)
         let top = TestNavigator(root: .third)
@@ -257,7 +257,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Dismiss top specified id")
-    func navigator_Dismiss_ToId() {
+    func navigator_dismiss_toId() {
         let expectedDestination: MockDestination = .first
         let sut = TestNavigator(root: expectedDestination)
         let id = sut.id
@@ -272,7 +272,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Dismiss top specified id failure")
-    func navigator_Dismiss_ToIdFailure() {
+    func navigator_dismiss_toIdFailure() {
         let sut = TestNavigator(root: .first)
         let expected = TestNavigator(root: .second)
         let top = TestNavigator(root: .third)
@@ -285,7 +285,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Close to initial")
-    func navigator_CloseToInitial() {
+    func navigator_closeToInitial() {
         let sut = TestNavigator(root: .first, destinations: [.third, .fourth])
         let presented = TestNavigator(root: .second)
         let top = TestNavigator(root: .third)
@@ -298,7 +298,7 @@ struct NavigatorPresentation {
     }
 
     @Test("Close to initial tab")
-    func navigator_CloseToInitial_Tab() {
+    func navigator_closeToInitial_tab() {
         let tab1 = TestNavigator(root: .first, destinations: [.third, .fourth], tabItem: .first)
         let tab2 = TestNavigator(root: .second, tabItem: .second)
         let sut = TestNavigator(tabs: [tab1, tab2])
@@ -312,13 +312,25 @@ struct NavigatorPresentation {
         #expect(true == tab1.destinationsSubj.value.isEmpty)
         #expect([tab1, tab2] == sut.tabs)
     }
+
+    @Test("Close to initial single view")
+    func navigator_closeToInitial_singleView() {
+        let sut = TestNavigator(view: .first)
+        let presented = TestNavigator(root: .second)
+        let top = TestNavigator(root: .third)
+        sut.present(presented)
+        presented.present(top)
+        top.closeToInitial()
+
+        #expect(nil == sut.childSubj.value)
+    }
 }
 
 @Suite("Navigator storing")
 struct NavigatorStoring {
 
     @Test("Close to initial tab")
-    func navigator_StoringAndDeociding() {
+    func navigator_storingAndDeociding() {
         let storage = MockNavigatorStorage()
         let sut = TestNavigator(root: .first)
         storage.store(navigator: sut)
