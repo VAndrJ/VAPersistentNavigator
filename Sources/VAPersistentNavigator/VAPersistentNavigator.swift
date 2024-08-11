@@ -252,12 +252,12 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         switch firstNavigator?.kind {
         case .tabView:
             firstNavigator?.tabs.forEach {
-                $0.popToRoot()
                 $0.present(nil)
+                $0.popToRoot()
             }
         case .flow:
-            firstNavigator?.popToRoot()
             firstNavigator?.present(nil)
+            firstNavigator?.popToRoot()
         case .singleView:
             firstNavigator?.present(nil)
         case .none:
