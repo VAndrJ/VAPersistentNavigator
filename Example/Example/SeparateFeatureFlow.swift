@@ -45,7 +45,7 @@ struct FeatureRootScreenView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Current: Some separete feature flow root")
+            Text("Current: Some separate feature flow root")
             Button("Next", action: context.next)
         }
     }
@@ -60,7 +60,7 @@ struct FeatureDetailsScreenView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Current: Some separete feature flow details")
+            Text("Current: Some separate feature flow details")
             Button("More", action: context.more)
         }
     }
@@ -75,7 +75,7 @@ struct FeatureMoreScreenView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Current: Some separete feature flow presented more")
+            Text("Current: Some separate feature flow presented more")
             Button("Dismiss", action: context.dismiss)
         }
     }
