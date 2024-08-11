@@ -24,10 +24,10 @@ struct ExampleApp: App {
         WindowGroup {
             Group {
                 WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
-                    .transition(.slide.combined(with: .opacity))
+                    .transition(.slide.combined(with: .opacity).combined(with: .scale))
                     .id(viewModel.navigator.id)
             }
-            .animation(.spring, value: viewModel.navigator.id)
+            .animation(.easeInOut, value: viewModel.navigator.id)
         }
     }
 }
