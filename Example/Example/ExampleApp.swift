@@ -7,6 +7,7 @@
 
 import SwiftUI
 import VAPersistentNavigator
+import FeaturePackage
 
 @main
 struct ExampleApp: App {
