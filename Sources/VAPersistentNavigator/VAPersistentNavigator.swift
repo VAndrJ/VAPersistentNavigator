@@ -139,6 +139,8 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     /// Pushes a new destination onto the navigation stack.
     public func push(destination: Destination) {
+        assert(kind == .flow, "Pushing a destination supported only for `.flow` kind.")
+
         var destinationsValue = destinationsSubj.value
         destinationsValue.append(destination)
         destinationsSubj.send(destinationsValue)
@@ -179,6 +181,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     ///
     /// - Parameter child: The child navigator to present.
     public func present(_ child: Navigator?) {
+        assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
         childSubj.send(child)
     }
 
