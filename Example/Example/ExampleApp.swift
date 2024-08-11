@@ -176,8 +176,6 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             destination: destination,
                             getOuterDestination: { .featurePackage($0) }
                         )
-                    case .empty:
-                        EmptyView()
                     }
                 },
                 buildTab: { tag in
