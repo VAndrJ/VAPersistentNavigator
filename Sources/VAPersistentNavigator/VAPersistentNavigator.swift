@@ -56,6 +56,25 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
+    /// Initializer for a single `View` navigator.
+    public convenience init(
+        id: UUID = .init(),
+        view: Destination,
+        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: view,
+            destinations: [],
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .singleView,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
+
     /// Initializer for a `NavigationStack` navigator.
     public convenience init(
         id: UUID = .init(),
@@ -235,6 +254,8 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
             }
         case .flow:
             firstNavigator?.popToRoot()
+            firstNavigator?.present(nil)
+        case .singleView:
             firstNavigator?.present(nil)
         case .none:
             break

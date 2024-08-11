@@ -7,6 +7,8 @@
 
 /// Represents the type of container being used.
 public enum NavigatorKind: Codable {
+    /// NavigationStack container for single view without any embedding
+    case singleView
     /// NavigationStack container for navigator.
     case flow
     /// TabView container for navigator.

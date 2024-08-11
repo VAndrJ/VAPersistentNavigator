@@ -39,6 +39,7 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
                 guard storageCancellable == nil else { return }
 
                 storageCancellable = navigator.storeSubj
+                    .prepend(())
                     .debounce(for: interval, scheduler: scheduler, options: options)
                     .sink {
                         #if DEBUG
