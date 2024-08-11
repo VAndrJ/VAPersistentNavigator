@@ -21,8 +21,12 @@ struct ExampleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
-                .id(viewModel.navigator.id)
+            Group {
+                WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
+                    .transition(.slide.combined(with: .opacity))
+                    .id(viewModel.navigator.id)
+            }
+            .animation(.spring, value: viewModel.navigator.id)
         }
     }
 }
@@ -207,6 +211,7 @@ struct GreetingScreenView: View {
             Button("Start", action: context.start)
             Button("Next to assert", action: context.nextToAssert)
         }
+        .transition(.scale)
     }
 }
 
@@ -226,6 +231,7 @@ struct HelloScreenView: View {
             Button("Start", action: context.start)
             Button("Next to assert", action: context.nextToAssert)
         }
+        .transition(.scale)
     }
 }
 
@@ -252,7 +258,7 @@ struct RootScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Root")
             Button("Other root", action: context.navigation.replaceRoot)
-            Button("Replace wintdow with TabView", action: context.navigation.replaceWindowWithTabView)
+            Button("Replace window with TabView", action: context.navigation.replaceWindowWithTabView)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Next", action: context.navigation.next)
             Button(#"Present "Feature""#, action: context.navigation.presentFeature)
