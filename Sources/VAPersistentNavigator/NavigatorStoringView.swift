@@ -15,7 +15,6 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
     private let scheduler: S
     private let options: S.SchedulerOptions?
     @ViewBuilder private let content: () -> Content
-    @State private var storageCancellable: AnyCancellable?
 
     public init(
         navigator: Navigator<Destination, TabItemTag, SheetTag>,
@@ -35,18 +34,16 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
 
     public var body: some View {
         content()
-            .onAppear {
-                guard storageCancellable == nil else { return }
-
-                storageCancellable = navigator.storeSubj
+            .onReceive(
+                navigator.storeSubj
                     .prepend(())
-                    .debounce(for: interval, scheduler: scheduler, options: options)
-                    .sink {
-                        #if DEBUG
-                        print("Navigation storing...")
-                        #endif
-                        storage.store(navigator: navigator)
-                    }
-            }
+                    .debounce(for: interval, scheduler: scheduler, options: options),
+                perform: {
+                    #if DEBUG
+                    print("Navigation storing...")
+                    #endif
+                    storage.store(navigator: navigator)
+                }
+            )
     }
 }
