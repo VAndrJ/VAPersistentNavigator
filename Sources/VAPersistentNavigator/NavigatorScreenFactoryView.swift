@@ -38,7 +38,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
     public var body: some View {
         switch navigator.kind {
         case .singleView:
-            VStack {
+            ZStack {
                 if let root {
                     buildView(root, navigator)
                 } else {
