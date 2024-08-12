@@ -47,8 +47,18 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
             }
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj)
-            .synchronize($isFullScreenCoverPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: true)
-            .synchronize($isSheetPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: false)
+            .synchronize(
+                $isFullScreenCoverPresented,
+                with: navigator.childSubj,
+                isAppeared: $isAppeared,
+                isFullScreen: true
+            )
+            .synchronize(
+                $isSheetPresented,
+                with: navigator.childSubj,
+                isAppeared: $isAppeared,
+                isFullScreen: false
+            )
             .onAppear {
                 guard !isAppeared else { return }
 
@@ -139,8 +149,18 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj)
             .synchronize($destinations, with: navigator.destinationsSubj)
-            .synchronize($isFullScreenCoverPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: true)
-            .synchronize($isSheetPresented, with: navigator.childSubj, isAppeared: $isAppeared, isFullScreen: false)
+            .synchronize(
+                $isFullScreenCoverPresented,
+                with: navigator.childSubj,
+                isAppeared: $isAppeared,
+                isFullScreen: true
+            )
+            .synchronize(
+                $isSheetPresented,
+                with: navigator.childSubj,
+                isAppeared: $isAppeared,
+                isFullScreen: false
+            )
             .onAppear {
                 guard !isAppeared else { return }
 
