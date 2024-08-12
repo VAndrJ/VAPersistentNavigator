@@ -58,7 +58,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     let navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     var body: some View {
-        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
+        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
             NavigatorScreenFactoryView(
                 navigator: navigator,
                 buildView: { destination, navigator in
