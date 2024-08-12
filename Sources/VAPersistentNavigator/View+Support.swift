@@ -1,5 +1,5 @@
 //
-//  View+Synchonization.swift
+//  View+Support.swift
 //  VAPersistentNavigator
 //
 //  Created by VAndrJ on 8/6/24.
@@ -128,5 +128,26 @@ extension Binding where Value == Bool {
                 }
             }
         )
+    }
+}
+
+extension View {
+
+    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
+        modifier(DetentsViewModifier(detents: detents))
+    }
+}
+
+struct DetentsViewModifier: ViewModifier {
+    let detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+
+    func body(content: Content) -> some View {
+        if let detents {
+            content
+                .presentationDetents(detents.detents)
+                .presentationDragIndicator(detents.dragIndicatorVisibility)
+        } else {
+            content
+        }
     }
 }

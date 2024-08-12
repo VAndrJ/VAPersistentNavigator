@@ -202,24 +202,3 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
         }
     }
 }
-
-extension View {
-
-    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
-        modifier(DetentsViewModifier(detents: detents))
-    }
-}
-
-struct DetentsViewModifier: ViewModifier {
-    let detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
-
-    func body(content: Content) -> some View {
-        if let detents {
-            content
-                .presentationDetents(detents.detents)
-                .presentationDragIndicator(detents.dragIndicatorVisibility)
-        } else {
-            content
-        }
-    }
-}
