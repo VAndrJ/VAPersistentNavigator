@@ -67,7 +67,6 @@ struct FeatureDetailsScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Some package feature flow details")
                 .multilineTextAlignment(.center)
-                .multilineTextAlignment(.center)
             Button("More", action: context.more)
         }
     }
