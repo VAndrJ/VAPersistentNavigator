@@ -21,7 +21,14 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
-                _onReplaceInitialNavigator = newValue
+                _onReplaceInitialNavigator = { [weak self] navigator in
+                    self?.closeToInitial()
+                    //: To avoid presented TabView issue
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(100))
+                        newValue?(navigator)
+                    }
+                }
             } else {
                 parent?.onReplaceInitialNavigator = newValue
             }
