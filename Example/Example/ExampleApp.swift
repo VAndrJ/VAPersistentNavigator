@@ -7,6 +7,7 @@
 
 import SwiftUI
 import VAPersistentNavigator
+import FeaturePackage
 
 @main
 struct ExampleApp: App {
@@ -16,18 +17,22 @@ struct ExampleApp: App {
     init() {
         let storage = DefaultsNavigatorStorage()
         self.navigatorStorage = storage
-        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(root: .root)))
+        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(view: .greeting)))
     }
 
     var body: some Scene {
         WindowGroup {
-            WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
-                .id(viewModel.navigator.id)
+            Group {
+                WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
+                    .transition(.slide.combined(with: .opacity).combined(with: .scale))
+                    .id(viewModel.navigator.id)
+            }
+            .animation(.easeInOut, value: viewModel.navigator.id)
         }
     }
 }
 
-class TestStateNavRestoreAppViewModel: ObservableObject {
+final class TestStateNavRestoreAppViewModel: ObservableObject {
     @Published var navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     init(navigator: Navigator<Destination, TabViewTag, SheetTag>) {
@@ -53,13 +58,25 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     let navigator: Navigator<Destination, TabViewTag, SheetTag>
 
     var body: some View {
-        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3), scheduler: DispatchQueue.main) {
+        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
             NavigatorScreenFactoryView(
                 navigator: navigator,
                 buildView: { destination, navigator in
                     let _ = { print("navigationDestination:", destination) }()
 
                     switch destination {
+                    case .greeting:
+                        GreetingScreenView(context: .init(
+                            start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
+                            hello: { navigator.replace(root: .hello) },
+                            nextToAssert: { navigator.push(destination: .main) }
+                        ))
+                    case .hello:
+                        HelloScreenView(context: .init(
+                            start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
+                            greeting: { navigator.replace(root: .greeting) },
+                            nextToAssert: { navigator.push(destination: .main) }
+                        ))
                     case .root:
                         RootScreenView(context: .init(
                             related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
@@ -75,7 +92,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                                     ))
                                 },
                                 next: { navigator.push(destination: .main) },
-                                presentFeature: { navigator.present(.init(root: .feature(.root))) }
+                                presentFeature: { navigator.present(.init(root: .feature(.root))) },
+                                presentPackageFeature: { navigator.present(.init(root: .featurePackage(.root))) }
                             )
                         ))
                     case .otherRoot:
@@ -148,9 +166,16 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             )
                         ))
                     case let .feature(destination):
-                        FeatureScreenFactoryView(navigator: navigator, destination: destination)
-                    case .empty:
-                        EmptyView()
+                        FeatureScreenFactoryView(
+                            navigator: navigator,
+                            destination: destination
+                        )
+                    case let .featurePackage(destination):
+                        FeaturePackageScreenFactoryView(
+                            navigator: navigator,
+                            destination: destination,
+                            getOuterDestination: { .featurePackage($0) }
+                        )
                     }
                 },
                 buildTab: { tag in
@@ -179,6 +204,46 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     }
 }
 
+struct GreetingScreenView: View {
+    struct Context {
+        let start: () -> Void
+        let hello: () -> Void
+        let nextToAssert: () -> Void
+    }
+
+    let context: Context
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Hello, world!")
+            Button("Hello", action: context.hello)
+            Button("Start", action: context.start)
+            Button("Next to assert", action: context.nextToAssert)
+        }
+        .transition(.scale)
+    }
+}
+
+struct HelloScreenView: View {
+    struct Context {
+        let start: () -> Void
+        let greeting: () -> Void
+        let nextToAssert: () -> Void
+    }
+
+    let context: Context
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Hello!")
+            Button("Hello", action: context.greeting)
+            Button("Start", action: context.start)
+            Button("Next to assert", action: context.nextToAssert)
+        }
+        .transition(.scale)
+    }
+}
+
 struct RootScreenView: View {
     struct Context {
         struct Related {
@@ -190,6 +255,7 @@ struct RootScreenView: View {
             let replaceWindowWithTabView: () -> Void
             let next: () -> Void
             let presentFeature: () -> Void
+            let presentPackageFeature: () -> Void
         }
 
         let related: Related
@@ -202,11 +268,13 @@ struct RootScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Root")
             Button("Other root", action: context.navigation.replaceRoot)
-            Button("Replace wintdow with TabView", action: context.navigation.replaceWindowWithTabView)
+            Button("Replace window with TabView", action: context.navigation.replaceWindowWithTabView)
                 .disabled(!context.related.isReplacementAvailable)
             Button("Next", action: context.navigation.next)
             Button(#"Present "Feature""#, action: context.navigation.presentFeature)
+            Button(#"Present "Package Feature""#, action: context.navigation.presentPackageFeature)
         }
+        .navigationTitle("Root")
     }
 }
 
@@ -307,6 +375,7 @@ struct OtherRootScreenView: View {
             Button("Root", action: context.replaceRoot)
             Button("Next", action: context.next)
         }
+        .navigationTitle("Other Root")
     }
 }
 

@@ -21,7 +21,14 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
-                _onReplaceInitialNavigator = newValue
+                _onReplaceInitialNavigator = { [weak self] navigator in
+                    self?.closeToInitial()
+                    //: To avoid presented TabView issue
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(100))
+                        newValue?(navigator)
+                    }
+                }
             } else {
                 parent?.onReplaceInitialNavigator = newValue
             }
@@ -55,6 +62,25 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
+
+    /// Initializer for a single `View` navigator.
+    public convenience init(
+        id: UUID = .init(),
+        view: Destination,
+        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: view,
+            destinations: [],
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .singleView,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
 
     /// Initializer for a `NavigationStack` navigator.
     public convenience init(
@@ -120,6 +146,8 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     /// Pushes a new destination onto the navigation stack.
     public func push(destination: Destination) {
+        assert(kind == .flow, "Pushing a destination supported only for `.flow` kind.")
+
         var destinationsValue = destinationsSubj.value
         destinationsValue.append(destination)
         destinationsSubj.send(destinationsValue)
@@ -160,6 +188,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     ///
     /// - Parameter child: The child navigator to present.
     public func present(_ child: Navigator?) {
+        assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
         childSubj.send(child)
     }
 
@@ -222,22 +251,33 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
 
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
-        var firstNavigator: Navigator? = self
-        while firstNavigator?.parent != nil {
-            firstNavigator = firstNavigator?.parent
+        var firstNavigator: Navigator! = self
+        while firstNavigator.parent != nil {
+            firstNavigator = firstNavigator.parent
         }
-
-        switch firstNavigator?.kind {
+        switch firstNavigator.kind {
         case .tabView:
-            firstNavigator?.tabs.forEach {
-                $0.popToRoot()
-                $0.present(nil)
+            firstNavigator.tabs.forEach {
+                dismissIfNeeded(in: $0)
+                popToRootIfNeeded(in: $0)
             }
         case .flow:
-            firstNavigator?.popToRoot()
-            firstNavigator?.present(nil)
-        case .none:
-            break
+            dismissIfNeeded(in: firstNavigator)
+            popToRootIfNeeded(in: firstNavigator)
+        case .singleView:
+            dismissIfNeeded(in: firstNavigator)
+        }
+    }
+
+    private func popToRootIfNeeded(in navigator: Navigator) {
+        if !navigator.destinationsSubj.value.isEmpty {
+            navigator.popToRoot()
+        }
+    }
+
+    private func dismissIfNeeded(in navigator: Navigator) {
+        if navigator.childSubj.value != nil {
+            navigator.present(nil)
         }
     }
 

@@ -6,9 +6,11 @@
 //
 
 import Foundation
+import FeaturePackage
 
 enum Destination: Codable, Hashable {
-    case empty
+    case greeting
+    case hello
     case root
     case root1
     case root2
@@ -19,6 +21,7 @@ enum Destination: Codable, Hashable {
     case main
     case detail(number: Int)
     case feature(FeatureDestination)
+    case featurePackage(FeaturePackageDestination)
 }
 
 enum TabViewTag: Codable, Hashable {

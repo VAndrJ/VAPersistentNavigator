@@ -13,6 +13,7 @@
 		A392D6B62C5A0DCA00AD7933 /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */; };
 		A392D6B72C5A0DCA00AD7933 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */; };
 		A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */; };
+		A3E9DDBE2C693F0500D712A3 /* FeaturePackage in Frameworks */ = {isa = PBXBuildFile; productRef = A3E9DDBD2C693F0500D712A3 /* FeaturePackage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +31,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A3E9DDBE2C693F0500D712A3 /* FeaturePackage in Frameworks */,
 				A392D6862C595E1D00AD7933 /* VAPersistentNavigator in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -58,9 +60,9 @@
 			isa = PBXGroup;
 			children = (
 				A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */,
-				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A392D6B22C5A0DCA00AD7933 /* Destinations.swift */,
 				A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */,
+				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */,
 			);
 			path = Example;
@@ -84,6 +86,7 @@
 			name = Example;
 			packageProductDependencies = (
 				A392D6852C595E1D00AD7933 /* VAPersistentNavigator */,
+				A3E9DDBD2C693F0500D712A3 /* FeaturePackage */,
 			);
 			productName = Example;
 			productReference = A392D6732C595DFB00AD7933 /* Example.app */;
@@ -115,6 +118,7 @@
 			mainGroup = A392D66A2C595DFB00AD7933;
 			packageReferences = (
 				A392D6842C595E1D00AD7933 /* XCLocalSwiftPackageReference "../../VAPersistentNavigator" */,
+				A3E9DDBC2C693F0500D712A3 /* XCLocalSwiftPackageReference "Example/Packages/FeaturePackage" */,
 			);
 			productRefGroup = A392D6742C595DFB00AD7933 /* Products */;
 			projectDirPath = "";
@@ -358,12 +362,20 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../../VAPersistentNavigator;
 		};
+		A3E9DDBC2C693F0500D712A3 /* XCLocalSwiftPackageReference "Example/Packages/FeaturePackage" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Example/Packages/FeaturePackage;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		A392D6852C595E1D00AD7933 /* VAPersistentNavigator */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = VAPersistentNavigator;
+		};
+		A3E9DDBD2C693F0500D712A3 /* FeaturePackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FeaturePackage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

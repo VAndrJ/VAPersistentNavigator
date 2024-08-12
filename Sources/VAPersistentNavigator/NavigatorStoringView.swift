@@ -15,7 +15,21 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
     private let scheduler: S
     private let options: S.SchedulerOptions?
     @ViewBuilder private let content: () -> Content
-    @State private var storageCancellable: AnyCancellable?
+
+    public init(
+        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        storage: Storage,
+        interval: S.SchedulerTimeType.Stride = .seconds(5),
+        options: S.SchedulerOptions? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) where S == DispatchQueue {
+        self.navigator = navigator
+        self.storage = storage
+        self.interval = interval
+        self.scheduler = DispatchQueue.main
+        self.options = options
+        self.content = content
+    }
 
     public init(
         navigator: Navigator<Destination, TabItemTag, SheetTag>,
@@ -35,17 +49,16 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
 
     public var body: some View {
         content()
-            .onAppear {
-                guard storageCancellable == nil else { return }
-
-                storageCancellable = navigator.storeSubj
-                    .debounce(for: interval, scheduler: scheduler, options: options)
-                    .sink {
-                        #if DEBUG
-                        print("Navigation storing...")
-                        #endif
-                        storage.store(navigator: navigator)
-                    }
-            }
+            .onReceive(
+                navigator.storeSubj
+                    .prepend(())
+                    .debounce(for: interval, scheduler: scheduler, options: options),
+                perform: {
+                    #if DEBUG
+                    print("Navigation storing...")
+                    #endif
+                    storage.store(navigator: navigator)
+                }
+            )
     }
 }
