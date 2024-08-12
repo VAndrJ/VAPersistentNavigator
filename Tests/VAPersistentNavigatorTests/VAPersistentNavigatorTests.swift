@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import XCTest
 @testable import VAPersistentNavigator
 
 typealias TestNavigator = Navigator<MockDestination, MockTabTag, SheetTag>
@@ -33,31 +34,42 @@ struct NavigatorInitial {
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
+}
 
-    @Test("onReplaceInitialNavigator closure")
-    func navigator_onReplaceInitialNavigator() {
+class NavigatorReplaceInitialTests: XCTestCase, MainActorIsolated {
+
+    func test_navigator_onReplaceInitialNavigator() {
         let sut = TestNavigator(root: .first)
-        let exected = TestNavigator(root: .second)
+        let expected = TestNavigator(root: .second)
+        var replaced: TestNavigator?
+        let expectation = expectation(description: "Replace initial")
         sut.onReplaceInitialNavigator = {
-            #expect(exected == $0)
+            replaced = $0
+            expectation.fulfill()
         }
-        sut.onReplaceInitialNavigator?(exected)
+        sut.onReplaceInitialNavigator?(expected)
+        wait(for: [expectation])
 
-        #expect(nil != sut.onReplaceInitialNavigator)
+        XCTAssertNotNil(sut.onReplaceInitialNavigator)
+        XCTAssertEqual(expected, replaced)
     }
 
-    @Test("onReplaceInitialNavigator closure parent call")
-    func navigator_onReplaceInitialNavigator_parent() {
+    func test_navigator_onReplaceInitialNavigator_parent() {
         let sut = TestNavigator(root: .first)
         let top = TestNavigator(root: .second)
         sut.present(top)
-        let exected = TestNavigator(root: .third)
-        top.onReplaceInitialNavigator = {
-            #expect(exected == $0)
+        let expected = TestNavigator(root: .third)
+        var replaced: TestNavigator?
+        let expectation = expectation(description: "Replace initial")
+        sut.onReplaceInitialNavigator = {
+            replaced = $0
+            expectation.fulfill()
         }
-        top.onReplaceInitialNavigator?(exected)
+        top.onReplaceInitialNavigator?(expected)
+        wait(for: [expectation])
 
-        #expect(nil != sut.onReplaceInitialNavigator)
+        XCTAssertNotNil(sut.onReplaceInitialNavigator)
+        XCTAssertEqual(expected, replaced)
     }
 }
 

@@ -55,3 +55,6 @@ class MockNavigatorStorage: NavigatorStorage {
         navigator.flatMap { try! decoder.decode(Navigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
     }
 }
+
+@MainActor
+protocol MainActorIsolated {}
