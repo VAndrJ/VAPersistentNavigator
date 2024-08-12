@@ -31,7 +31,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     let navigator: Navigator<Destination, TabItemTag, SheetTag>
 
     var body: some View {
-        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, scheduler: DispatchQueue.main) {
+        NavigatorStoringView(navigator: navigator, storage: navigatorStorage) {
             NavigatorScreenFactoryView(
                 navigator: navigator, 
                 buildView: { destination, navigator in
@@ -75,7 +75,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `popToRoot`.
 
-- `replace(root:)`. Replaces the root view in `NavigationStack`.
+- `replace(root:isPopToRoot:)`. Replaces the root view in `NavigationStack`.
 
 - `present`. `sheet` and `fullScreenCover`.
 
