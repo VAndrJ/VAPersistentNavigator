@@ -389,7 +389,7 @@ struct MainScreenView: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Main")
-            Button("Next") { context.next(.random(in: 0...1000)) }
+            Button("Next", action: context.next <<| .random(in: 0...1000))
         }
     }
 }
