@@ -36,19 +36,16 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                 navigator: navigator, 
                 buildView: { destination, navigator in
                     switch destination {
-                    case .root:
-                        RootView()
-                    case .details:
-                        DetailsView()
-                    case .more:
-                        MoreView()
+                    case .root: RootView()
+                    case .details: DetailsView()
+                    case .more: MoreView()
                     }
                 },
-                buildTab: { tag in
-                    switch tag {
-                        case .first: Label("Tab 1", systemImage: "pencil.circle")
-                        case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
-                        case .none: EmptyView()
+                buildTab: { tabTag in
+                    switch tabTag {
+                    case .first: Label("Tab 1", systemImage: "pencil.circle")
+                    case .second: Label("Tab 2", systemImage: "square.and.pencil.circle")
+                    case .none: EmptyView()
                     }
                 },
                 getDetents: { sheetTag in
