@@ -20,6 +20,21 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
         navigator: Navigator<Destination, TabItemTag, SheetTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
+        options: S.SchedulerOptions? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) where S == DispatchQueue {
+        self.navigator = navigator
+        self.storage = storage
+        self.interval = interval
+        self.scheduler = DispatchQueue.main
+        self.options = options
+        self.content = content
+    }
+
+    public init(
+        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        storage: Storage,
+        interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,
         options: S.SchedulerOptions? = nil,
         @ViewBuilder content: @escaping () -> Content
