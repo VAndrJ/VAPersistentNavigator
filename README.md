@@ -36,9 +36,9 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                 navigator: navigator, 
                 buildView: { destination, navigator in
                     switch destination {
-                    case .root: RootView()
-                    case .details: DetailsView()
-                    case .more: MoreView()
+                    case .root: RootScreenView()
+                    case .details: DetailsScreenView()
+                    case .more: MoreScreenView()
                     }
                 },
                 buildTab: { tabTag in
