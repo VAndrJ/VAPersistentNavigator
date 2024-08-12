@@ -21,12 +21,12 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
 
     public init(
         navigator: Navigator<Destination, TabItemTag, SheetTag>,
-        rootReplaceAnimation: @escaping (Destination?) -> Animation? = { _ in .default },
         @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content,
         @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem,
-        getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) }
+        getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
+        getRootReplaceAnimation: @escaping (Destination?) -> Animation? = { _ in .default }
     ) {
-        self.rootReplaceAnimation = rootReplaceAnimation
+        self.rootReplaceAnimation = getRootReplaceAnimation
         self.buildView = buildView
         self.root = navigator.rootSubj.value
         self.destinations = navigator.destinationsSubj.value
@@ -88,10 +88,10 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 if let child = navigator.childSubj.value {
                     NavigatorScreenFactoryView(
                         navigator: child,
-                        rootReplaceAnimation: rootReplaceAnimation,
                         buildView: buildView,
                         buildTab: buildTab,
-                        getDetents: getDetents
+                        getDetents: getDetents,
+                        getRootReplaceAnimation: rootReplaceAnimation
                     )
                 }
             }
@@ -101,20 +101,20 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     if let detents = getDetents(child.presentation.sheetTag) {
                         NavigatorScreenFactoryView(
                             navigator: child,
-                            rootReplaceAnimation: rootReplaceAnimation,
                             buildView: buildView,
                             buildTab: buildTab,
-                            getDetents: getDetents
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
                         )
                         .presentationDetents(detents.detents)
                         .presentationDragIndicator(detents.dragIndicatorVisibility)
                     } else {
                         NavigatorScreenFactoryView(
                             navigator: child,
-                            rootReplaceAnimation: rootReplaceAnimation,
                             buildView: buildView,
                             buildTab: buildTab,
-                            getDetents: getDetents
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
                         )
                     }
                 }
@@ -124,10 +124,10 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 ForEach(navigator.tabs) { tab in
                     NavigatorScreenFactoryView(
                         navigator: tab,
-                        rootReplaceAnimation: rootReplaceAnimation,
                         buildView: buildView,
                         buildTab: buildTab,
-                        getDetents: getDetents
+                        getDetents: getDetents,
+                        getRootReplaceAnimation: rootReplaceAnimation
                     )
                     .tabItem {
                         buildTab(tab.tabItem)
@@ -190,10 +190,10 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 if let child = navigator.childSubj.value {
                     NavigatorScreenFactoryView(
                         navigator: child,
-                        rootReplaceAnimation: rootReplaceAnimation,
                         buildView: buildView,
                         buildTab: buildTab,
-                        getDetents: getDetents
+                        getDetents: getDetents,
+                        getRootReplaceAnimation: rootReplaceAnimation
                     )
                 }
             }
@@ -203,20 +203,20 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     if let detents = getDetents(child.presentation.sheetTag) {
                         NavigatorScreenFactoryView(
                             navigator: child,
-                            rootReplaceAnimation: rootReplaceAnimation,
                             buildView: buildView,
                             buildTab: buildTab,
-                            getDetents: getDetents
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
                         )
                         .presentationDetents(detents.detents)
                         .presentationDragIndicator(detents.dragIndicatorVisibility)
                     } else {
                         NavigatorScreenFactoryView(
                             navigator: child,
-                            rootReplaceAnimation: rootReplaceAnimation,
                             buildView: buildView,
                             buildTab: buildTab,
-                            getDetents: getDetents
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
                         )
                     }
                 }
