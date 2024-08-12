@@ -98,25 +98,14 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
 #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    if let detents = getDetents(child.presentation.sheetTag) {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                        .presentationDetents(detents.detents)
-                        .presentationDragIndicator(detents.dragIndicatorVisibility)
-                    } else {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                    }
+                    NavigatorScreenFactoryView(
+                        navigator: child,
+                        buildView: buildView,
+                        buildTab: buildTab,
+                        getDetents: getDetents,
+                        getRootReplaceAnimation: rootReplaceAnimation
+                    )
+                    .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
         case .tabView:
@@ -200,27 +189,37 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
 #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    if let detents = getDetents(child.presentation.sheetTag) {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                        .presentationDetents(detents.detents)
-                        .presentationDragIndicator(detents.dragIndicatorVisibility)
-                    } else {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                    }
+                    NavigatorScreenFactoryView(
+                        navigator: child,
+                        buildView: buildView,
+                        buildTab: buildTab,
+                        getDetents: getDetents,
+                        getRootReplaceAnimation: rootReplaceAnimation
+                    )
+                    .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
+        }
+    }
+}
+
+extension View {
+
+    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
+        modifier(DetentsViewModifier(detents: detents))
+    }
+}
+
+struct DetentsViewModifier: ViewModifier {
+    let detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+
+    func body(content: Content) -> some View {
+        if let detents {
+            content
+                .presentationDetents(detents.detents)
+                .presentationDragIndicator(detents.dragIndicatorVisibility)
+        } else {
+            content
         }
     }
 }
