@@ -33,7 +33,7 @@ class VAPersistentNavigatorReplaceInitialTests: XCTestCase, MainActorIsolated {
         let expected = TestNavigator(root: .third)
         var replaced: TestNavigator?
         let expectation = expectation(description: "Replace initial")
-        sut.onReplaceInitialNavigator = {
+        top.onReplaceInitialNavigator = {
             replaced = $0
             expectation.fulfill()
         }
