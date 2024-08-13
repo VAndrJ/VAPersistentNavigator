@@ -15,7 +15,7 @@ enum FeatureDestination: Codable, Hashable {
 }
 
 struct FeatureScreenFactoryView: View {
-    let navigator: Navigator<Destination, TabViewTag, SheetTag>
+    let navigator: Navigator<Destination, TabTag, SheetTag>
     let destination: FeatureDestination
 
     var body: some View {

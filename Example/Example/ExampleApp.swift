@@ -33,15 +33,15 @@ struct ExampleApp: App {
 }
 
 final class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination, TabViewTag, SheetTag>
+    @Published var navigator: Navigator<Destination, TabTag, SheetTag>
 
-    init(navigator: Navigator<Destination, TabViewTag, SheetTag>) {
+    init(navigator: Navigator<Destination, TabTag, SheetTag>) {
         self._navigator = .init(wrappedValue: navigator)
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination, TabViewTag, SheetTag>) {
+    func replaceNavigator(_ navigator: Navigator<Destination, TabTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -53,9 +53,9 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabViewTag, Storage.SheetTag == SheetTag {
+struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabViewTag, SheetTag>
+    let navigator: Navigator<Destination, TabTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
