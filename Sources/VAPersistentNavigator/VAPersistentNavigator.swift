@@ -9,7 +9,8 @@ import Foundation
 import Combine
 
 /// A class representing a navigator that manages navigation states and presentations.
-public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: Codable, Identifiable, Equatable {
+@MainActor
+public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id
     }
