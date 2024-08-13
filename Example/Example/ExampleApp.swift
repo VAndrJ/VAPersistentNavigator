@@ -32,6 +32,7 @@ struct ExampleApp: App {
     }
 }
 
+@MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
     @Published var navigator: Navigator<Destination, TabTag, SheetTag>
 
