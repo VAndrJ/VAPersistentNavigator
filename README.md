@@ -22,9 +22,9 @@ To store the current navigation state, simply use any storage that implements th
 Wrap everything in a `NavigatorStoringView`, which will save the current navigation state whenever any changes occur.
 
 
-1.x: Swift 5.10
-
 2.x: Swift 6.0
+
+1.x: Swift 5.10
 
 
 ## Example
