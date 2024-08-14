@@ -119,7 +119,7 @@ extension Binding where Value == Bool {
         )
     }
 
-    static func &&<T>(_ lhs: Binding<T?>, _ rhs: Binding<Bool>) -> Binding<Bool> {
+    static func &&<T: Sendable>(_ lhs: Binding<T?>, _ rhs: Binding<Bool>) -> Binding<Bool> {
         Binding<Bool>(
             get: { lhs.wrappedValue != nil && rhs.wrappedValue },
             set: { value in
