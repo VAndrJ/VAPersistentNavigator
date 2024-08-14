@@ -110,27 +110,6 @@ struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Has
     }
 }
 
-extension Binding where Value == Bool {
-
-    static func && (_ lhs: Binding<Bool>, _ rhs: Binding<Bool>) -> Binding<Bool> {
-        Binding<Bool>(
-            get: { lhs.wrappedValue && rhs.wrappedValue },
-            set: { lhs.wrappedValue = $0 }
-        )
-    }
-
-    static func &&<T>(_ lhs: Binding<T?>, _ rhs: Binding<Bool>) -> Binding<Bool> {
-        Binding<Bool>(
-            get: { lhs.wrappedValue != nil && rhs.wrappedValue },
-            set: { value in
-                if !value {
-                    lhs.wrappedValue = nil
-                }
-            }
-        )
-    }
-}
-
 extension View {
 
     func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
