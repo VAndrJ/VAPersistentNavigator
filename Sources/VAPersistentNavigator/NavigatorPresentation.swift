@@ -10,7 +10,7 @@ import Foundation
 /// Represents the presentation style of the navigator.
 public enum NavigatorPresentation<SheetTag: Codable & Hashable>: Codable, Hashable {
     case sheet(tag: SheetTag? = nil)
-    /// - Note: Available only on iOS 16.0, tvOS 16.0, and watchOS 9.0 and later.
+    /// - Note: Available only on iOS 16.0, tvOS 16.0, and watchOS 9.0 and later. Not available on macOS.
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
     case fullScreenCover
 
