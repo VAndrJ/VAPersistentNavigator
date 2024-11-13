@@ -13,12 +13,12 @@ extension View {
     func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>(
         _ binding: Binding<Bool>,
         with subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>,
-        isAppeared: Binding<Bool>,
+        isFirstAppearanceOccured: Binding<Bool>,
         isFullScreen: Bool
     ) -> some View {
         modifier(SynchronizingNavigatorPresentationViewModifier(
             binding: binding,
-            isAppeared: isAppeared,
+            isFirstAppearanceOccured: isFirstAppearanceOccured,
             subject: subject,
             isFullScreen: isFullScreen
         ))
@@ -67,7 +67,7 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
 
 struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: ViewModifier {
     @Binding var binding: Bool
-    @Binding var isAppeared: Bool
+    @Binding var isFirstAppearanceOccured: Bool
     let subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>
     let isFullScreen: Bool
 
@@ -75,9 +75,9 @@ struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Has
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             content
                 .onReceive(subject) { value in
-                    binding = getIsPresented(presentation: value?.presentation) && isAppeared
+                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
                 }
-                .onChange(of: isAppeared) { _, value in
+                .onChange(of: isFirstAppearanceOccured) { _, value in
                     binding = getIsPresented(presentation: subject.value?.presentation) && value
                 }
                 .onChange(of: binding) { _, value in
@@ -88,9 +88,9 @@ struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Has
         } else {
             content
                 .onReceive(subject) { value in
-                    binding = getIsPresented(presentation: value?.presentation) && isAppeared
+                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
                 }
-                .onChange(of: isAppeared) { value in
+                .onChange(of: isFirstAppearanceOccured) { value in
                     binding = getIsPresented(presentation: subject.value?.presentation) && value
                 }
                 .onChange(of: binding) { value in

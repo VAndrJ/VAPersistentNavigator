@@ -13,7 +13,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
     @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content
     @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
     private let getDetents: (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
-    @State private var isAppeared = false
+    @State private var isFirstAppearanceOccurred = false
     @State private var destinations: [Destination]
     @State private var root: Destination?
     @State private var isFullScreenCoverPresented = false
@@ -50,17 +50,17 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
-                isAppeared: $isAppeared,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: true
             )
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
-                isAppeared: $isAppeared,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: false
             )
             .onAppear {
-                guard !isAppeared else { return }
+                guard !isFirstAppearanceOccurred else { return }
 
 #if os(iOS)
                 // Crutch to avoid iOS 16.0+ 💩 issue
@@ -69,7 +69,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 }
                 Task {
                     await MainActor.run {
-                        isAppeared = true
+                        isFirstAppearanceOccurred = true
                         Task {
                             await MainActor.run {
                                 if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
@@ -80,7 +80,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     }
                 }
 #else
-                isAppeared = true
+                isFirstAppearanceOccurred = true
 #endif
             }
 #if os(iOS) || os(watchOS) || os(tvOS)
@@ -141,26 +141,27 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
-                isAppeared: $isAppeared,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: true
             )
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
-                isAppeared: $isAppeared,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: false
             )
             .onAppear {
-                guard !isAppeared else { return }
+                guard !isFirstAppearanceOccurred else { return }
 
 #if os(iOS)
                 // Crutch to avoid iOS 16.0+ 💩 issue
                 if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
                     UIView.setAnimationsEnabled(false)
                 }
+                // To guarantee delays.
                 Task {
                     await MainActor.run {
-                        isAppeared = true
+                        isFirstAppearanceOccurred = true
                         Task {
                             await MainActor.run {
                                 if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
@@ -171,7 +172,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     }
                 }
 #else
-                isAppeared = true
+                isFirstAppearanceOccurred = true
 #endif
             }
 #if os(iOS) || os(watchOS) || os(tvOS)

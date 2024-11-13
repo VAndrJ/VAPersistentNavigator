@@ -190,6 +190,7 @@ public final class Navigator<Destination: Codable & Hashable, TabItemTag: Codabl
     /// - Parameter child: The child navigator to present.
     public func present(_ child: Navigator?) {
         assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
+
         childSubj.send(child)
     }
 
