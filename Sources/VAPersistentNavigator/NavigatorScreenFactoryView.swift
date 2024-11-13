@@ -158,6 +158,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                 if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
                     UIView.setAnimationsEnabled(false)
                 }
+                // To guarantee delays.
                 Task {
                     await MainActor.run {
                         isFirstAppearanceOccurred = true
