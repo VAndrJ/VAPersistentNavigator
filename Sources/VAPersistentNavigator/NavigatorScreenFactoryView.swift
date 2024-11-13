@@ -80,7 +80,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     }
                 }
 #else
-                isAppeared = true
+                isFirstAppearanceOccurred = true
 #endif
             }
 #if os(iOS) || os(watchOS) || os(tvOS)
@@ -171,7 +171,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     }
                 }
 #else
-                isAppeared = true
+                isFirstAppearanceOccurred = true
 #endif
             }
 #if os(iOS) || os(watchOS) || os(tvOS)
