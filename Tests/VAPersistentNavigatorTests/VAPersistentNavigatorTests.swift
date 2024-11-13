@@ -186,7 +186,7 @@ struct NavigatorTabs {
 
 @Suite("Navigator presentation")
 @MainActor
-struct NavigatorPresentation {
+struct NavigatorPresentationTests {
 
     @Test("Present sheet")
     func navigator_present() {
