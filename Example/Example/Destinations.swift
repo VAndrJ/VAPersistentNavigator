@@ -7,8 +7,9 @@
 
 import Foundation
 import FeaturePackage
+import VAPersistentNavigator
 
-enum Destination: Codable, Hashable {
+enum Destination: Codable, Hashable, PersistentDestination {
     case greeting
     case hello
     case root
