@@ -8,11 +8,17 @@
 import Foundation
 import Combine
 
+@MainActor
+public protocol PersistentNavigator {
+
+    func push(_ destination: any PersistentDestination)
+}
+
 public protocol PersistentDestination: Codable & Hashable {}
 
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
-public final class Navigator<Destination: PersistentDestination, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable {
+public final class Navigator<Destination: PersistentDestination, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable, PersistentNavigator {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id
     }
@@ -145,6 +151,14 @@ public final class Navigator<Destination: PersistentDestination, TabItemTag: Cod
         self.selectedTabSubj = .init(selectedTab)
 
         rebind()
+    }
+
+    public func push(_ destination: any PersistentDestination) {
+        guard let destination = destination as? Destination else {
+            return
+        }
+
+        push(destination: destination)
     }
 
     /// Pushes a new destination onto the navigation stack.
