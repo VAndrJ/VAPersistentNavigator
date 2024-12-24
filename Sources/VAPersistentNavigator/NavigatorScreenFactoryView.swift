@@ -219,7 +219,7 @@ class EmptyNavigator: PersistentNavigator {
 
     func replace(root: any PersistentDestination, isPopToRoot: Bool) {}
 
-    func present(_ child: (any PersistentNavigator)?) {}
+    func present(child: (any PersistentNavigator)?) {}
 
     func dismissTop() {}
     
@@ -242,6 +242,8 @@ class EmptyNavigator: PersistentNavigator {
     func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
         return false
     }
+
+    func present(_ data: NavigatorData) {}
 }
 
 extension EnvironmentValues {

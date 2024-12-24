@@ -8,6 +8,28 @@
 import Foundation
 import Combine
 
+public enum NavigatorData {
+    case view(
+        _ view: any PersistentDestination,
+        id: UUID = .init(),
+        presentation: PersistentNavigatorPresentation = .sheet,
+        tabItem: (any PersistentTabItemTag)? = nil
+    )
+    case stack(
+        root: any PersistentDestination,
+        id: UUID = .init(),
+        destinations: [any PersistentDestination] = [],
+        presentation: PersistentNavigatorPresentation = .sheet,
+        tabItem: (any PersistentTabItemTag)? = nil
+    )
+    indirect case tab(
+        tabs: [NavigatorData] = [],
+        id: UUID = .init(),
+        presentation: PersistentNavigatorPresentation = .sheet,
+        selectedTab: (any PersistentTabItemTag)? = nil
+    )
+}
+
 @MainActor
 public protocol PersistentNavigator {
     var id: UUID { get }
@@ -23,11 +45,12 @@ public protocol PersistentNavigator {
     func dismiss(to id: UUID) -> Bool
     func dismissTop()
     func closeToInitial()
-    func present(_ child: (any PersistentNavigator)?)
+    func present(child: (any PersistentNavigator)?)
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
+    func present(_ data: NavigatorData)
 }
 
-extension PersistentNavigator {
+public extension PersistentNavigator {
 
     func pop(to destination: any PersistentDestination) -> Bool {
         pop(to: destination, isFirst: true)
@@ -247,7 +270,7 @@ public final class Navigator<
         destinationsSubj.send([])
     }
 
-    public func present(_ child: (any PersistentNavigator)?) {
+    public func present(child: (any PersistentNavigator)?) {
         guard let child = child as? Navigator else {
             assertionFailure("Present only the specified `Navigator` type.")
             return
@@ -263,6 +286,55 @@ public final class Navigator<
         assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
 
         childSubj.send(child)
+    }
+
+    public func present(_ data: NavigatorData) {
+        present(getNavigator(data: data))
+    }
+
+    private func getNavigator(data: NavigatorData) -> Navigator? {
+        switch data {
+        case let .view(view, id, presentation, tabItem):
+            guard let destination = view as? Destination else {
+                assertionFailure("Present only the specified `Destination` type.")
+                return nil
+            }
+            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let tabItem = tabItem as? TabItemTag
+
+            return .init(
+                id: id,
+                view: destination,
+                presentation: presentation,
+                tabItem: tabItem
+            )
+        case let .stack(root, id, destinations, presentation, tabItem):
+            guard let destination = root as? Destination else {
+                assertionFailure("Present only the specified `Destination` type.")
+                return nil
+            }
+            let destinations = destinations.compactMap { $0 as? Destination }
+            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let tabItem = tabItem as? TabItemTag
+
+            return .init(
+                id: id,
+                root: destination,
+                destinations: destinations,
+                presentation: presentation,
+                tabItem: tabItem
+            )
+        case let .tab(tabs, id, presentation, selectedTab):
+            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let tabItem = tabItem as? TabItemTag
+
+            return .init(
+                id: id,
+                tabs: tabs.compactMap { getNavigator(data: $0) },
+                presentation: presentation,
+                selectedTab: tabItem
+            )
+        }
     }
 
     @discardableResult
