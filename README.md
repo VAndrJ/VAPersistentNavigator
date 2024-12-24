@@ -92,6 +92,38 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 - `currentTab`. Variable to get and change the current tab in `TabView`.
 
 
+## PersistentNavigator for simplified usage
+
+
+```swift
+struct FeatureDetailsScreenView: View {
+    @Environment(\.persistentNavigator) var navigator: any PersistentNavigator
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Current: Some separate feature flow details")
+                .multilineTextAlignment(.center)
+            Button("More") {
+                navigator.present(.view(Destination.feature(.more)))
+            }
+            Button("Pop") {
+                navigator.pop()
+            }
+            Button("Dismiss") {
+                navigator.dismissTop()
+            }
+            Button("Close all") {
+                navigator.closeToInitial()
+            }
+        }
+    }
+}
+```
+
+
+More detailed information can be found in the example project.
+
+
 ## TBD
 
 
