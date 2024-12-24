@@ -67,7 +67,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     /// We can use functions DI
                     /// to be independent of the specific implementation of the navigator
                     /// And rule them all in one place.
-                    /// Or use `\.navigator` environment variable to use in-place, like ``FeatureScreenFactoryView`` example
+                    /// Or use `\.persistentNavigator` environment variable to use in-place, like ``FeatureScreenFactoryView`` example
                     switch destination {
                     case .greeting:
                         GreetingScreenView(context: .init(

@@ -114,7 +114,7 @@ public struct NavigatorScreenFactoryView<
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
-            .environment(\.navigator, navigator)
+            .environment(\.persistentNavigator, navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -131,7 +131,7 @@ public struct NavigatorScreenFactoryView<
                     .tag(tab.tabItem)
                 }
             }
-            .environment(\.navigator, navigator)
+            .environment(\.persistentNavigator, navigator)
         case .flow:
             NavigationStack(path: $destinations) {
                 if let root {
@@ -208,7 +208,7 @@ public struct NavigatorScreenFactoryView<
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
-            .environment(\.navigator, navigator)
+            .environment(\.persistentNavigator, navigator)
         }
     }
 }
@@ -247,5 +247,5 @@ class EmptyNavigator: PersistentNavigator {
 }
 
 extension EnvironmentValues {
-    @Entry public var navigator: any PersistentNavigator = EmptyNavigator()
+    @Entry public var persistentNavigator: any PersistentNavigator = EmptyNavigator()
 }
