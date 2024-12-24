@@ -58,7 +58,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
     let navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
     var body: some View {
-        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
+        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, delay: .seconds(3)) {
             NavigatorScreenFactoryView(
                 navigator: navigator,
                 buildView: { destination, navigator in
