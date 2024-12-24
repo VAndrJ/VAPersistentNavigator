@@ -8,7 +8,14 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorStoringView<Content, Destination: PersistentDestination, TabItemTag: PersistentTabItemTag, SheetTag: Codable & Hashable, Storage: NavigatorStorage, S: Scheduler>: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
+public struct NavigatorStoringView<
+    Content,
+    Destination: PersistentDestination,
+    TabItemTag: PersistentTabItemTag,
+    SheetTag: PersistentSheetTag,
+    Storage: NavigatorStorage,
+    S: Scheduler
+>: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
     private let navigator: Navigator<Destination, TabItemTag, SheetTag>
     private let storage: Storage
     private let interval: S.SchedulerTimeType.Stride

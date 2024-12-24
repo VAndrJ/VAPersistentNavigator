@@ -18,12 +18,14 @@ public protocol PersistentDestination: Codable & Hashable {}
 
 public protocol PersistentTabItemTag: Codable & Hashable {}
 
+public protocol PersistentSheetTag: Codable & Hashable {}
+
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
 public final class Navigator<
     Destination: PersistentDestination,
     TabItemTag: PersistentTabItemTag,
-    SheetTag: Codable & Hashable
+    SheetTag: PersistentSheetTag
 >: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable, PersistentNavigator {
     public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
         lhs.id == rhs.id

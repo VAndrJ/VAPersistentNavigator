@@ -11,7 +11,7 @@ import Foundation
 public protocol NavigatorStorage {
     associatedtype Destination: PersistentDestination
     associatedtype TabItemTag: PersistentTabItemTag
-    associatedtype SheetTag: Codable & Hashable
+    associatedtype SheetTag: PersistentSheetTag
 
     /// Stores the given navigator.
     ///

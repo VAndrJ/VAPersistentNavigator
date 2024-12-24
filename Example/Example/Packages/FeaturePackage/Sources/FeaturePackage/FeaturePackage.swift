@@ -10,7 +10,7 @@ public enum FeaturePackageDestination: Codable, Hashable {
 public struct FeaturePackageScreenFactoryView<
     OuterDestination: PersistentDestination,
     TabViewTag: PersistentTabItemTag,
-    SheetTag: Codable & Hashable
+    SheetTag: PersistentSheetTag
 >: View {
     let navigator: Navigator<OuterDestination, TabViewTag, SheetTag>
     let destination: FeaturePackageDestination

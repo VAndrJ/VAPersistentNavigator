@@ -68,7 +68,7 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
 struct SynchronizingNavigatorPresentationViewModifier<
     Destination: PersistentDestination,
     TabItemTag: PersistentTabItemTag,
-    SheetTag: Codable & Hashable
+    SheetTag: PersistentSheetTag
 >: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
