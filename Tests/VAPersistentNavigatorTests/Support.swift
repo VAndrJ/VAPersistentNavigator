@@ -9,7 +9,7 @@ import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
-enum MockDestination: Codable, Hashable {
+enum MockDestination: Codable, Hashable, PersistentDestination {
     case empty
     case first
     case second
@@ -17,12 +17,12 @@ enum MockDestination: Codable, Hashable {
     case fourth
 }
 
-enum MockTabTag: Codable, Hashable {
+enum MockTabTag: Codable, Hashable, PersistentTabItemTag {
     case first
     case second
 }
 
-enum SheetTag: Codable, Hashable {
+enum SheetTag: Codable, Hashable, PersistentSheetTag {
     case first
     case second
 }
@@ -47,12 +47,12 @@ class MockNavigatorStorage: NavigatorStorage {
 
     var navigator: Data?
 
-    func store(navigator: Navigator<Destination, TabItemTag, SheetItemTag>) {
+    func store(navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>) {
         self.navigator = try! encoder.encode(navigator)
     }
     
-    func getNavigator() -> Navigator<Destination, TabItemTag, SheetItemTag>? {
-        navigator.flatMap { try! decoder.decode(Navigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
+    func getNavigator() -> CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>? {
+        navigator.flatMap { try! decoder.decode(CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
     }
 }
 
