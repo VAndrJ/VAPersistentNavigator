@@ -219,8 +219,6 @@ class EmptyNavigator: PersistentNavigator {
 
     func replace(root: any PersistentDestination, isPopToRoot: Bool) {}
 
-    func present(child: (any PersistentNavigator)?) {}
-
     func dismissTop() {}
     
     func closeToInitial() {}
