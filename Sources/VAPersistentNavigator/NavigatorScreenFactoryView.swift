@@ -214,8 +214,34 @@ public struct NavigatorScreenFactoryView<
 }
 
 class EmptyNavigator: PersistentNavigator {
+    var id: UUID { UUID() }
+    var isRootView: Bool { true }
+
+    func replace(root: any PersistentDestination, isPopToRoot: Bool) {}
+
+    func present(_ child: (any PersistentNavigator)?) {}
+
+    func dismissTop() {}
     
+    func closeToInitial() {}
+    
+    func dismiss(to destination: any PersistentDestination) -> Bool {
+        return false
+    }
+
+    func popToRoot() {}
+    
+    func dismiss(to id: UUID) -> Bool {
+        return false
+    }
+
     func push(_ destination: any PersistentDestination) {}
+
+    func pop() {}
+
+    func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
+        return false
+    }
 }
 
 extension EnvironmentValues {

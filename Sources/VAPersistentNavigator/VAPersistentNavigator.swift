@@ -10,8 +10,32 @@ import Combine
 
 @MainActor
 public protocol PersistentNavigator {
+    var id: UUID { get }
+    var isRootView: Bool { get }
 
     func push(_ destination: any PersistentDestination)
+    func pop()
+    func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool
+    func popToRoot()
+    @discardableResult
+    func dismiss(to destination: any PersistentDestination) -> Bool
+    @discardableResult
+    func dismiss(to id: UUID) -> Bool
+    func dismissTop()
+    func closeToInitial()
+    func present(_ child: (any PersistentNavigator)?)
+    func replace(root: any PersistentDestination, isPopToRoot: Bool)
+}
+
+extension PersistentNavigator {
+
+    func pop(to destination: any PersistentDestination) -> Bool {
+        pop(to: destination, isFirst: true)
+    }
+
+    func replace(root: any PersistentDestination) {
+        replace(root: root, isPopToRoot: true)
+    }
 }
 
 public protocol PersistentDestination: Codable & Hashable {}
@@ -71,6 +95,8 @@ public final class Navigator<
     let tabs: [Navigator]
 
     let storeSubj = PassthroughSubject<Void, Never>()
+
+    public var isRootView: Bool { destinationsSubj.value.isEmpty }
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
     let childSubj: CurrentValueSubject<Navigator?, Never>
     let kind: NavigatorKind
@@ -163,6 +189,7 @@ public final class Navigator<
 
     public func push(_ destination: any PersistentDestination) {
         guard let destination = destination as? Destination else {
+            assertionFailure("Push only the specified `Destination` type.")
             return
         }
 
@@ -180,9 +207,20 @@ public final class Navigator<
 
     /// Pops the top destination from the navigation stack.
     public func pop() {
+        guard !isRootView else { return }
+
         var destinationsValue = destinationsSubj.value
         _ = destinationsValue.popLast()
         destinationsSubj.send(destinationsValue)
+    }
+
+    public func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
+        guard let destination = destination as? Destination else {
+            assertionFailure("Pop only the specified `Destination` type.")
+            return false
+        }
+
+        return pop(to: destination, isFirst: isFirst)
     }
 
     /// Pops the navigation stack to a specific destination.
@@ -209,6 +247,15 @@ public final class Navigator<
         destinationsSubj.send([])
     }
 
+    public func present(_ child: (any PersistentNavigator)?) {
+        guard let child = child as? Navigator else {
+            assertionFailure("Present only the specified `Navigator` type.")
+            return
+        }
+
+        present(child)
+    }
+
     /// Presents a child navigator.
     ///
     /// - Parameter child: The child navigator to present.
@@ -216,6 +263,16 @@ public final class Navigator<
         assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
 
         childSubj.send(child)
+    }
+
+    @discardableResult
+    public func dismiss(to destination: any PersistentDestination) -> Bool {
+        guard let destination = destination as? Destination else {
+            assertionFailure("Pop only the specified `Destination` type.")
+            return false
+        }
+
+        return dismiss(to: destination)
     }
 
     /// Dismisses to a specific destination.
@@ -256,6 +313,15 @@ public final class Navigator<
         }
 
         return false
+    }
+
+    public func replace(root: any PersistentDestination, isPopToRoot: Bool) {
+        guard let destination = root as? Destination else {
+            assertionFailure("Pop only the specified `Destination` type.")
+            return
+        }
+
+        replace(root: destination, isPopToRoot: isPopToRoot)
     }
 
     /// Replaces the root destination.
