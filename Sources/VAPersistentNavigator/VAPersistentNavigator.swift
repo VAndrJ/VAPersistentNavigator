@@ -66,6 +66,14 @@ public final class CodablePersistentNavigator<
     let kind: NavigatorKind
     let presentation: NavigatorPresentation<SheetTag>
     private(set) weak var parent: CodablePersistentNavigator?
+#if DEBUG
+    var logDescription: String {
+        let root = if let root { String(describing: root) } else { "nil" }
+        let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
+
+        return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
+    }
+#endif
 
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
@@ -162,6 +170,9 @@ public final class CodablePersistentNavigator<
 
     /// Pushes a new destination onto the navigation stack.
     public func push(destination: Destination) {
+#if DEBUG
+        navigatorLogger.log("push", "destination: \(destination)")
+#endif
         assert(kind == .flow, "Pushing a destination supported only for `.flow` kind.")
 
         var destinationsValue = destinationsSubj.value
@@ -171,10 +182,18 @@ public final class CodablePersistentNavigator<
 
     /// Pops the top destination from the navigation stack.
     public func pop() {
-        guard !isRootView else { return }
+        guard !isRootView else {
+#if DEBUG
+            navigatorLogger.log("pop", "not possible, isRootView: \(isRootView)")
+#endif
+            return
+        }
 
         var destinationsValue = destinationsSubj.value
-        _ = destinationsValue.popLast()
+        let destination = destinationsValue.popLast()
+#if DEBUG
+        navigatorLogger.log("pop", "destination: \(destination)")
+#endif
         destinationsSubj.send(destinationsValue)
     }
 
@@ -197,17 +216,33 @@ public final class CodablePersistentNavigator<
     public func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
         if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
+#if DEBUG
+            navigatorLogger.log("pop", "destination: \(destination)")
+#endif
             destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
             destinationsSubj.send(destinationsValue)
 
             return true
         } else {
+#if DEBUG
+            navigatorLogger.log("pop", "not possible, destination: \(destination) not found")
+#endif
             return false
         }
     }
 
     /// Pops the navigation stack to the root destination.
     public func popToRoot() {
+        guard !isRootView else {
+#if DEBUG
+            navigatorLogger.log("popToRoot", "not possible, isRootView: \(isRootView)")
+#endif
+            return
+        }
+
+#if DEBUG
+        navigatorLogger.log("popToRoot")
+#endif
         destinationsSubj.send([])
     }
 
@@ -216,6 +251,9 @@ public final class CodablePersistentNavigator<
     /// - Parameter child: The child navigator to present.
     public func present(_ child: CodablePersistentNavigator?) {
         assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
+#if DEBUG
+        navigatorLogger.log("present", "child: \(child?.logDescription ?? "nil")")
+#endif
 
         childSubj.send(child)
     }
@@ -288,6 +326,9 @@ public final class CodablePersistentNavigator<
         var topNavigator: CodablePersistentNavigator? = self
         while topNavigator != nil {
             if topNavigator?.root == destination {
+#if DEBUG
+                navigatorLogger.log("dismiss to", "destination: \(destination)")
+#endif
                 topNavigator?.present(nil)
 
                 return true
@@ -295,6 +336,9 @@ public final class CodablePersistentNavigator<
 
             topNavigator = topNavigator?.parent
         }
+#if DEBUG
+        navigatorLogger.log("dismiss to", "not possible, destination: \(destination) not found")
+#endif
 
         return false
     }
@@ -308,6 +352,9 @@ public final class CodablePersistentNavigator<
         var topNavigator: CodablePersistentNavigator? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
+#if DEBUG
+                navigatorLogger.log("dismiss to", "id: \(id)")
+#endif
                 topNavigator?.present(nil)
 
                 return true
@@ -315,6 +362,9 @@ public final class CodablePersistentNavigator<
 
             topNavigator = topNavigator?.parent
         }
+#if DEBUG
+        navigatorLogger.log("dismiss to", "not possible, id: \(id) not found")
+#endif
 
         return false
     }
@@ -335,18 +385,30 @@ public final class CodablePersistentNavigator<
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     public func replace(root: Destination, isPopToRoot: Bool = true) {
         if isPopToRoot {
+#if DEBUG
+            navigatorLogger.log("replace root", "pop to root")
+#endif
             popToRoot()
         }
+#if DEBUG
+            navigatorLogger.log("replace root", "destination: \(root)")
+#endif
         rootSubj.send(root)
     }
 
     /// Dismisses the current top navigator.
     public func dismissTop() {
+#if DEBUG
+        navigatorLogger.log("dismiss top")
+#endif
         parent?.present(nil)
     }
 
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
+#if DEBUG
+        navigatorLogger.log("close to initial")
+#endif
         var firstNavigator: CodablePersistentNavigator! = self
         while firstNavigator.parent != nil {
             firstNavigator = firstNavigator.parent
@@ -456,4 +518,14 @@ public final class CodablePersistentNavigator<
         }
         storeSubj.send(())
     }
+
+#if DEBUG
+    deinit {
+        guard Thread.isMainThread else { return }
+
+        MainActor.assumeIsolated {
+            navigatorLogger.log(#function, logDescription, id)
+        }
+    }
+#endif
 }

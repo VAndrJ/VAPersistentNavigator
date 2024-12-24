@@ -62,7 +62,7 @@ public struct NavigatorStoringView<
                     .debounce(for: interval, scheduler: scheduler, options: options),
                 perform: {
                     #if DEBUG
-                    print("Navigation storing...")
+                    navigatorLogger.log("Navigation storing...")
                     #endif
                     storage.store(navigator: navigator)
                 }
