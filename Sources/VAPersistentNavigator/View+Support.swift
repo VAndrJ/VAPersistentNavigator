@@ -65,7 +65,11 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier<Destination: PersistentDestination, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: ViewModifier {
+struct SynchronizingNavigatorPresentationViewModifier<
+    Destination: PersistentDestination,
+    TabItemTag: PersistentTabItemTag,
+    SheetTag: Codable & Hashable
+>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
     let subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>

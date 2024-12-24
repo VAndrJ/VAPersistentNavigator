@@ -25,7 +25,7 @@ enum Destination: Codable, Hashable, PersistentDestination {
     case featurePackage(FeaturePackageDestination)
 }
 
-enum TabTag: Codable, Hashable {
+enum TabTag: Codable, Hashable, PersistentTabItemTag {
     enum FirstTabView: Codable, Hashable {
         case first
         case second

@@ -10,7 +10,7 @@ import Foundation
 /// A protocol defining the storage mechanism for a navigator.
 public protocol NavigatorStorage {
     associatedtype Destination: PersistentDestination
-    associatedtype TabItemTag: Codable & Hashable
+    associatedtype TabItemTag: PersistentTabItemTag
     associatedtype SheetTag: Codable & Hashable
 
     /// Stores the given navigator.

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: PersistentDestination, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: View {
+public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: PersistentDestination, TabItemTag: PersistentTabItemTag, SheetTag: Codable & Hashable>: View {
     private let navigator: Navigator<Destination, TabItemTag, SheetTag>
     private let rootReplaceAnimation: (Destination?) -> Animation?
     @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content
