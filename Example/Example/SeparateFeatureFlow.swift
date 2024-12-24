@@ -36,8 +36,9 @@ struct FeatureRootScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Some separate feature flow root")
                 .multilineTextAlignment(.center)
-            Button("Next") {
-                navigator.push(Destination.feature(.details))
+            /// `NavigationLink` with a proper `PersistentDestination` can also be used.
+            NavigationLink(value: Destination.feature(.details)) {
+                Text("Next")
             }
             Button("More") {
                 navigator.present(.view(Destination.feature(.more)))
