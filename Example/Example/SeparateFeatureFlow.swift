@@ -39,6 +39,9 @@ struct FeatureRootScreenView: View {
             Button("Next") {
                 navigator.push(Destination.feature(.details))
             }
+            Button("More") {
+                navigator.present(.view(Destination.feature(.more)))
+            }
             Button("Dismiss") {
                 navigator.dismissTop()
             }
@@ -72,6 +75,9 @@ struct FeatureMoreScreenView: View {
                 .multilineTextAlignment(.center)
             Button("Dismiss") {
                 navigator.dismissTop()
+            }
+            Button("Close all") {
+                navigator.closeToInitial()
             }
         }
     }
