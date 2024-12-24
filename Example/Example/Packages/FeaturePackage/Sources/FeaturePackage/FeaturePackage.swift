@@ -7,13 +7,17 @@ public enum FeaturePackageDestination: Codable, Hashable {
     case more
 }
 
-public struct FeaturePackageScreenFactoryView<OuterDestination: Codable & Hashable, TabViewTag: Codable & Hashable, SheetTag: Codable & Hashable>: View {
-    let navigator: Navigator<OuterDestination, TabViewTag, SheetTag>
+public struct FeaturePackageScreenFactoryView<
+    OuterDestination: PersistentDestination,
+    TabViewTag: PersistentTabItemTag,
+    SheetTag: PersistentSheetTag
+>: View {
+    let navigator: CodablePersistentNavigator<OuterDestination, TabViewTag, SheetTag>
     let destination: FeaturePackageDestination
     let getOuterDestination: (FeaturePackageDestination) -> OuterDestination
 
     public init(
-        navigator: Navigator<OuterDestination, TabViewTag, SheetTag>,
+        navigator: CodablePersistentNavigator<OuterDestination, TabViewTag, SheetTag>,
         destination: FeaturePackageDestination,
         getOuterDestination: @escaping (FeaturePackageDestination) -> OuterDestination
     ) {

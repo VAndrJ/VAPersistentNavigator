@@ -12,7 +12,7 @@ extension View {
 
     func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>,
+        with subject: CurrentValueSubject<CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?, Never>,
         isFirstAppearanceOccured: Binding<Bool>,
         isFullScreen: Bool
     ) -> some View {
@@ -65,10 +65,14 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: ViewModifier {
+struct SynchronizingNavigatorPresentationViewModifier<
+    Destination: PersistentDestination,
+    TabItemTag: PersistentTabItemTag,
+    SheetTag: PersistentSheetTag
+>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
-    let subject: CurrentValueSubject<Navigator<Destination, TabItemTag, SheetTag>?, Never>
+    let subject: CurrentValueSubject<CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?, Never>
     let isFullScreen: Bool
 
     func body(content: Content) -> some View {

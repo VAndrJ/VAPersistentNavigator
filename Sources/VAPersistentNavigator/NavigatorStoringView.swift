@@ -8,8 +8,15 @@
 import SwiftUI
 import Combine
 
-public struct NavigatorStoringView<Content, Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable, Storage: NavigatorStorage, S: Scheduler>: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
-    private let navigator: Navigator<Destination, TabItemTag, SheetTag>
+public struct NavigatorStoringView<
+    Content,
+    Destination: PersistentDestination,
+    TabItemTag: PersistentTabItemTag,
+    SheetTag: PersistentSheetTag,
+    Storage: NavigatorStorage,
+    S: Scheduler
+>: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
+    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
     private let storage: Storage
     private let interval: S.SchedulerTimeType.Stride
     private let scheduler: S
@@ -17,7 +24,7 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
     @ViewBuilder private let content: () -> Content
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         options: S.SchedulerOptions? = nil,
@@ -32,7 +39,7 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
     }
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,
@@ -55,7 +62,7 @@ public struct NavigatorStoringView<Content, Destination: Codable & Hashable, Tab
                     .debounce(for: interval, scheduler: scheduler, options: options),
                 perform: {
                     #if DEBUG
-                    print("Navigation storing...")
+                    navigatorLogger.log("Navigation storing...")
                     #endif
                     storage.store(navigator: navigator)
                 }

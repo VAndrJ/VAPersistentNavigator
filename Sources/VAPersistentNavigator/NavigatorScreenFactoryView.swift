@@ -7,10 +7,16 @@
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>: View {
-    private let navigator: Navigator<Destination, TabItemTag, SheetTag>
+public struct NavigatorScreenFactoryView<
+    Content: View,
+    TabItem: View,
+    Destination: PersistentDestination,
+    TabItemTag: PersistentTabItemTag,
+    SheetTag: PersistentSheetTag
+>: View {
+    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
     private let rootReplaceAnimation: (Destination?) -> Animation?
-    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content
+    @ViewBuilder private let buildView: (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content
     @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
     private let getDetents: (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
@@ -20,8 +26,8 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
+        @ViewBuilder buildView: @escaping (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content,
         @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem,
         getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Destination?) -> Animation? = { _ in .default }
@@ -108,6 +114,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
+            .environment(\.persistentNavigator, navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -124,6 +131,7 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     .tag(tab.tabItem)
                 }
             }
+            .environment(\.persistentNavigator, navigator)
         case .flow:
             NavigationStack(path: $destinations) {
                 if let root {
@@ -200,6 +208,42 @@ public struct NavigatorScreenFactoryView<Content: View, TabItem: View, Destinati
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
+            .environment(\.persistentNavigator, navigator)
         }
     }
+}
+
+class EmptyNavigator: PersistentNavigator {
+    var id: UUID { UUID() }
+    var isRootView: Bool { true }
+
+    func replace(root: any PersistentDestination, isPopToRoot: Bool) {}
+
+    func dismissTop() {}
+    
+    func closeToInitial() {}
+    
+    func dismiss(to destination: any PersistentDestination) -> Bool {
+        return false
+    }
+
+    func popToRoot() {}
+    
+    func dismiss(to id: UUID) -> Bool {
+        return false
+    }
+
+    func push(_ destination: any PersistentDestination) {}
+
+    func pop() {}
+
+    func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
+        return false
+    }
+
+    func present(_ data: NavigatorData) {}
+}
+
+extension EnvironmentValues {
+    @Entry public var persistentNavigator: any PersistentNavigator = EmptyNavigator()
 }

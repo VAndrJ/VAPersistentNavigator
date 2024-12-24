@@ -7,8 +7,9 @@
 
 import Foundation
 import FeaturePackage
+import VAPersistentNavigator
 
-enum Destination: Codable, Hashable {
+enum Destination: PersistentDestination {
     case greeting
     case hello
     case root
@@ -24,7 +25,7 @@ enum Destination: Codable, Hashable {
     case featurePackage(FeaturePackageDestination)
 }
 
-enum TabTag: Codable, Hashable {
+enum TabTag: PersistentTabItemTag {
     enum FirstTabView: Codable, Hashable {
         case first
         case second
@@ -39,6 +40,6 @@ enum TabTag: Codable, Hashable {
     case second(SecondTabView)
 }
 
-enum SheetTag: Codable, Hashable {
+enum SheetTag: PersistentSheetTag {
     case first
 }

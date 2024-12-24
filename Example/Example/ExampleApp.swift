@@ -11,19 +11,16 @@ import FeaturePackage
 
 @main
 struct ExampleApp: App {
-    let navigatorStorage: DefaultsNavigatorStorage
     @StateObject var viewModel: TestStateNavRestoreAppViewModel
 
     init() {
-        let storage = DefaultsNavigatorStorage()
-        self.navigatorStorage = storage
-        self._viewModel = .init(wrappedValue: .init(navigator: storage.getNavigator() ?? .init(view: .greeting)))
+        self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
     }
 
     var body: some Scene {
         WindowGroup {
             Group {
-                WindowView(navigatorStorage: navigatorStorage, navigator: viewModel.navigator)
+                WindowView(navigatorStorage: viewModel.navigatorStorage, navigator: viewModel.navigator)
                     .transition(.slide.combined(with: .opacity).combined(with: .scale))
                     .id(viewModel.navigator.id)
             }
@@ -34,15 +31,17 @@ struct ExampleApp: App {
 
 @MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
-    @Published var navigator: Navigator<Destination, TabTag, SheetTag>
+    let navigatorStorage: DefaultsNavigatorStorage
+    @Published var navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
-    init(navigator: Navigator<Destination, TabTag, SheetTag>) {
-        self._navigator = .init(wrappedValue: navigator)
+    init(navigatorStorage: DefaultsNavigatorStorage) {
+        self.navigatorStorage = navigatorStorage
+        self._navigator = .init(wrappedValue: navigatorStorage.getNavigator() ?? .init(view: .greeting))
 
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination, TabTag, SheetTag>) {
+    func replaceNavigator(_ navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -56,7 +55,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
 
 struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabTag, SheetTag>
+    let navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
@@ -65,6 +64,10 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                 buildView: { destination, navigator in
                     let _ = { print("navigationDestination:", destination) }()
 
+                    /// We can use functions DI for navigation
+                    /// to be independent of the specific implementation of the navigator
+                    /// And rule them all in one place.
+                    /// Or use `\.persistentNavigator` environment variable to use in-place, like ``FeatureScreenFactoryView`` example
                     switch destination {
                     case .greeting:
                         GreetingScreenView(context: .init(
@@ -167,10 +170,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                             )
                         ))
                     case let .feature(destination):
-                        FeatureScreenFactoryView(
-                            navigator: navigator,
-                            destination: destination
-                        )
+                        FeatureScreenFactoryView(destination: destination)
                     case let .featurePackage(destination):
                         FeaturePackageScreenFactoryView(
                             navigator: navigator,
