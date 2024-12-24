@@ -16,7 +16,7 @@ public struct NavigatorStoringView<
     Storage: NavigatorStorage,
     S: Scheduler
 >: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
-    private let navigator: Navigator<Destination, TabItemTag, SheetTag>
+    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
     private let storage: Storage
     private let interval: S.SchedulerTimeType.Stride
     private let scheduler: S
@@ -24,7 +24,7 @@ public struct NavigatorStoringView<
     @ViewBuilder private let content: () -> Content
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         options: S.SchedulerOptions? = nil,
@@ -39,7 +39,7 @@ public struct NavigatorStoringView<
     }
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
         storage: Storage,
         interval: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,

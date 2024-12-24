@@ -16,9 +16,9 @@ public protocol NavigatorStorage {
     /// Stores the given navigator.
     ///
     /// - Parameter navigator: The `Navigator` to be stored.
-    func store(navigator: Navigator<Destination, TabItemTag, SheetTag>)
+    func store(navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>)
     /// Retrieves the stored navigator.
     ///
-    /// - Returns: The stored `Navigator`, or `nil` if no `Navigator` is stored.
-    func getNavigator() -> Navigator<Destination, TabItemTag, SheetTag>?
+    /// - Returns: The stored `PersistentNavigator`, or `nil` if no `Navigator` is stored.
+    func getNavigator() -> CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?
 }

@@ -15,7 +15,7 @@
 
 To save the current state in applications using SwiftUI, there are various mechanisms, for example, `@SceneStorage`. However, due to the tight coupling to `View`, this complicates the possibility of separating the logic of navigation and state saving. Additionally, due to SwiftUI bugs, the built-in mechanisms do not work in some cases and lead to various issues.
 
-For navigation, use `Navigator` with `NavigatorScreenFactoryView`, which synchronizes the state of the navigator and navigation.
+For navigation, use `PersistentNavigator` with `NavigatorScreenFactoryView`, which synchronizes the state of the navigator and navigation.
 
 To store the current navigation state, simply use any storage that implements the `NavigatorStorage` protocol. It doesn't matter if it's UserDefaults, a file, or encrypted storage. 
 
@@ -33,7 +33,7 @@ Wrap everything in a `NavigatorStoringView`, which will save the current navigat
 ```swift
 struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabItemTag, SheetTag>
+    let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage) {

@@ -32,7 +32,7 @@ struct ExampleApp: App {
 @MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
     let navigatorStorage: DefaultsNavigatorStorage
-    @Published var navigator: Navigator<Destination, TabTag, SheetTag>
+    @Published var navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
     init(navigatorStorage: DefaultsNavigatorStorage) {
         self.navigatorStorage = navigatorStorage
@@ -41,7 +41,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: Navigator<Destination, TabTag, SheetTag>) {
+    func replaceNavigator(_ navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -55,7 +55,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
 
 struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabTag, Storage.SheetTag == SheetTag {
     let navigatorStorage: Storage
-    let navigator: Navigator<Destination, TabTag, SheetTag>
+    let navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, interval: .seconds(3)) {
@@ -64,7 +64,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                 buildView: { destination, navigator in
                     let _ = { print("navigationDestination:", destination) }()
 
-                    /// We can use functions DI
+                    /// We can use functions DI for navigation
                     /// to be independent of the specific implementation of the navigator
                     /// And rule them all in one place.
                     /// Or use `\.persistentNavigator` environment variable to use in-place, like ``FeatureScreenFactoryView`` example

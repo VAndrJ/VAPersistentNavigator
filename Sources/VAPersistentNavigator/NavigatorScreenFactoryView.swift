@@ -14,9 +14,9 @@ public struct NavigatorScreenFactoryView<
     TabItemTag: PersistentTabItemTag,
     SheetTag: PersistentSheetTag
 >: View {
-    private let navigator: Navigator<Destination, TabItemTag, SheetTag>
+    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
     private let rootReplaceAnimation: (Destination?) -> Animation?
-    @ViewBuilder private let buildView: (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content
+    @ViewBuilder private let buildView: (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content
     @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
     private let getDetents: (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
@@ -26,8 +26,8 @@ public struct NavigatorScreenFactoryView<
     @State private var isSheetPresented = false
 
     public init(
-        navigator: Navigator<Destination, TabItemTag, SheetTag>,
-        @ViewBuilder buildView: @escaping (Destination, Navigator<Destination, TabItemTag, SheetTag>) -> Content,
+        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
+        @ViewBuilder buildView: @escaping (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content,
         @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem,
         getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Destination?) -> Animation? = { _ in .default }

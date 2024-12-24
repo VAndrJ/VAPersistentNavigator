@@ -10,19 +10,19 @@ import Combine
 
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
-public final class Navigator<
+public final class CodablePersistentNavigator<
     Destination: PersistentDestination,
     TabItemTag: PersistentTabItemTag,
     SheetTag: PersistentSheetTag
 >: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable, PersistentNavigator {
-    public static func == (lhs: Navigator, rhs: Navigator) -> Bool {
+    public static func == (lhs: CodablePersistentNavigator, rhs: CodablePersistentNavigator) -> Bool {
         lhs.id == rhs.id
     }
 
     public private(set) var id: UUID
 
     /// A closure that is called when the initial navigator needs to be replaced.
-    public var onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)? {
+    public var onReplaceInitialNavigator: ((_ newNavigator: CodablePersistentNavigator) -> Void)? {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
@@ -39,7 +39,7 @@ public final class Navigator<
             }
         }
     }
-    private var _onReplaceInitialNavigator: ((_ newNavigator: Navigator) -> Void)?
+    private var _onReplaceInitialNavigator: ((_ newNavigator: CodablePersistentNavigator) -> Void)?
 
     public var root: Destination? { rootSubj.value }
     let rootSubj: CurrentValueSubject<Destination?, Never>
@@ -56,16 +56,16 @@ public final class Navigator<
     }
     let selectedTabSubj: CurrentValueSubject<TabItemTag?, Never>
     private(set) var tabItem: TabItemTag?
-    let tabs: [Navigator]
+    let tabs: [CodablePersistentNavigator]
 
     let storeSubj = PassthroughSubject<Void, Never>()
 
     public var isRootView: Bool { destinationsSubj.value.isEmpty }
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
-    let childSubj: CurrentValueSubject<Navigator?, Never>
+    let childSubj: CurrentValueSubject<CodablePersistentNavigator?, Never>
     let kind: NavigatorKind
     let presentation: NavigatorPresentation<SheetTag>
-    private(set) weak var parent: Navigator?
+    private(set) weak var parent: CodablePersistentNavigator?
 
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
@@ -112,7 +112,7 @@ public final class Navigator<
     /// Initializer for a `TabView` navigator.
     public convenience init(
         id: UUID = .init(),
-        tabs: [Navigator] = [],
+        tabs: [CodablePersistentNavigator] = [],
         presentation: NavigatorPresentation<SheetTag> = .sheet,
         selectedTab: TabItemTag? = nil
     ) {
@@ -135,7 +135,7 @@ public final class Navigator<
         presentation: NavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil,
         kind: NavigatorKind = .flow,
-        tabs: [Navigator] = [],
+        tabs: [CodablePersistentNavigator] = [],
         selectedTab: TabItemTag? = nil
     ) {
         self.id = id
@@ -214,7 +214,7 @@ public final class Navigator<
     /// Presents a child navigator.
     ///
     /// - Parameter child: The child navigator to present.
-    public func present(_ child: Navigator?) {
+    public func present(_ child: CodablePersistentNavigator?) {
         assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
 
         childSubj.send(child)
@@ -224,7 +224,7 @@ public final class Navigator<
         present(getNavigator(data: data))
     }
 
-    private func getNavigator(data: NavigatorData) -> Navigator? {
+    private func getNavigator(data: NavigatorData) -> CodablePersistentNavigator? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             guard let destination = view as? Destination else {
@@ -285,7 +285,7 @@ public final class Navigator<
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     public func dismiss(to destination: Destination) -> Bool {
-        var topNavigator: Navigator? = self
+        var topNavigator: CodablePersistentNavigator? = self
         while topNavigator != nil {
             if topNavigator?.root == destination {
                 topNavigator?.present(nil)
@@ -305,7 +305,7 @@ public final class Navigator<
     /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
     public func dismiss(to id: UUID) -> Bool {
-        var topNavigator: Navigator? = self
+        var topNavigator: CodablePersistentNavigator? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
                 topNavigator?.present(nil)
@@ -347,7 +347,7 @@ public final class Navigator<
 
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
-        var firstNavigator: Navigator! = self
+        var firstNavigator: CodablePersistentNavigator! = self
         while firstNavigator.parent != nil {
             firstNavigator = firstNavigator.parent
         }
@@ -365,13 +365,13 @@ public final class Navigator<
         }
     }
 
-    private func popToRootIfNeeded(in navigator: Navigator) {
+    private func popToRootIfNeeded(in navigator: CodablePersistentNavigator) {
         if !navigator.destinationsSubj.value.isEmpty {
             navigator.popToRoot()
         }
     }
 
-    private func dismissIfNeeded(in navigator: Navigator) {
+    private func dismissIfNeeded(in navigator: CodablePersistentNavigator) {
         if navigator.childSubj.value != nil {
             navigator.present(nil)
         }
@@ -406,12 +406,12 @@ public final class Navigator<
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.rootSubj = .init(try container.decodeIfPresent(Destination.self, forKey: .root))
         self.destinationsSubj = .init(try container.decode([Destination].self, forKey: .destinations))
-        self.childSubj = .init(try container.decodeIfPresent(Navigator.self, forKey: .navigator))
+        self.childSubj = .init(try container.decodeIfPresent(CodablePersistentNavigator.self, forKey: .navigator))
         self.tabItem = try container.decodeIfPresent(TabItemTag.self, forKey: .tabItem)
         self.selectedTabSubj = .init(try container.decodeIfPresent(TabItemTag.self, forKey: .selectedTab))
         self.kind = try container.decode(NavigatorKind.self, forKey: .kind)
         self.id = try container.decode(UUID.self, forKey: .id)
-        self.tabs = try container.decode([Navigator].self, forKey: .tabs)
+        self.tabs = try container.decode([CodablePersistentNavigator].self, forKey: .tabs)
         self.presentation = try container.decode(NavigatorPresentation.self, forKey: .presentation)
 
         rebind()
@@ -445,7 +445,7 @@ public final class Navigator<
             .store(in: &bag)
     }
 
-    private func rebindChild(child: Navigator?) {
+    private func rebindChild(child: CodablePersistentNavigator?) {
         childCancellable?.cancel()
         if let child = childSubj.value {
             child.parent = self

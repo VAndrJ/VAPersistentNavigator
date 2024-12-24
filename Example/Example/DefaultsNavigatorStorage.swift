@@ -18,11 +18,11 @@ final class DefaultsNavigatorStorage: NavigatorStorage {
         self.defaults = defaults
     }
 
-    func store(navigator: Navigator<Destination, TabTag, SheetTag>) {
+    func store(navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
         defaults.set(try? encoder.encode(navigator), forKey: key)
     }
 
-    func getNavigator() -> Navigator<Destination, TabTag, SheetTag>? {
-        defaults.data(forKey: key).flatMap { try? decoder.decode(Navigator.self, from: $0) }
+    func getNavigator() -> CodablePersistentNavigator<Destination, TabTag, SheetTag>? {
+        defaults.data(forKey: key).flatMap { try? decoder.decode(CodablePersistentNavigator.self, from: $0) }
     }
 }
