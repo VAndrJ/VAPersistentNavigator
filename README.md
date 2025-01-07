@@ -97,7 +97,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 ```swift
 struct FeatureDetailsScreenView: View {
-    @Environment(\.persistentNavigator) var navigator: any PersistentNavigator
+    @Environment(\.persistentNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {

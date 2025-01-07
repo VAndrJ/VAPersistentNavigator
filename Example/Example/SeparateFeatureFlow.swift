@@ -30,7 +30,7 @@ struct FeatureScreenFactoryView: View {
 }
 
 struct FeatureRootScreenView: View {
-    @Environment(\.persistentNavigator) var navigator: any PersistentNavigator
+    @Environment(\.persistentNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
@@ -51,7 +51,7 @@ struct FeatureRootScreenView: View {
 }
 
 struct FeatureDetailsScreenView: View {
-    @Environment(\.persistentNavigator) var navigator: any PersistentNavigator
+    @Environment(\.persistentNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
@@ -68,7 +68,7 @@ struct FeatureDetailsScreenView: View {
 }
 
 struct FeatureMoreScreenView: View {
-    @Environment(\.persistentNavigator) var navigator: any PersistentNavigator
+    @Environment(\.persistentNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
