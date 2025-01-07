@@ -296,13 +296,13 @@ public final class CodablePersistentNavigator<
             )
         case let .tab(tabs, id, presentation, selectedTab):
             let presentation = NavigatorPresentation<SheetTag>(from: presentation)
-            let tabItem = tabItem as? TabItemTag
+            let selectedTab = selectedTab as? TabItemTag
 
             return .init(
                 id: id,
                 tabs: tabs.compactMap { getNavigator(data: $0) },
                 presentation: presentation,
-                selectedTab: tabItem
+                selectedTab: selectedTab
             )
         }
     }
