@@ -192,7 +192,7 @@ public final class CodablePersistentNavigator<
         var destinationsValue = destinationsSubj.value
         let destination = destinationsValue.popLast()
 #if DEBUG
-        navigatorLogger.log("pop", "destination: \(destination)")
+        navigatorLogger.log("pop", "destination: \(String(describing: destination))")
 #endif
         destinationsSubj.send(destinationsValue)
     }
