@@ -9,7 +9,9 @@
 import Foundation
 import OSLog
 
-let navigatorLogger = Logger.navigator
+nonisolated(unsafe) public var navigatorLog: ((_ items: Any...) -> Void)? = navigatorLogger.log(_:)
+
+private let navigatorLogger = Logger.navigator
 
 extension Logger {
     static let navigator = Logger(subsystem: "VAPersistentNavigator", category: "PersistentNavigator")
