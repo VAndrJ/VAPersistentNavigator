@@ -241,7 +241,7 @@ class EmptyNavigator: PersistentNavigator {
         return false
     }
 
-    func present(_ data: NavigatorData) {}
+    func present(_ data: NavigatorData, strategy: PresentationStrategy) {}
 }
 
 extension EnvironmentValues {
