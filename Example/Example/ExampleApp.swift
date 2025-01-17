@@ -318,6 +318,7 @@ struct Tab2ScreenView: View {
     }
 
     let context: Context
+    @StateObject private var viewModel = Tab2ScreenViewViewModel()
 
     var body: some View {
         VStack(spacing: 16) {
@@ -325,6 +326,24 @@ struct Tab2ScreenView: View {
             Button("Next", action: context.next)
         }
         .navigationTitle("Tab 2")
+        .onFirstAppear {
+            viewModel.onFirstAppear()
+        }
+    }
+}
+
+final class Tab2ScreenViewViewModel: ObservableObject {
+
+    init() {
+        print(#function, Self.self)
+    }
+
+    func onFirstAppear() {
+        print(#function, Self.self)
+    }
+
+    deinit {
+        print(#function, Self.self)
     }
 }
 
