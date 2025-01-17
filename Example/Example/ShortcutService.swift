@@ -11,6 +11,7 @@ import Combine
 enum ShortcutItemType: String {
     case presentOnTop = "com.example.presentOnTop"
     case closeToRoot = "com.example.closeToRoot"
+    case pushOnTop = "com.example.push"
 }
 
 @MainActor

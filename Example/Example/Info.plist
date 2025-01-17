@@ -20,6 +20,14 @@
 			<key>UIApplicationShortcutItemType</key>
 			<string>com.example.closeToRoot</string>
 		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeArrowRight</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.example.push</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Push on top if available</string>
+		</dict>
 	</array>
 </dict>
 </plist>
