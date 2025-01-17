@@ -59,7 +59,10 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         case .presentOnTop:
             navigator.present(.init(view: .shortcutExample), strategy: .onTop)
         case .pushOnTop:
-            navigator.push(destination: .shortcutExample)
+            /// If the `.push` is unsuccessful then fallback to the `.present`
+            if !navigator.push(destination: .shortcutExample) {
+                navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+            }
         }
     }
 

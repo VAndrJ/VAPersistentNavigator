@@ -21,6 +21,8 @@
 			<string>com.example.closeToRoot</string>
 		</dict>
 		<dict>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>or present new</string>
 			<key>UIApplicationShortcutItemIconType</key>
 			<string>UIApplicationShortcutIconTypeAdd</string>
 			<key>UIApplicationShortcutItemType</key>
