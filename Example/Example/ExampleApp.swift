@@ -11,7 +11,10 @@ import FeaturePackage
 
 @main
 struct ExampleApp: App {
-    @StateObject var viewModel: TestStateNavRestoreAppViewModel
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var viewModel: TestStateNavRestoreAppViewModel
+
+    private let shortcutService = ShortcutService.shared
 
     init() {
         self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
@@ -25,6 +28,9 @@ struct ExampleApp: App {
                     .id(viewModel.navigator.id)
             }
             .animation(.easeInOut, value: viewModel.navigator.id)
+            .onReceive(shortcutService.shortcutPublisher) {
+                viewModel.handleShortcut($0)
+            }
         }
     }
 }
@@ -44,6 +50,17 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     func replaceNavigator(_ navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
+    }
+
+    func handleShortcut(_ shortcut: ShortcutItemType) {
+        switch shortcut {
+        case .closeToRoot:
+            fatalError("Handle shortcut")
+            break
+        case .presentOnTop:
+            fatalError("Handle shortcut")
+            break
+        }
     }
 
     private func bindReplacement() {

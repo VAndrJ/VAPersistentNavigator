@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A35878A42D3A8BFF007DC079 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35878A32D3A8BFB007DC079 /* AppDelegate.swift */; };
+		A35878A62D3A930A007DC079 /* ShortcutService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A35878A52D3A9307007DC079 /* ShortcutService.swift */; };
 		A37E99FD2C6A1F18003A1C39 /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = A37E99FC2C6A1F15003A1C39 /* Support.swift */; };
 		A392D6862C595E1D00AD7933 /* VAPersistentNavigator in Frameworks */ = {isa = PBXBuildFile; productRef = A392D6852C595E1D00AD7933 /* VAPersistentNavigator */; };
 		A392D6B42C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */; };
@@ -18,6 +20,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A35878A22D3A8AB0007DC079 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		A35878A32D3A8BFB007DC079 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A35878A52D3A9307007DC079 /* ShortcutService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutService.swift; sourceTree = "<group>"; };
 		A37E99FC2C6A1F15003A1C39 /* Support.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
 		A392D6732C595DFB00AD7933 /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A392D6952C595FDE00AD7933 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
@@ -61,11 +66,14 @@
 		A392D6B82C5A0E0300AD7933 /* Example */ = {
 			isa = PBXGroup;
 			children = (
+				A35878A22D3A8AB0007DC079 /* Info.plist */,
 				A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */,
 				A392D6B22C5A0DCA00AD7933 /* Destinations.swift */,
 				A392D6B12C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift */,
 				A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */,
 				A37E99FC2C6A1F15003A1C39 /* Support.swift */,
+				A35878A32D3A8BFB007DC079 /* AppDelegate.swift */,
+				A35878A52D3A9307007DC079 /* ShortcutService.swift */,
 				A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */,
 			);
 			path = Example;
@@ -148,6 +156,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A35878A62D3A930A007DC079 /* ShortcutService.swift in Sources */,
+				A35878A42D3A8BFF007DC079 /* AppDelegate.swift in Sources */,
 				A392D6B42C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift in Sources */,
 				A37E99FD2C6A1F18003A1C39 /* Support.swift in Sources */,
 				A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */,
@@ -287,6 +297,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -317,6 +328,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Example/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
