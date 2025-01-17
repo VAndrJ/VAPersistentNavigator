@@ -20,6 +20,7 @@ enum Destination: PersistentDestination {
     case tab1
     case tab2
     case main
+    case shortcutExample
     case detail(number: Int)
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)

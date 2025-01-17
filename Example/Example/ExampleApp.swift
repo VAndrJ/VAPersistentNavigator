@@ -55,11 +55,9 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     func handleShortcut(_ shortcut: ShortcutItemType) {
         switch shortcut {
         case .closeToRoot:
-            fatalError("Handle shortcut")
-            break
+            navigator.closeToInitial()
         case .presentOnTop:
-            fatalError("Handle shortcut")
-            break
+            navigator.present(.init(view: .shortcutExample), strategy: .onTop)
         }
     }
 
@@ -143,6 +141,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         Tab2ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .main:
                         MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
+                    case .shortcutExample:
+                        Text("Shortcut example \(Int.random(in: 0...1000))")
                     case let .detail(number):
                         DetailScreenView(context: .init(
                             related: .init(
