@@ -63,6 +63,14 @@ public final class CodablePersistentNavigator<
     public var isRootView: Bool { destinationsSubj.value.isEmpty }
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
     var orTabChild: CodablePersistentNavigator { tabChild ?? self }
+    public var topNavigator: CodablePersistentNavigator {
+        var navigator: CodablePersistentNavigator! = self
+        while navigator?.topChild != nil {
+            navigator = navigator?.topChild
+        }
+
+        return navigator
+    }
     public var tabChild: CodablePersistentNavigator? {
         tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
     }
@@ -169,25 +177,33 @@ public final class CodablePersistentNavigator<
         rebind()
     }
 
-    public func push(_ destination: any PersistentDestination) {
+    @discardableResult
+    public func push(_ destination: any PersistentDestination) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Push only the specified `Destination` type.")
-            return
+            return false
         }
 
-        push(destination: destination)
+        return push(destination: destination)
     }
 
     /// Pushes a new destination onto the navigation stack.
-    public func push(destination: Destination) {
+    @discardableResult
+    public func push(destination: Destination) -> Bool {
 #if DEBUG
         navigatorLog?("push", "destination: \(destination)")
 #endif
-        assert(kind == .flow, "Pushing a destination supported only for `.flow` kind.")
+        let topNavigator = self.topNavigator.orTabChild
+        switch topNavigator.kind {
+        case .flow:
+            var destinationsValue = topNavigator.destinationsSubj.value
+            destinationsValue.append(destination)
+            topNavigator.destinationsSubj.send(destinationsValue)
 
-        var destinationsValue = destinationsSubj.value
-        destinationsValue.append(destination)
-        destinationsSubj.send(destinationsValue)
+            return true
+        case .singleView, .tabView:
+            return false
+        }
     }
 
     /// Pops the top destination from the navigation stack.
@@ -270,11 +286,7 @@ public final class CodablePersistentNavigator<
 #endif
         switch strategy {
         case .onTop:
-            var navigator: CodablePersistentNavigator? = self
-            while navigator?.topChild != nil {
-                navigator = navigator?.topChild
-            }
-            navigator?.childSubj.send(child)
+            topNavigator.childSubj.send(child)
         case .replaceCurrent:
             let subj = orTabChild.childSubj
             subj.send(nil)

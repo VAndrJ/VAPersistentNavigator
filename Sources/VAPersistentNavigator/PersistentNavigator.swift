@@ -12,7 +12,8 @@ public protocol PersistentNavigator {
     var id: UUID { get }
     var isRootView: Bool { get }
 
-    func push(_ destination: any PersistentDestination)
+    @discardableResult
+    func push(_ destination: any PersistentDestination) -> Bool
     func pop()
     func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool
     func popToRoot()
