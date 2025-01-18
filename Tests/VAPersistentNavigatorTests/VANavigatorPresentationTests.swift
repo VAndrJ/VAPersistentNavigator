@@ -31,4 +31,18 @@ struct VANavigatorPresentationTests {
     func sheetTagNil() {
         #expect(NavigatorPresentation<String>.sheet(tag: nil).sheetTag == nil)
     }
+
+    @Test("NavigatorPresentation mapping")
+    func presentationMapping() {
+        let persistentPresentationCover: PersistentNavigatorPresentation = .fullScreenCover
+        let navigatorPresentationCover = NavigatorPresentation<SheetTag>(from: persistentPresentationCover)
+        #expect(.fullScreenCover == navigatorPresentationCover)
+        let persistentPresentationSheet: PersistentNavigatorPresentation = .sheet
+        let navigatorPresentationSheet = NavigatorPresentation<SheetTag>(from: persistentPresentationSheet)
+        #expect(.sheet == navigatorPresentationSheet)
+        let sheetTag: SheetTag = .first
+        let persistentPresentationSheetTag: PersistentNavigatorPresentation = .sheet(tag: sheetTag)
+        let navigatorPresentationSheetTag = NavigatorPresentation<SheetTag>(from: persistentPresentationSheetTag)
+        #expect(.sheet(tag: sheetTag) == navigatorPresentationSheetTag)
+    }
 }

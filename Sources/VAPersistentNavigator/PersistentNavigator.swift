@@ -12,7 +12,8 @@ public protocol PersistentNavigator {
     var id: UUID { get }
     var isRootView: Bool { get }
 
-    func push(_ destination: any PersistentDestination)
+    @discardableResult
+    func push(_ destination: any PersistentDestination) -> Bool
     func pop()
     func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool
     func popToRoot()
@@ -23,10 +24,14 @@ public protocol PersistentNavigator {
     func dismissTop()
     func closeToInitial()
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
-    func present(_ data: NavigatorData)
+    func present(_ data: NavigatorData, strategy: PresentationStrategy)
 }
 
 public extension PersistentNavigator {
+
+    func present(_ data: NavigatorData) {
+        present(data, strategy: .onTop)
+    }
 
     func pop(to destination: any PersistentDestination) -> Bool {
         pop(to: destination, isFirst: true)
@@ -35,6 +40,16 @@ public extension PersistentNavigator {
     func replace(root: any PersistentDestination) {
         replace(root: root, isPopToRoot: true)
     }
+}
+
+/// Defines strategies for presenting a new navigator in the app.
+public enum PresentationStrategy {
+    /// Presents a new navigator from the top-most available navigator.
+    case onTop
+    /// Replaces the currently presented navigator with a new one.
+    case replaceCurrent
+    /// Presents a new navigator from the current navigator.
+    case fromCurrent
 }
 
 public enum NavigatorData {

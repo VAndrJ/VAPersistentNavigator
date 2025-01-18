@@ -161,7 +161,6 @@ struct CodablePersistentNavigatorPresentationTests {
 
     @Test("Presented destinations pop")
     func navigator_popToDestination_notExisting_destinationsArray() {
-        let expectedDestination: MockDestination = .second
         let expectedDestinations: [MockDestination] = [.third, .fourth]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
         let navigator: any PersistentNavigator = sut
@@ -192,5 +191,96 @@ struct CodablePersistentNavigatorPresentationTests {
 
         #expect(.tabView == sut.childSubj.value?.kind)
         #expect(MockTabTag.second == sut.childSubj.value?.selectedTabSubj.value)
+    }
+}
+
+@Suite("Codable Navigator top / child navigators")
+@MainActor
+struct CodablePersistentNavigatorChildrenTests {
+
+    @Test("TabNavigator topmost tab child navigator without selection")
+    func navigator_tab_topFirst_noSelected() {
+        let firstTab = TestNavigator(root: .first)
+        let secondTab = TestNavigator(view: .third)
+        let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: nil)
+
+        #expect(firstTab == sut.topChild)
+        #expect(firstTab == sut.tabChild)
+        #expect(firstTab == sut.topNavigator)
+    }
+
+    @Test("TabNavigator topmost tab child navigator with selection")
+    func navigator_tab_topFirst_preSelected() {
+        let selectedTab: MockTabTag = .second
+        let firstTab = TestNavigator(root: .first, tabItem: .first)
+        let secondTab = TestNavigator(view: .third, tabItem: selectedTab)
+        let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: selectedTab)
+
+        #expect(secondTab == sut.topChild)
+        #expect(secondTab == sut.tabChild)
+        #expect(secondTab == sut.topNavigator)
+    }
+
+    @Test("Topmost navigator flow push success")
+    func navigator_topmost_topMostFlow_pushSuccess() {
+        let selectedTab: MockTabTag = .second
+        let firstTab = TestNavigator(root: .first, tabItem: .first)
+        let secondTab = TestNavigator(view: .third, tabItem: selectedTab)
+        let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: selectedTab)
+        let presentedNavigator = TestNavigator(root: .second)
+        sut.present(presentedNavigator)
+        #expect(presentedNavigator == sut.topNavigator)
+        let expectedDestination: MockDestination = .fourth
+        #expect(true == sut.push(expectedDestination))
+        #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.last)
+    }
+
+    @Test("Topmost navigator flow push failure")
+    func navigator_topmost_topMostFlow_pushFailure_singleView() {
+        let selectedTab: MockTabTag = .second
+        let firstTab = TestNavigator(root: .first, tabItem: .first)
+        let secondTab = TestNavigator(view: .third, tabItem: selectedTab)
+        let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: selectedTab)
+        let presentedNavigator = TestNavigator(view: .second)
+        sut.present(presentedNavigator)
+        #expect(presentedNavigator == sut.topNavigator)
+        let expectedDestination: MockDestination = .fourth
+        #expect(false == sut.push(expectedDestination))
+    }
+
+    @Test("Topmost navigator flow push failure")
+    func navigator_topmost_topMostFlow_pushFailure_tabView() {
+        let selectedTab: MockTabTag = .second
+        let firstTab = TestNavigator(root: .first, tabItem: .first)
+        let secondTab = TestNavigator(view: .third, tabItem: selectedTab)
+        let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: selectedTab)
+        let presentedNavigator = TestNavigator(tabs: [])
+        sut.present(presentedNavigator)
+        #expect(presentedNavigator == sut.topNavigator)
+        let expectedDestination: MockDestination = .fourth
+        #expect(false == sut.push(expectedDestination))
+    }
+
+    @Test("Replace current presented navigator")
+    func navigator_replaceCurrentPresented() async {
+        let sut = TestNavigator(view: .first)
+        let presentedDestination: MockDestination = .second
+        sut.present(.init(view: presentedDestination))
+        #expect(presentedDestination == sut.childSubj.value?.root)
+        let expectedDestination: MockDestination = .third
+        sut.present(.init(view: expectedDestination), strategy: .replaceCurrent)
+        try? await Task.sleep(for: .milliseconds(300))
+        #expect(expectedDestination == sut.childSubj.value?.root)
+    }
+
+    @Test("Pop root view")
+    func navigator_popRootView() {
+        let expectedDestination: MockDestination = .first
+        let sut = TestNavigator(root: expectedDestination)
+        #expect(sut.destinationsSubj.value.isEmpty)
+        sut.pop()
+        sut.popToRoot()
+        #expect(sut.destinationsSubj.value.isEmpty)
+        #expect(expectedDestination == sut.root)
     }
 }

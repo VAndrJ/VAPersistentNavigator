@@ -11,7 +11,10 @@ import FeaturePackage
 
 @main
 struct ExampleApp: App {
-    @StateObject var viewModel: TestStateNavRestoreAppViewModel
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @StateObject private var viewModel: TestStateNavRestoreAppViewModel
+
+    private let shortcutService = ShortcutService.shared
 
     init() {
         self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
@@ -25,6 +28,9 @@ struct ExampleApp: App {
                     .id(viewModel.navigator.id)
             }
             .animation(.easeInOut, value: viewModel.navigator.id)
+            .onReceive(shortcutService.shortcutPublisher) {
+                viewModel.handleShortcut($0)
+            }
         }
     }
 }
@@ -44,6 +50,20 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     func replaceNavigator(_ navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
         self.navigator = navigator
         bindReplacement()
+    }
+
+    func handleShortcut(_ shortcut: ShortcutItemType) {
+        switch shortcut {
+        case .closeToRoot:
+            navigator.closeToInitial()
+        case .presentOnTop:
+            navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+        case .pushOnTop:
+            /// If the `.push` is unsuccessful then fallback to the `.present`
+            if !navigator.push(destination: .shortcutExample) {
+                navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+            }
+        }
     }
 
     private func bindReplacement() {
@@ -126,6 +146,8 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         Tab2ScreenView(context: .init(next: { navigator.push(destination: .main) }))
                     case .main:
                         MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
+                    case .shortcutExample:
+                        Text("Shortcut example \(Int.random(in: 0...1000))")
                     case let .detail(number):
                         DetailScreenView(context: .init(
                             related: .init(
@@ -301,6 +323,7 @@ struct Tab2ScreenView: View {
     }
 
     let context: Context
+    @StateObject private var viewModel = Tab2ScreenViewViewModel()
 
     var body: some View {
         VStack(spacing: 16) {
@@ -308,6 +331,24 @@ struct Tab2ScreenView: View {
             Button("Next", action: context.next)
         }
         .navigationTitle("Tab 2")
+        .onFirstAppear {
+            viewModel.onFirstAppear()
+        }
+    }
+}
+
+final class Tab2ScreenViewViewModel: ObservableObject {
+
+    init() {
+        print(#function, Self.self)
+    }
+
+    func onFirstAppear() {
+        print(#function, Self.self)
+    }
+
+    deinit {
+        print(#function, Self.self)
     }
 }
 

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCompose</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Present on top</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.example.presentOnTop</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeHome</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Close to root</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.example.closeToRoot</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>or present new</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeAdd</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.example.push</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Push on top if available</string>
+		</dict>
+	</array>
+</dict>
+</plist>

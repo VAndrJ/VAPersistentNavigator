@@ -233,7 +233,10 @@ class EmptyNavigator: PersistentNavigator {
         return false
     }
 
-    func push(_ destination: any PersistentDestination) {}
+    @discardableResult
+    func push(_ destination: any PersistentDestination) -> Bool {
+        return false
+    }
 
     func pop() {}
 
@@ -241,7 +244,7 @@ class EmptyNavigator: PersistentNavigator {
         return false
     }
 
-    func present(_ data: NavigatorData) {}
+    func present(_ data: NavigatorData, strategy: PresentationStrategy) {}
 }
 
 extension EnvironmentValues {

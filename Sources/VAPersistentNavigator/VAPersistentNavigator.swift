@@ -62,6 +62,24 @@ public final class CodablePersistentNavigator<
 
     public var isRootView: Bool { destinationsSubj.value.isEmpty }
     let destinationsSubj: CurrentValueSubject<[Destination], Never>
+    var orTabChild: CodablePersistentNavigator { tabChild ?? self }
+    public var topNavigator: CodablePersistentNavigator {
+        var navigator: CodablePersistentNavigator! = self
+        while navigator?.topChild != nil {
+            navigator = navigator?.topChild
+        }
+
+        return navigator
+    }
+    public var tabChild: CodablePersistentNavigator? {
+        tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
+    }
+    public var topChild: CodablePersistentNavigator? {
+        switch kind {
+        case .tabView: tabChild
+        case .flow, .singleView: childSubj.value
+        }
+    }
     let childSubj: CurrentValueSubject<CodablePersistentNavigator?, Never>
     let kind: NavigatorKind
     let presentation: NavigatorPresentation<SheetTag>
@@ -159,25 +177,33 @@ public final class CodablePersistentNavigator<
         rebind()
     }
 
-    public func push(_ destination: any PersistentDestination) {
+    @discardableResult
+    public func push(_ destination: any PersistentDestination) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Push only the specified `Destination` type.")
-            return
+            return false
         }
 
-        push(destination: destination)
+        return push(destination: destination)
     }
 
     /// Pushes a new destination onto the navigation stack.
-    public func push(destination: Destination) {
+    @discardableResult
+    public func push(destination: Destination) -> Bool {
 #if DEBUG
         navigatorLog?("push", "destination: \(destination)")
 #endif
-        assert(kind == .flow, "Pushing a destination supported only for `.flow` kind.")
+        let topNavigator = self.topNavigator.orTabChild
+        switch topNavigator.kind {
+        case .flow:
+            var destinationsValue = topNavigator.destinationsSubj.value
+            destinationsValue.append(destination)
+            topNavigator.destinationsSubj.send(destinationsValue)
 
-        var destinationsValue = destinationsSubj.value
-        destinationsValue.append(destination)
-        destinationsSubj.send(destinationsValue)
+            return true
+        case .singleView, .tabView:
+            return false
+        }
     }
 
     /// Pops the top destination from the navigation stack.
@@ -248,18 +274,34 @@ public final class CodablePersistentNavigator<
 
     /// Presents a child navigator.
     ///
-    /// - Parameter child: The child navigator to present.
-    public func present(_ child: CodablePersistentNavigator?) {
-        assert(kind != .tabView, "Cannot present a child navigator from a TabView.")
+    /// - Parameters:
+    ///   - child: The child navigator to present.
+    ///   - strategy: Defines strategy for presenting a new navigator.
+    public func present(
+        _ child: CodablePersistentNavigator?,
+        strategy: PresentationStrategy = .onTop
+    ) {
 #if DEBUG
-        navigatorLog?("present", "child: \(child?.logDescription ?? "nil")")
+        navigatorLog?("present", "child: \(child?.logDescription ?? "nil")", "strategy: \(strategy)")
 #endif
-
-        childSubj.send(child)
+        switch strategy {
+        case .onTop:
+            topNavigator.childSubj.send(child)
+        case .replaceCurrent:
+            let subj = orTabChild.childSubj
+            subj.send(nil)
+            //: To avoid presented iOS 16 issue
+            Task { @MainActor [subj] in
+                try? await Task.sleep(for: .milliseconds(100))
+                subj.send(child)
+            }
+        case .fromCurrent:
+            orTabChild.childSubj.send(child)
+        }
     }
 
-    public func present(_ data: NavigatorData) {
-        present(getNavigator(data: data))
+    public func present(_ data: NavigatorData, strategy: PresentationStrategy) {
+        present(getNavigator(data: data), strategy: strategy)
     }
 
     private func getNavigator(data: NavigatorData) -> CodablePersistentNavigator? {
@@ -331,7 +373,7 @@ public final class CodablePersistentNavigator<
 #if DEBUG
                 navigatorLog?("dismiss to", "destination: \(destination)")
 #endif
-                topNavigator?.present(nil)
+                topNavigator?.present(nil, strategy: .fromCurrent)
 
                 return true
             }
@@ -357,7 +399,7 @@ public final class CodablePersistentNavigator<
 #if DEBUG
                 navigatorLog?("dismiss to", "id: \(id)")
 #endif
-                topNavigator?.present(nil)
+                topNavigator?.present(nil, strategy: .fromCurrent)
 
                 return true
             }
@@ -403,7 +445,7 @@ public final class CodablePersistentNavigator<
 #if DEBUG
         navigatorLog?("dismiss top")
 #endif
-        parent?.present(nil)
+        parent?.present(nil, strategy: .fromCurrent)
     }
 
     /// Closes the navigator to the initial first navigator.
@@ -437,7 +479,7 @@ public final class CodablePersistentNavigator<
 
     private func dismissIfNeeded(in navigator: CodablePersistentNavigator) {
         if navigator.childSubj.value != nil {
-            navigator.present(nil)
+            navigator.present(nil, strategy: .fromCurrent)
         }
     }
 
