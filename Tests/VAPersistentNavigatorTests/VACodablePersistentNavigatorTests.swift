@@ -260,4 +260,27 @@ struct CodablePersistentNavigatorChildrenTests {
         let expectedDestination: MockDestination = .fourth
         #expect(false == sut.push(expectedDestination))
     }
+
+    @Test("Replace current presented navigator")
+    func navigator_replaceCurrentPresented() async {
+        let sut = TestNavigator(view: .first)
+        let presentedDestination: MockDestination = .second
+        sut.present(.init(view: presentedDestination))
+        #expect(presentedDestination == sut.childSubj.value?.root)
+        let expectedDestination: MockDestination = .third
+        sut.present(.init(view: expectedDestination), strategy: .replaceCurrent)
+        try? await Task.sleep(for: .milliseconds(300))
+        #expect(expectedDestination == sut.childSubj.value?.root)
+    }
+
+    @Test("Pop root view")
+    func navigator_popRootView() {
+        let expectedDestination: MockDestination = .first
+        let sut = TestNavigator(root: expectedDestination)
+        #expect(sut.destinationsSubj.value.isEmpty)
+        sut.pop()
+        sut.popToRoot()
+        #expect(sut.destinationsSubj.value.isEmpty)
+        #expect(expectedDestination == sut.root)
+    }
 }
