@@ -25,6 +25,8 @@ public protocol PersistentNavigator {
     func closeToInitial()
     @discardableResult
     func closeTo(destination: any PersistentDestination) -> Bool
+    @discardableResult
+    func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
     func present(_ data: NavigatorData, strategy: PresentationStrategy)
 }

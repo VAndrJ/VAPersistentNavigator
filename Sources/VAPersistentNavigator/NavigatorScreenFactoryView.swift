@@ -250,6 +250,11 @@ class EmptyNavigator: PersistentNavigator {
     func closeTo(destination: any PersistentDestination) -> Bool {
         return false
     }
+
+    @discardableResult
+    func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool {
+        return false
+    }
 }
 
 extension EnvironmentValues {
