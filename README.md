@@ -22,11 +22,6 @@ To store the current navigation state, simply use any storage that implements th
 Wrap everything in a `NavigatorStoringView`, which will save the current navigation state whenever any changes occur.
 
 
-2.x: Swift 6.0
-
-1.x: Swift 5.10
-
-
 ## Example
 
 
@@ -66,6 +61,9 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 ```
 
 
+More detailed information can be found in the example project.
+
+
 ## Implemented
 
 
@@ -86,6 +84,10 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 - `dismiss(to:)`. Dismisses presented `sheet`s or `fullScreenCover`s to specified `Destination` or `id`.
 
 - `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
+
+- `close(to:)`. Attempts to navigate to a specified target `Destination`.
+
+- `close(where:)`. Attempts to navigate to a specified target `Destination` using predicate.
 
 - `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
 
@@ -128,8 +130,6 @@ More detailed information can be found in the example project.
 
 
 - Documentation.
-
-- Tests.
 
 - Split.
 

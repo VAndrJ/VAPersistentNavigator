@@ -448,6 +448,84 @@ public final class CodablePersistentNavigator<
         parent?.present(nil, strategy: .fromCurrent)
     }
 
+    /// Attempts to navigate to a specified target destination by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
+    @discardableResult
+    public func closeTo(destination: any PersistentDestination) -> Bool {
+        guard let destination = destination as? Destination else {
+            assertionFailure("Close only the specified `Destination` type.")
+            return false
+        }
+
+        return close(to: destination)
+    }
+
+    /// Attempts to navigate to a specified target destination by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
+    @discardableResult
+    public func close(to target: Destination) -> Bool {
+        var navigator: CodablePersistentNavigator? = topNavigator
+        while navigator != nil {
+            if navigator?.closeIn(where: { $0 == target }) == true {
+                return true
+            }
+            navigator = navigator?.parent
+        }
+
+        return false
+    }
+
+    /// Attempts to navigate to a destination that satisfies the given predicate by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
+    public func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool {
+        close(where: predicate)
+    }
+
+    /// Attempts to navigate to a destination that satisfies the given predicate by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
+    public func close(where predicate: (Destination) -> Bool) -> Bool {
+        var navigator: CodablePersistentNavigator? = topNavigator
+        while navigator != nil {
+            if navigator?.closeIn(where: predicate) == true {
+                return true
+            }
+            navigator = navigator?.parent
+        }
+
+        return false
+    }
+
+    private func closeIn(where predicate: (Destination) -> Bool) -> Bool {
+        for destination in destinationsSubj.value.reversed() {
+            if predicate(destination) {
+                present(nil, strategy: .fromCurrent)
+                pop(to: destination)
+
+                return true
+            }
+        }
+        if let destination = root, predicate(destination) {
+            present(nil, strategy: .fromCurrent)
+            popToRoot()
+
+            return true
+        }
+
+        return false
+    }
+
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
 #if DEBUG

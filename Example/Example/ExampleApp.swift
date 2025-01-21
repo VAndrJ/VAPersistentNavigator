@@ -11,10 +11,11 @@ import FeaturePackage
 
 @main
 struct ExampleApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
     @StateObject private var viewModel: TestStateNavRestoreAppViewModel
 
     private let shortcutService = ShortcutService.shared
+    private let notificationService = NotificationService.shared
 
     init() {
         self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
@@ -28,8 +29,11 @@ struct ExampleApp: App {
                     .id(viewModel.navigator.id)
             }
             .animation(.easeInOut, value: viewModel.navigator.id)
-            .onReceive(shortcutService.shortcutPublisher) {
-                viewModel.handleShortcut($0)
+            .onReceive(shortcutService.shortcutPubl) {
+                viewModel.handle(shortcut: $0)
+            }
+            .onReceive(notificationService.notificationPubl) {
+                viewModel.handle(notification: $0)
             }
         }
     }
@@ -52,16 +56,23 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         bindReplacement()
     }
 
-    func handleShortcut(_ shortcut: ShortcutItemType) {
+    func handle(notification: Notification) {
+        navigator.present(.init(view: .notificationExample(
+            title: notification.title,
+            body: notification.body
+        )))
+    }
+
+    func handle(shortcut: ShortcutItemType) {
         switch shortcut {
         case .closeToRoot:
             navigator.closeToInitial()
         case .presentOnTop:
-            navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+            navigator.present(.init(view: .shortcutExample))
         case .pushOnTop:
             /// If the `.push` is unsuccessful then fallback to the `.present`
             if !navigator.push(destination: .shortcutExample) {
-                navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+                navigator.present(.init(view: .shortcutExample))
             }
         }
     }
@@ -138,6 +149,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     case .root3:
                         Root3ScreenView(context: .init(
                             closeToInitial: { navigator.closeToInitial() },
+                            closeToRoot1: { navigator.close(to: .root1) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .tab1:
@@ -148,6 +160,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
                     case .shortcutExample:
                         Text("Shortcut example \(Int.random(in: 0...1000))")
+                    case let .notificationExample(title, body):
+                        VStack {
+                            Text(title)
+                                .font(.title)
+                            Text(body)
+                        }
                     case let .detail(number):
                         DetailScreenView(context: .init(
                             related: .init(
@@ -389,6 +407,7 @@ struct Root2ScreenView: View {
 struct Root3ScreenView: View {
     struct Context {
         let closeToInitial: () -> Void
+        let closeToRoot1: () -> Void
         let dismiss: () -> Void
     }
 
@@ -398,6 +417,7 @@ struct Root3ScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Root3")
             Button("Close to initial", action: context.closeToInitial)
+            Button("Close to root 1", action: context.closeToRoot1)
             Button("Dismiss", action: context.dismiss)
         }
     }
