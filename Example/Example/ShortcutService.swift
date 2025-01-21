@@ -18,17 +18,16 @@ enum ShortcutItemType: String {
 final class ShortcutService {
     static let shared = ShortcutService()
 
-    let shortcutPublisher = PassthroughSubject<ShortcutItemType, Never>()
+    let shortcutPubl = PassthroughSubject<ShortcutItemType, Never>()
 
-    func handleShortcut(
-        item: UIApplicationShortcutItem,
-        completionHandler: ((Bool) -> Void)? = nil
-    ) {
+    @discardableResult
+    func handleShortcut(item: UIApplicationShortcutItem) -> Bool {
         if let shortcutItemType = ShortcutItemType(rawValue: item.type) {
-            shortcutPublisher.send(shortcutItemType)
-            completionHandler?(true)
+            shortcutPubl.send(shortcutItemType)
+            
+            return true
         } else {
-            completionHandler?(false)
+           return false
         }
     }
 }

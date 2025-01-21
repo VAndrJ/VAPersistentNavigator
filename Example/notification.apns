@@ -1,0 +1,9 @@
+{
+    "Simulator Target Bundle": "com.vandrj.Example",
+    "aps": {
+        "alert": {
+            "title": "Notification Title",
+            "body": "Notification Body"
+        }
+    }
+}

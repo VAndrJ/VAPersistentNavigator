@@ -17,6 +17,7 @@
 		A392D6B72C5A0DCA00AD7933 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */; };
 		A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */; };
 		A3E9DDBE2C693F0500D712A3 /* FeaturePackage in Frameworks */ = {isa = PBXBuildFile; productRef = A3E9DDBD2C693F0500D712A3 /* FeaturePackage */; };
+		A3EF8CB72D3F9443008B59A7 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3EF8CB62D3F9432008B59A7 /* NotificationService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,8 @@
 		A392D6B22C5A0DCA00AD7933 /* Destinations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Destinations.swift; sourceTree = "<group>"; };
 		A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
 		A3C38FA22C64CC1400B00A52 /* SeparateFeatureFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeparateFeatureFlow.swift; sourceTree = "<group>"; };
+		A3EF8CB62D3F9432008B59A7 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		A3FF226E2D3EFD9B0037ABE2 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +69,7 @@
 		A392D6B82C5A0E0300AD7933 /* Example */ = {
 			isa = PBXGroup;
 			children = (
+				A3FF226E2D3EFD9B0037ABE2 /* Example.entitlements */,
 				A35878A22D3A8AB0007DC079 /* Info.plist */,
 				A392D6B32C5A0DCA00AD7933 /* ExampleApp.swift */,
 				A392D6B22C5A0DCA00AD7933 /* Destinations.swift */,
@@ -74,6 +78,7 @@
 				A37E99FC2C6A1F15003A1C39 /* Support.swift */,
 				A35878A32D3A8BFB007DC079 /* AppDelegate.swift */,
 				A35878A52D3A9307007DC079 /* ShortcutService.swift */,
+				A3EF8CB62D3F9432008B59A7 /* NotificationService.swift */,
 				A392D6B02C5A0DCA00AD7933 /* Assets.xcassets */,
 			);
 			path = Example;
@@ -160,6 +165,7 @@
 				A35878A42D3A8BFF007DC079 /* AppDelegate.swift in Sources */,
 				A392D6B42C5A0DCA00AD7933 /* DefaultsNavigatorStorage.swift in Sources */,
 				A37E99FD2C6A1F18003A1C39 /* Support.swift in Sources */,
+				A3EF8CB72D3F9443008B59A7 /* NotificationService.swift in Sources */,
 				A3C38FA32C64CC2100B00A52 /* SeparateFeatureFlow.swift in Sources */,
 				A392D6B52C5A0DCA00AD7933 /* Destinations.swift in Sources */,
 				A392D6B62C5A0DCA00AD7933 /* ExampleApp.swift in Sources */,
@@ -293,6 +299,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
@@ -324,6 +331,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;

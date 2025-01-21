@@ -15,6 +15,7 @@ struct ExampleApp: App {
     @StateObject private var viewModel: TestStateNavRestoreAppViewModel
 
     private let shortcutService = ShortcutService.shared
+    private let notificationService = NotificationService.shared
 
     init() {
         self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
@@ -28,8 +29,11 @@ struct ExampleApp: App {
                     .id(viewModel.navigator.id)
             }
             .animation(.easeInOut, value: viewModel.navigator.id)
-            .onReceive(shortcutService.shortcutPublisher) {
-                viewModel.handleShortcut($0)
+            .onReceive(shortcutService.shortcutPubl) {
+                viewModel.handle(shortcut: $0)
+            }
+            .onReceive(notificationService.notificationPubl) {
+                viewModel.handle(notification: $0)
             }
         }
     }
@@ -52,16 +56,23 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         bindReplacement()
     }
 
-    func handleShortcut(_ shortcut: ShortcutItemType) {
+    func handle(notification: Notification) {
+        navigator.present(.init(view: .notificationExample(
+            title: notification.title,
+            body: notification.body
+        )))
+    }
+
+    func handle(shortcut: ShortcutItemType) {
         switch shortcut {
         case .closeToRoot:
             navigator.closeToInitial()
         case .presentOnTop:
-            navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+            navigator.present(.init(view: .shortcutExample))
         case .pushOnTop:
             /// If the `.push` is unsuccessful then fallback to the `.present`
             if !navigator.push(destination: .shortcutExample) {
-                navigator.present(.init(view: .shortcutExample), strategy: .onTop)
+                navigator.present(.init(view: .shortcutExample))
             }
         }
     }
@@ -148,6 +159,12 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         MainScreenView(context: .init(next: { navigator.push(destination: .detail(number: $0)) }))
                     case .shortcutExample:
                         Text("Shortcut example \(Int.random(in: 0...1000))")
+                    case let .notificationExample(title, body):
+                        VStack {
+                            Text(title)
+                                .font(.title)
+                            Text(body)
+                        }
                     case let .detail(number):
                         DetailScreenView(context: .init(
                             related: .init(

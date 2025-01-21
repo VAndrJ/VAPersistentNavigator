@@ -21,6 +21,7 @@ enum Destination: PersistentDestination {
     case tab2
     case main
     case shortcutExample
+    case notificationExample(title: String, body: String)
     case detail(number: Int)
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)
