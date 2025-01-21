@@ -87,6 +87,10 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
 
 - `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
 
+- `close(to:)`. Attempts to navigate to a specified target `Destination`.
+
+- `close(where:)`. Attempts to navigate to a specified target `Destination` using predicate.
+
 - `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
 
 - `currentTab`. Variable to get and change the current tab in `TabView`.
