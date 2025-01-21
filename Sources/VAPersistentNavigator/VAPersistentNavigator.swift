@@ -448,6 +448,41 @@ public final class CodablePersistentNavigator<
         parent?.present(nil, strategy: .fromCurrent)
     }
 
+    @discardableResult
+    public func closeTo(destination: any PersistentDestination) -> Bool {
+        guard let destination = destination as? Destination else {
+            assertionFailure("Close only the specified `Destination` type.")
+            return false
+        }
+
+        return close(to: destination)
+    }
+
+    @discardableResult
+    public func close(to target: Destination) -> Bool {
+        var navigator: CodablePersistentNavigator? = self
+        while navigator != nil {
+            navigator = navigator?.parent
+            if navigator?.root == target {
+                navigator?.present(nil, strategy: .fromCurrent)
+                navigator?.popToRoot()
+
+                return true
+            } else {
+                for destination in destinationsSubj.value {
+                    if destination == target {
+                        navigator?.present(nil, strategy: .fromCurrent)
+                        navigator?.pop(to: destination)
+
+                        return true
+                    }
+                }
+            }
+        }
+
+        return false
+    }
+
     /// Closes the navigator to the initial first navigator.
     public func closeToInitial() {
 #if DEBUG

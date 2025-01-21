@@ -149,6 +149,7 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                     case .root3:
                         Root3ScreenView(context: .init(
                             closeToInitial: { navigator.closeToInitial() },
+                            closeToRoot1: { navigator.close(to: .root1) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .tab1:
@@ -406,6 +407,7 @@ struct Root2ScreenView: View {
 struct Root3ScreenView: View {
     struct Context {
         let closeToInitial: () -> Void
+        let closeToRoot1: () -> Void
         let dismiss: () -> Void
     }
 
@@ -415,6 +417,7 @@ struct Root3ScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Root3")
             Button("Close to initial", action: context.closeToInitial)
+            Button("Close to root 1", action: context.closeToRoot1)
             Button("Dismiss", action: context.dismiss)
         }
     }

@@ -245,6 +245,11 @@ class EmptyNavigator: PersistentNavigator {
     }
 
     func present(_ data: NavigatorData, strategy: PresentationStrategy) {}
+
+    @discardableResult
+    func closeTo(destination: any PersistentDestination) -> Bool {
+        return false
+    }
 }
 
 extension EnvironmentValues {

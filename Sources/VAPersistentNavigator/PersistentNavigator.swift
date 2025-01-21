@@ -23,6 +23,8 @@ public protocol PersistentNavigator {
     func dismiss(to id: UUID) -> Bool
     func dismissTop()
     func closeToInitial()
+    @discardableResult
+    func closeTo(destination: any PersistentDestination) -> Bool
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
     func present(_ data: NavigatorData, strategy: PresentationStrategy)
 }
