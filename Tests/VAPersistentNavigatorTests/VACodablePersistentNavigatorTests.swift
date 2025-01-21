@@ -328,6 +328,21 @@ struct CodablePersistentNavigatorClose {
         #expect(expectedDestination == sut.topNavigator.root)
     }
 
+    @Test("Close to destination with presented tabs and stack")
+    func navigator_closeToDestination_presentedTabs() {
+        let expectedDestination: MockDestination = .second
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(tabs: [
+            .init(view: expectedDestination),
+            .init(view: .third),
+        ]))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.root)
+    }
+
     @Test("Close to destination with presented views and stack failure")
     func navigator_closeToDestination_presentedViewsStackFailure() {
         let expectedDestination: MockDestination = .empty
