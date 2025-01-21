@@ -284,3 +284,146 @@ struct CodablePersistentNavigatorChildrenTests {
         #expect(expectedDestination == sut.root)
     }
 }
+
+@Suite("Codable Navigator close to destination")
+@MainActor
+struct CodablePersistentNavigatorClose {
+
+    @Test("Close to destination with presented views")
+    func navigator_closeToDestination_presentedViews() {
+        let expectedDestination: MockDestination = .second
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(view: expectedDestination))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination with presented views failure")
+    func navigator_closeToDestination_presentedViewsFailure() {
+        let expectedDestination: MockDestination = .empty
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(view: .second))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(false == closeResult)
+        #expect(.fourth == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination with presented views and stack")
+    func navigator_closeToDestination_presentedViewsStack() {
+        let expectedDestination: MockDestination = .second
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: expectedDestination, destinations: [.third, .fourth]))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination with presented views and stack failure")
+    func navigator_closeToDestination_presentedViewsStackFailure() {
+        let expectedDestination: MockDestination = .empty
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: .second, destinations: [.third, .fourth]))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(false == closeResult)
+        #expect(.fourth == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination with presented views and stack pop")
+    func navigator_closeToDestination_presentedViewsStackPop() {
+        let expectedDestination: MockDestination = .third
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: .second, destinations: [expectedDestination, .fourth]))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(destination: expectedDestination)
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.first)
+    }
+
+    @Test("Close to destination predicate with presented views")
+    func navigator_closeToDestination_predicate_presentedViews() {
+        let expectedDestination: MockDestination = .second
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(view: expectedDestination))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(where: {
+            expectedDestination == $0 as? MockDestination
+        })
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination predicate with presented views failure")
+    func navigator_closeToDestination_predicate_presentedViewsFailure() {
+        let expectedDestination: MockDestination = .empty
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(view: .second))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(where: {
+            expectedDestination == $0 as? MockDestination
+        })
+        #expect(false == closeResult)
+        #expect(.fourth == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination predicate with presented views and stack")
+    func navigator_closeToDestination_predicate_presentedViewsStack() {
+        let expectedDestination: MockDestination = .second
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: expectedDestination, destinations: [.third, .fourth]))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(where: {
+            expectedDestination == $0 as? MockDestination
+        })
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination predicate with presented views and stack failure")
+    func navigator_closeToDestination_predicate_presentedViewsStackFailure() {
+        let expectedDestination: MockDestination = .empty
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: .second, destinations: [.third, .fourth]))
+        sut.present(.init(view: .third))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(where: {
+            expectedDestination == $0 as? MockDestination
+        })
+        #expect(false == closeResult)
+        #expect(.fourth == sut.topNavigator.root)
+    }
+
+    @Test("Close to destination predicate with presented views and stack pop")
+    func navigator_closeToDestination_predicate_presentedViewsStackPop() {
+        let expectedDestination: MockDestination = .third
+        let sut = TestNavigator(view: .first)
+        sut.present(.init(root: .second, destinations: [expectedDestination, .fourth]))
+        sut.present(.init(view: .fourth))
+        #expect(.fourth == sut.topNavigator.root)
+        let closeResult = sut.closeTo(where: {
+            expectedDestination == $0 as? MockDestination
+        })
+        #expect(true == closeResult)
+        #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.first)
+    }
+}

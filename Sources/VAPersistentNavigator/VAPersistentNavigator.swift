@@ -470,7 +470,7 @@ public final class CodablePersistentNavigator<
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
     public func close(to target: Destination) -> Bool {
-        var navigator: CodablePersistentNavigator? = self
+        var navigator: CodablePersistentNavigator? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: { $0 == target }) == true {
                 return true
@@ -496,7 +496,7 @@ public final class CodablePersistentNavigator<
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
     public func close(where predicate: (Destination) -> Bool) -> Bool {
-        var navigator: CodablePersistentNavigator? = self
+        var navigator: CodablePersistentNavigator? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: predicate) == true {
                 return true
@@ -508,7 +508,7 @@ public final class CodablePersistentNavigator<
     }
 
     private func closeIn(where predicate: (Destination) -> Bool) -> Bool {
-        for destination in (destinationsSubj.value.reversed() ?? []) {
+        for destination in destinationsSubj.value.reversed() {
             if predicate(destination) {
                 present(nil, strategy: .fromCurrent)
                 pop(to: destination)
