@@ -1,5 +1,5 @@
 //
-//  AppDelegate.swift
+//  CustomAppDelegate.swift
 //  Example
 //
 //  Created by VAndrJ on 1/17/25.
@@ -8,8 +8,7 @@
 import UIKit
 import UserNotifications
 
-class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
-    @Published var notificationTitle: String?
+class CustomAppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
 
     func application(
         _ application: UIApplication,
@@ -35,7 +34,7 @@ class AppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
     }
 }
 
-extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
+extension CustomAppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
 
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -49,15 +48,5 @@ extension AppDelegate: @preconcurrency UNUserNotificationCenterDelegate {
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
         return [.banner, .badge]
-    }
-}
-
-class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
-
-    func windowScene(
-        _ windowScene: UIWindowScene,
-        performActionFor shortcutItem: UIApplicationShortcutItem
-    ) async -> Bool {
-        return ShortcutService.shared.handleShortcut(item: shortcutItem)
     }
 }

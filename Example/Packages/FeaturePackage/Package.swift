@@ -12,7 +12,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(path: "../../../../../VAPersistentNavigator"),
+        .package(path: "../../../../VAPersistentNavigator"),
     ],
     targets: [
         .target(

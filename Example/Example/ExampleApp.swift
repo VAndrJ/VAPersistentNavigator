@@ -11,7 +11,7 @@ import FeaturePackage
 
 @main
 struct ExampleApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
     @StateObject private var viewModel: TestStateNavRestoreAppViewModel
 
     private let shortcutService = ShortcutService.shared
