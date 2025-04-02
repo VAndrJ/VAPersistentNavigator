@@ -258,5 +258,7 @@ class EmptyNavigator: PersistentNavigator {
 }
 
 extension EnvironmentValues {
-    @Entry public var persistentNavigator: any PersistentNavigator = EmptyNavigator()
+    @Entry public var persistentNavigator: any PersistentNavigator = emptyNavigator
+
+    private static let emptyNavigator = EmptyNavigator()
 }
