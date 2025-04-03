@@ -297,7 +297,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.root)
     }
@@ -310,7 +310,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(false == closeResult)
         #expect(.fourth == sut.topNavigator.root)
     }
@@ -323,7 +323,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.root)
     }
@@ -338,7 +338,7 @@ struct CodablePersistentNavigatorClose {
         ]))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.root)
     }
@@ -351,7 +351,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(false == closeResult)
         #expect(.fourth == sut.topNavigator.root)
     }
@@ -363,7 +363,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(root: .second, destinations: [expectedDestination, .fourth]))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(destination: expectedDestination)
+        let closeResult = sut.close(to: expectedDestination)
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.first)
     }
@@ -376,9 +376,9 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(where: {
+        let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
-        })
+        }
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.root)
     }
@@ -391,9 +391,9 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(where: {
+        let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
-        })
+        }
         #expect(false == closeResult)
         #expect(.fourth == sut.topNavigator.root)
     }
@@ -406,9 +406,9 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(where: {
+        let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
-        })
+        }
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.root)
     }
@@ -421,9 +421,9 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .third))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(where: {
+        let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
-        })
+        }
         #expect(false == closeResult)
         #expect(.fourth == sut.topNavigator.root)
     }
@@ -435,9 +435,9 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(root: .second, destinations: [expectedDestination, .fourth]))
         sut.present(.init(view: .fourth))
         #expect(.fourth == sut.topNavigator.root)
-        let closeResult = sut.closeTo(where: {
+        let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
-        })
+        }
         #expect(true == closeResult)
         #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.first)
     }
