@@ -24,7 +24,6 @@ public extension SimpleNavigator {
 
         return push(destination: destination)
     }
-    
 
     /// Pops the navigation stack to a specific destination.
     ///
@@ -40,7 +39,7 @@ public extension SimpleNavigator {
             return false
         }
 
-        return pop(to: destination, isFirst: isFirst)
+        return pop(target: destination, isFirst: isFirst)
     }
 
     /// Replaces the root destination.
@@ -55,7 +54,7 @@ public extension SimpleNavigator {
             return
         }
 
-        replace(root: destination, isPopToRoot: isPopToRoot)
+        replace(destination, isPopToRoot: isPopToRoot)
     }
 
     /// Dismisses to a specific destination.
@@ -70,7 +69,7 @@ public extension SimpleNavigator {
             return false
         }
 
-        return dismiss(to: destination)
+        return dismiss(target: destination)
     }
 
     /// Attempts to navigate to a specified target destination by traversing
@@ -86,7 +85,7 @@ public extension SimpleNavigator {
             return false
         }
 
-        return close(to: destination)
+        return close(target: destination)
     }
 
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
@@ -94,7 +93,7 @@ public extension SimpleNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func closeTo(where predicate: (any Hashable) -> Bool) -> Bool {
-        return close(where: predicate)
+    func close(where predicate: (any Hashable) -> Bool) -> Bool {
+        return close(predicate: predicate)
     }
 }
