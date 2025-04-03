@@ -37,7 +37,7 @@ public enum TypedNavigatorPresentation<SheetTag: Hashable>: Hashable {
                 if let tag = tag as? SheetTag {
                     self = .sheet(tag: tag)
                 } else {
-                    assertionFailure("Tag must have only the specified `SheetTag` type.")
+                    navigatorLog?("Tag must have only the specified `SheetTag` type. Found: \(type(of: tag)). Expecting: \(SheetTag.self)")
                     self = .sheet
                 }
             } else {

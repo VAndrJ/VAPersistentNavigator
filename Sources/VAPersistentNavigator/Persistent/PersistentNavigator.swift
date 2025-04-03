@@ -21,8 +21,8 @@ public extension PersistentNavigator {
     @discardableResult
     func push(_ destination: any PersistentDestination) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Push only the specified `Destination` type.")
-            
+            navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
@@ -37,8 +37,8 @@ public extension PersistentNavigator {
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
-            
+            navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
@@ -50,9 +50,9 @@ public extension PersistentNavigator {
     /// - Parameters:
     ///   - root: The new root destination.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    func replace(root: any PersistentDestination, isPopToRoot: Bool) {
-        guard let destination = root as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
+    func replace(root destination: any PersistentDestination, isPopToRoot: Bool = true) {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return
         }
@@ -67,7 +67,7 @@ public extension PersistentNavigator {
     @discardableResult
     func dismiss(to destination: any PersistentDestination) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
+            navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
@@ -83,7 +83,7 @@ public extension PersistentNavigator {
     @discardableResult
     func close(to destination: any PersistentDestination) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Close only the specified `Destination` type.")
+            navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }

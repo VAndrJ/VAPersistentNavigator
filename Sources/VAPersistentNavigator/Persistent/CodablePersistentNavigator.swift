@@ -147,7 +147,8 @@ public final class CodablePersistentNavigator<
         switch data {
         case let .view(view, id, presentation, tabItem):
             guard let destination = view as? Destination else {
-                assertionFailure("Present only the specified `Destination` type.")
+                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: view)). Expecting: \(Destination.self)")
+
                 return nil
             }
 
@@ -162,7 +163,7 @@ public final class CodablePersistentNavigator<
             )
         case let .stack(root, id, destinations, presentation, tabItem):
             guard let destination = root as? Destination else {
-                assertionFailure("Present only the specified `Destination` type.")
+                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: root)). Expecting: \(Destination.self)")
 
                 return nil
             }

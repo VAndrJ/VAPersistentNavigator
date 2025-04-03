@@ -17,8 +17,8 @@ public extension SimpleNavigator {
     @discardableResult
     func push(_ destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Push only the specified `Destination` type.")
-            
+            navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
@@ -34,8 +34,8 @@ public extension SimpleNavigator {
     @discardableResult
     func pop(to destination: any Hashable, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
-            
+            navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
@@ -47,9 +47,9 @@ public extension SimpleNavigator {
     /// - Parameters:
     ///   - root: The new root destination.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    func replace(root: any Hashable, isPopToRoot: Bool) {
-        guard let destination = root as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
+    func replace(root destination: any Hashable, isPopToRoot: Bool = true) {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return
         }
@@ -64,8 +64,8 @@ public extension SimpleNavigator {
     @discardableResult
     func dismiss(to destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Pop only the specified `Destination` type.")
-            
+            navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
@@ -80,8 +80,8 @@ public extension SimpleNavigator {
     @discardableResult
     func close(to destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
-            assertionFailure("Close only the specified `Destination` type.")
-            
+            navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
             return false
         }
 
