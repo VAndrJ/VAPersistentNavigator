@@ -14,39 +14,18 @@ public final class CodablePersistentNavigator<
     Destination: PersistentDestination,
     TabItemTag: PersistentTabItemTag,
     SheetTag: PersistentSheetTag
->: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable, PersistentNavigator, @preconcurrency CustomDebugStringConvertible {
+>: PersistentNavigator, @preconcurrency Codable, @preconcurrency Equatable, @preconcurrency CustomDebugStringConvertible {
     public static func == (lhs: CodablePersistentNavigator, rhs: CodablePersistentNavigator) -> Bool {
         return lhs.id == rhs.id
     }
 
-    public private(set) var id: UUID
-
-    /// A closure that is called when the initial navigator needs to be replaced.
-    public var onReplaceInitialNavigator: ((_ newNavigator: CodablePersistentNavigator) -> Void)? {
-        get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
-        set {
-            if parent == nil {
-                _onReplaceInitialNavigator = { [weak self] navigator in
-                    self?.closeToInitial()
-                    //: To avoid presented TabView issue
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(100))
-                        newValue?(navigator)
-                    }
-                }
-            } else {
-                parent?.onReplaceInitialNavigator = newValue
-            }
-        }
-    }
-    private var _onReplaceInitialNavigator: ((_ newNavigator: CodablePersistentNavigator) -> Void)?
+    public let id: UUID
+    public var _onReplaceInitialNavigator: ((_ newNavigator: CodablePersistentNavigator) -> Void)?
     public let rootSubj: CurrentValueSubject<Destination?, Never>
     public let selectedTabSubj: CurrentValueSubject<TabItemTag?, Never>
     public private(set) var tabItem: TabItemTag?
     public let tabs: [CodablePersistentNavigator]
     public let storeSubj = PassthroughSubject<Void, Never>()
-
-    public var isRootView: Bool { destinationsSubj.value.isEmpty }
     public let destinationsSubj: CurrentValueSubject<[Destination], Never>
     public let childSubj: CurrentValueSubject<CodablePersistentNavigator?, Never>
     public let kind: NavigatorKind

@@ -10,39 +10,17 @@ import Combine
 
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
-public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcurrency Equatable, SimpleNavigator, @preconcurrency CustomDebugStringConvertible {
-    public typealias Tab = AnyHashable
-    public typealias Destiantion = AnyHashable
-
+public final class SimpleViewNavigator: BaseNavigator, Identifiable, @preconcurrency Equatable, @preconcurrency CustomDebugStringConvertible {
     public static func == (lhs: SimpleViewNavigator, rhs: SimpleViewNavigator) -> Bool {
         return lhs.id == rhs.id
     }
 
-    public private(set) var id: UUID
-    /// A closure that is called when the initial navigator needs to be replaced.
-    public var onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)? {
-        get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
-        set {
-            if parent == nil {
-                _onReplaceInitialNavigator = { [weak self] navigator in
-                    self?.closeToInitial()
-                    //: To avoid presented TabView issue
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(100))
-                        newValue?(navigator)
-                    }
-                }
-            } else {
-                parent?.onReplaceInitialNavigator = newValue
-            }
-        }
-    }
-    private var _onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)?
+    public let id: UUID
+    public var _onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)?
     public let rootSubj: CurrentValueSubject<AnyHashable?, Never>
     public let selectedTabSubj: CurrentValueSubject<AnyHashable?, Never>
     public private(set) var tabItem: AnyHashable?
     public let tabs: [SimpleViewNavigator]
-    public var isRootView: Bool { destinationsSubj.value.isEmpty }
     public let destinationsSubj: CurrentValueSubject<[AnyHashable], Never>
     public let childSubj: CurrentValueSubject<SimpleViewNavigator?, Never>
     public let kind: NavigatorKind
@@ -137,14 +115,14 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     public func getNavigator(data: NavigatorData) -> SimpleViewNavigator? {
         switch data {
         case let .view(view, id, presentation, tabItem):
-            return SimpleViewNavigator(
+            return .init(
                 id: id,
                 view: view,
                 presentation: TypedNavigatorPresentation(from: presentation),
                 tabItem: tabItem
             )
         case let .stack(root, id, destinations, presentation, tabItem):
-            return SimpleViewNavigator(
+            return .init(
                 id: id,
                 root: root,
                 destinations: destinations,
@@ -152,7 +130,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
                 tabItem: tabItem
             )
         case let .tab(tabs, id, presentation, selectedTab):
-            return SimpleViewNavigator(
+            return .init(
                 id: id,
                 tabs: tabs.compactMap { getNavigator(data: $0) },
                 presentation: TypedNavigatorPresentation(from: presentation),

@@ -115,7 +115,7 @@ public struct NavigatorScreenFactoryView<
             .with(navigator: navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
-                ForEach(navigator.tabs, id: \.id) { tab in
+                ForEach(navigator.tabs) { tab in
                     NavigatorScreenFactoryView(
                         navigator: tab,
                         buildView: buildView,

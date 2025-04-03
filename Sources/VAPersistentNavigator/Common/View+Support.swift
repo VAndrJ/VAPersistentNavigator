@@ -15,10 +15,6 @@ extension View {
         switch navigator {
         case let navigator as any PersistentNavigator:
             self.environment(\.persistentNavigator, navigator)
-                .environment(\.simpleNavigator, navigator)
-                .environment(\.baseNavigator, navigator)
-        case let navigator as any SimpleNavigator:
-            self.environment(\.simpleNavigator, navigator)
                 .environment(\.baseNavigator, navigator)
         default:
             self.environment(\.baseNavigator, navigator)

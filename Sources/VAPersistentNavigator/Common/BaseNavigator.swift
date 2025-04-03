@@ -9,13 +9,12 @@ import Foundation
 import Combine
 
 @MainActor
-public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible {
+public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable {
     associatedtype Tab: Hashable
     associatedtype Destination: Hashable
     associatedtype Tag: Hashable
 
     var id: UUID { get }
-    var isRootView: Bool { get }
     var kind: NavigatorKind { get }
     var tabs: [Self] { get }
     var presentation: TypedNavigatorPresentation<Tag> { get }
@@ -25,12 +24,14 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible {
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
     var parent: Self? { get }
+    var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
 
     func getNavigator(data: NavigatorData) -> Self?
 }
 
 public extension BaseNavigator {
     var root: Destination? { rootSubj.value }
+    var isRootView: Bool { destinationsSubj.value.isEmpty }
     var orTabChild: Self { tabChild ?? self }
     var tabChild: Self? {
         tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
@@ -56,6 +57,24 @@ public extension BaseNavigator {
                 selectedTabSubj.send(newValue)
             } else {
                 parent?.currentTab = newValue
+            }
+        }
+    }
+    /// A closure that is called when the initial navigator needs to be replaced.
+    var onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? {
+        get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
+        set {
+            if parent == nil {
+                _onReplaceInitialNavigator = { [weak self] navigator in
+                    self?.closeToInitial()
+                    //: To avoid presented TabView issue
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .milliseconds(100))
+                        newValue?(navigator)
+                    }
+                }
+            } else {
+                parent?.onReplaceInitialNavigator = newValue
             }
         }
     }
@@ -339,5 +358,95 @@ public extension BaseNavigator {
         if navigator.childSubj.value != nil {
             navigator.present(nil, strategy: .fromCurrent)
         }
+    }
+}
+
+// MARK: - Hashable functions
+
+public extension BaseNavigator {
+
+    /// Pushes a new destination onto the navigation stack.
+    /// - Returns: `true` if the destination matches base type, otherwise `false`.
+    @discardableResult
+    func push(_ destination: any Hashable) -> Bool {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
+            return false
+        }
+
+        return push(destination: destination)
+    }
+
+    /// Pops the navigation stack to a specific destination.
+    ///
+    /// - Parameters:
+    ///   - destination: The destination to pop to.
+    ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
+    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    @discardableResult
+    func pop(to destination: any Hashable, isFirst: Bool = true) -> Bool {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
+            return false
+        }
+
+        return pop(target: destination, isFirst: isFirst)
+    }
+
+    /// Replaces the root destination.
+    ///
+    /// - Parameters:
+    ///   - root: The new root destination.
+    ///   - isPopToRoot: If `true`, pops to the root before replacing it.
+    func replace(root destination: any Hashable, isPopToRoot: Bool = true) {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
+            return
+        }
+
+        replace(destination, isPopToRoot: isPopToRoot)
+    }
+
+    /// Dismisses to a specific destination.
+    ///
+    /// - Parameter destination: The destination to dismiss to.
+    /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
+    @discardableResult
+    func dismiss(to destination: any Hashable) -> Bool {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
+            return false
+        }
+
+        return dismiss(target: destination)
+    }
+
+    /// Attempts to navigate to a specified target destination by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
+    @discardableResult
+    func close(to destination: any Hashable) -> Bool {
+        guard let destination = destination as? Destination else {
+            navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
+
+            return false
+        }
+
+        return close(target: destination)
+    }
+
+    /// Attempts to navigate to a destination that satisfies the given predicate by traversing
+    /// up the hierarchy of navigators.
+    ///
+    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
+    func close(where predicate: (any Hashable) -> Bool) -> Bool {
+        return close(predicate: predicate)
     }
 }

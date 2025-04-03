@@ -10,7 +10,7 @@ import SwiftUI
 import Combine
 
 @MainActor
-public protocol PersistentNavigator: SimpleNavigator {
+public protocol PersistentNavigator: BaseNavigator {
     var storeSubj: PassthroughSubject<Void, Never> { get }
 }
 
@@ -111,7 +111,8 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     typealias Destination = String
     typealias Tab = String
     typealias Tag = String
-    
+
+    var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
     var storeSubj: PassthroughSubject<Void, Never> { .init() }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
     var parent: EmptyPersistentNavigator? { nil }
@@ -122,8 +123,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var tabs: [EmptyPersistentNavigator] { [] }
     var kind: NavigatorKind { .singleView }
     var presentation: TypedNavigatorPresentation<Tag> { .sheet }
-    var id: UUID { UUID() }
-    var isRootView: Bool { true }
+    let id = UUID()
     nonisolated var debugDescription: String { "" }
 
     nonisolated init() {}
@@ -135,7 +135,6 @@ final class EmptyPersistentNavigator: PersistentNavigator {
 
 extension EnvironmentValues {
     @Entry public var baseNavigator: any BaseNavigator = emptyPersistentNavigator
-    @Entry public var simpleNavigator: any SimpleNavigator = emptyPersistentNavigator
     @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
 
     static let emptyPersistentNavigator = EmptyPersistentNavigator()
