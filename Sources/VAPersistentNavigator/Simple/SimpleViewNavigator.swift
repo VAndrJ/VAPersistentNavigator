@@ -11,14 +11,16 @@ import Combine
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
 public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcurrency Equatable, SimpleNavigator, @preconcurrency CustomDebugStringConvertible {
+    public typealias Tab = AnyHashable
+    public typealias Destiantion = AnyHashable
+
     public static func == (lhs: SimpleViewNavigator, rhs: SimpleViewNavigator) -> Bool {
         return lhs.id == rhs.id
     }
 
     public private(set) var id: UUID
-
     /// A closure that is called when the initial navigator needs to be replaced.
-    public var onReplaceInitialNavigator: ((_ newNavigator: (any SimpleNavigator)) -> Void)? {
+    public var onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)? {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
@@ -35,49 +37,17 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
             }
         }
     }
-    private var _onReplaceInitialNavigator: ((_ newNavigator: (any SimpleNavigator)) -> Void)?
-
-    public var root: AnyHashable? { rootSubj.value }
+    private var _onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)?
     public let rootSubj: CurrentValueSubject<AnyHashable?, Never>
-
-    public var currentTab: AnyHashable? {
-        get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
-        set {
-            if kind.isTabView {
-                selectedTabSubj.send(newValue)
-            } else {
-                parent?.currentTab = newValue
-            }
-        }
-    }
     public let selectedTabSubj: CurrentValueSubject<AnyHashable?, Never>
     public private(set) var tabItem: AnyHashable?
-    public let tabs: [any SimpleNavigator]
-
+    public let tabs: [SimpleViewNavigator]
     public var isRootView: Bool { destinationsSubj.value.isEmpty }
     public let destinationsSubj: CurrentValueSubject<[AnyHashable], Never>
-    public var orTabChild: any SimpleNavigator { tabChild ?? self }
-    public var topNavigator: any SimpleNavigator {
-        var navigator: (any SimpleNavigator)! = self
-        while navigator?.topChild != nil {
-            navigator = navigator?.topChild
-        }
-
-        return navigator
-    }
-    public var tabChild: (any SimpleNavigator)? {
-        tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
-    }
-    public var topChild: (any SimpleNavigator)? {
-        switch kind {
-        case .tabView: tabChild
-        case .flow, .singleView: childSubj.value
-        }
-    }
-    public let childSubj: CurrentValueSubject<(any SimpleNavigator)?, Never>
+    public let childSubj: CurrentValueSubject<SimpleViewNavigator?, Never>
     public let kind: NavigatorKind
-    public let presentation: NavigatorPresentation
-    public private(set) weak var parent: (any SimpleNavigator)?
+    public let presentation: TypedNavigatorPresentation<AnyHashable>
+    public private(set) weak var parent: SimpleViewNavigator?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
@@ -89,7 +59,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     public convenience init(
         id: UUID = .init(),
         view: any Hashable,
-        presentation: NavigatorPresentation = .sheet,
+        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
         tabItem: (any Hashable)? = nil
     ) {
         self.init(
@@ -109,7 +79,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         id: UUID = .init(),
         root: any Hashable,
         destinations: [any Hashable] = [],
-        presentation: NavigatorPresentation = .sheet,
+        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
         tabItem: (any Hashable)? = nil
     ) {
         self.init(
@@ -127,8 +97,8 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     /// Initializer for a `TabView` navigator.
     public convenience init(
         id: UUID = .init(),
-        tabs: [any SimpleNavigator] = [],
-        presentation: NavigatorPresentation = .sheet,
+        tabs: [SimpleViewNavigator] = [],
+        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
         selectedTab: (any Hashable)? = nil
     ) {
         self.init(
@@ -147,10 +117,10 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         id: UUID = .init(),
         root: (any Hashable)?, // ignored when kind == .tabView
         destinations: [any Hashable] = [],
-        presentation: NavigatorPresentation = .sheet,
+        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
         tabItem: (any Hashable)? = nil,
         kind: NavigatorKind = .flow,
-        tabs: [any SimpleNavigator] = [],
+        tabs: [SimpleViewNavigator] = [],
         selectedTab: (any Hashable)? = nil
     ) {
         self.id = id
@@ -164,13 +134,13 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         self.selectedTabSubj = .init(selectedTab?.anyHashable)
     }
 
-    public func getNavigator(data: NavigatorData) -> (any SimpleNavigator)? {
+    public func getNavigator(data: NavigatorData) -> SimpleViewNavigator? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             return SimpleViewNavigator(
                 id: id,
                 view: view,
-                presentation: presentation,
+                presentation: TypedNavigatorPresentation(from: presentation),
                 tabItem: tabItem
             )
         case let .stack(root, id, destinations, presentation, tabItem):
@@ -178,14 +148,14 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
                 id: id,
                 root: root,
                 destinations: destinations,
-                presentation: presentation,
+                presentation: TypedNavigatorPresentation(from: presentation),
                 tabItem: tabItem
             )
         case let .tab(tabs, id, presentation, selectedTab):
             return SimpleViewNavigator(
                 id: id,
                 tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: presentation,
+                presentation: TypedNavigatorPresentation(from: presentation),
                 selectedTab: selectedTab
             )
         }
