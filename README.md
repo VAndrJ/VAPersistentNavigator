@@ -94,12 +94,35 @@ More detailed information can be found in the example project.
 - `currentTab`. Variable to get and change the current tab in `TabView`.
 
 
-## PersistentNavigator for simplified usage
+## Environment values for simplified usage
 
 
 ```swift
 struct FeatureDetailsScreenView: View {
     @Environment(\.persistentNavigator) var navigator
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Current: Some separate feature flow details")
+                .multilineTextAlignment(.center)
+            Button("More") {
+                navigator.present(.view(Destination.feature(.more)))
+            }
+            Button("Pop") {
+                navigator.pop()
+            }
+            Button("Dismiss") {
+                navigator.dismissTop()
+            }
+            Button("Close all") {
+                navigator.closeToInitial()
+            }
+        }
+    }
+}
+
+struct FeatureDetailsScreenView: View {
+    @Environment(\.simpleNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
@@ -132,6 +155,8 @@ More detailed information can be found in the example project.
 - Documentation.
 
 - Split.
+
+- Simple navigator usage example.
 
 
 ## Author
