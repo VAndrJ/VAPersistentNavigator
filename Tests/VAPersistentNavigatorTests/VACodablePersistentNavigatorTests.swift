@@ -52,10 +52,14 @@ struct CodablePersistentNavigatorStack {
         let expectedDestinations = initialDestinations.removingSubrange(from: expectedIndex)
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
         let navigator: any PersistentNavigator = sut
-        let result = navigator.pop(to: expectedDestination)
 
-        #expect(true == result)
+        #expect(true == navigator.pop(to: expectedDestination))
         #expect(expectedDestinations == sut.destinationsSubj.value)
+
+        let incorrectDestination: IncorrectDestination = .empty
+
+        #expect(false == navigator.pop(to: incorrectDestination))
+        #expect(false == navigator.pop(to: incorrectDestination as any Hashable))
     }
 
     @Test("Destinations should be substracted to last specified")
@@ -66,9 +70,8 @@ struct CodablePersistentNavigatorStack {
         let expectedDestinations = initialDestinations.removingSubrange(from: expectedIndex)
         let sut = TestNavigator(root: .first, destinations: initialDestinations)
         let navigator: any PersistentNavigator = sut
-        let result = navigator.pop(to: expectedDestination, isFirst: false)
 
-        #expect(true == result)
+        #expect(true == navigator.pop(to: expectedDestination as any Hashable, isFirst: false))
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
@@ -78,9 +81,8 @@ struct CodablePersistentNavigatorStack {
         let expectedDestinations: [MockDestination] = [.third, .fourth, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
         let navigator: any PersistentNavigator = sut
-        let result = navigator.pop(to: expectedDestination, isFirst: false)
 
-        #expect(false == result)
+        #expect(false == navigator.pop(to: expectedDestination, isFirst: false))
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
@@ -90,10 +92,16 @@ struct CodablePersistentNavigatorStack {
         let expectedDestinations: [MockDestination] = [.second, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
         let navigator: any PersistentNavigator = sut
-        navigator.replace(root: expectedRoot)
 
+        #expect(true == navigator.replace(root: expectedRoot))
+        #expect(true == navigator.replace(root: expectedRoot as any Hashable))
         #expect(expectedRoot == sut.root)
         #expect(sut.destinationsSubj.value.isEmpty)
+
+        let incorrectRoot: IncorrectDestination = .empty
+
+        #expect(false == navigator.replace(root: incorrectRoot))
+        #expect(false == navigator.replace(root: incorrectRoot as any Hashable))
     }
 
     @Test("Replace root view without pop")
@@ -102,10 +110,15 @@ struct CodablePersistentNavigatorStack {
         let expectedDestinations: [MockDestination] = [.second, .third]
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
         let navigator: any PersistentNavigator = sut
-        navigator.replace(root: expectedRoot, isPopToRoot: false)
 
+        #expect(true == navigator.replace(root: expectedRoot, isPopToRoot: false))
         #expect(expectedRoot == sut.root)
         #expect(expectedDestinations == sut.destinationsSubj.value)
+
+        let incorrectRoot: IncorrectDestination = .empty
+
+        #expect(false == navigator.replace(root: incorrectRoot))
+        #expect(false == navigator.replace(root: incorrectRoot as any Hashable))
     }
 }
 
@@ -141,10 +154,18 @@ struct CodablePersistentNavigatorPresentationTests {
         let navigator: any PersistentNavigator = sut
         navigator.present(.stack(root: MockDestination.second))
         let presentedNavigator: (any PersistentNavigator)? = sut.childSubj.value
-        let result = presentedNavigator?.dismiss(to: expectedDestination)
 
-        #expect(true == result)
+        #expect(true == presentedNavigator?.dismiss(to: expectedDestination))
         #expect(nil == sut.childSubj.value)
+
+        navigator.present(.stack(root: MockDestination.second))
+
+        #expect(true == presentedNavigator?.dismiss(to: expectedDestination as any Hashable))
+
+        let incorrectDestination: IncorrectDestination = .empty
+
+        #expect(false == presentedNavigator?.dismiss(to: incorrectDestination))
+        #expect(false == presentedNavigator?.dismiss(to: incorrectDestination as any Hashable))
     }
 
     @Test("Dismiss top specified Destination failure")
@@ -153,9 +174,8 @@ struct CodablePersistentNavigatorPresentationTests {
         let sut = TestNavigator(root: expectedDestination)
         let navigator: any PersistentNavigator = sut
         navigator.present(.stack(root: MockDestination.second))
-        let result = sut.childSubj.value?.dismiss(to: MockDestination.fourth)
 
-        #expect(false == result)
+        #expect(false == sut.childSubj.value?.dismiss(to: MockDestination.fourth))
         #expect(nil != sut.childSubj.value)
     }
 
@@ -234,7 +254,7 @@ struct CodablePersistentNavigatorChildrenTests {
 
         let expectedDestination: MockDestination = .fourth
 
-        #expect(true == sut.push(expectedDestination))
+        #expect(true == sut.push(expectedDestination as any Hashable))
         #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.last)
     }
 
@@ -256,6 +276,7 @@ struct CodablePersistentNavigatorChildrenTests {
         let inCorrectDestination: IncorrectDestination = .empty
 
         #expect(false == sut.push(inCorrectDestination))
+        #expect(false == sut.push(inCorrectDestination as any Hashable))
     }
 
     @Test("Topmost navigator flow push failure")
@@ -284,7 +305,7 @@ struct CodablePersistentNavigatorChildrenTests {
 
         let expectedDestination: MockDestination = .third
         sut.present(.init(view: expectedDestination), strategy: .replaceCurrent)
-        try? await Task.sleep(for: .milliseconds(300))
+        try? await Task.sleep(for: .milliseconds(600))
 
         #expect(expectedDestination == sut.childSubj.value?.root)
     }
@@ -302,6 +323,29 @@ struct CodablePersistentNavigatorChildrenTests {
         #expect(sut.destinationsSubj.value.isEmpty)
         #expect(expectedDestination == sut.root)
     }
+
+    @Test("Get navigator from data")
+    func navigator_creationFromData() {
+        let expectedDestination: MockDestination = .first
+        let sut = TestNavigator(root: expectedDestination)
+
+        #expect(expectedDestination == sut.getNavigator(data: .view(expectedDestination))?.root)
+        #expect(expectedDestination == sut.getNavigator(data: .stack(root: expectedDestination))?.root)
+
+        let incorrectDestination: IncorrectDestination = .empty
+
+        #expect(nil == sut.getNavigator(data: .view(incorrectDestination)))
+        #expect(nil == sut.getNavigator(data: .stack(root: incorrectDestination)))
+        #expect(nil == sut.getNavigator(data: .view(expectedDestination, presentation: .sheet(tag: expectedDestination)))?.tabItem)
+    }
+
+    @Test("NavigatorPresentation tag")
+    func navigatorPresentation_sheetTag() async throws {
+        let expectedTag: MockTabTag = .first
+
+        #expect(expectedTag == NavigatorPresentation.sheet(tag: expectedTag).sheetTag as? MockTabTag)
+        #expect(nil == NavigatorPresentation.fullScreenCover.sheetTag)
+    }
 }
 
 @Suite("Codable Navigator close to destination")
@@ -317,16 +361,16 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .fourth))
 
         #expect(.fourth == sut.topNavigator.root)
-
-        let closeResult = sut.close(to: expectedDestination)
-
-        #expect(true == closeResult)
+        #expect(true == sut.close(to: expectedDestination))
         #expect(expectedDestination == sut.topNavigator.root)
+
+        sut.present(.init(view: .third))
+
+        #expect(true == sut.close(to: expectedDestination as any Hashable))
     }
 
     @Test("Close to destination with presented views failure")
     func navigator_closeToDestination_presentedViewsFailure() {
-        let expectedDestination: MockDestination = .empty
         let sut = TestNavigator(view: .first)
         sut.present(.init(view: .second))
         sut.present(.init(view: .third))
@@ -334,10 +378,19 @@ struct CodablePersistentNavigatorClose {
 
         #expect(.fourth == sut.topNavigator.root)
 
-        let closeResult = sut.close(to: expectedDestination)
+        let expectedDestination: MockDestination = .empty
 
-        #expect(false == closeResult)
+        #expect(false == sut.close(to: expectedDestination))
         #expect(.fourth == sut.topNavigator.root)
+
+        let incorrectDestination: IncorrectDestination = .empty
+
+        #expect(false == sut.close(to: incorrectDestination))
+        #expect(false == sut.close(to: incorrectDestination as any Hashable))
+
+        let hashableDestination: AnyHashable = 1
+
+        #expect(false == sut.close(where: { $0.anyHashable == hashableDestination }))
     }
 
     @Test("Close to destination with presented views and stack")

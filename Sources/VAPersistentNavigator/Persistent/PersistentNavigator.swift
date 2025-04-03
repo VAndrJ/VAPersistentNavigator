@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SwiftUI
 import Combine
 
 @MainActor
@@ -35,7 +34,7 @@ public extension PersistentNavigator {
     ///   - destination: The destination to pop to.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
-    func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
+    func pop(to destination: any PersistentDestination, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -110,36 +109,3 @@ public protocol PersistentDestination: Codable & Hashable {}
 public protocol PersistentTabItemTag: Codable & Hashable {}
 
 public protocol PersistentSheetTag: Codable & Hashable {}
-
-final class EmptyPersistentNavigator: PersistentNavigator {
-    typealias Destination = String
-    typealias Tab = String
-    typealias Tag = String
-
-    var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
-    var storeSubj: PassthroughSubject<Void, Never> { .init() }
-    var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
-    var parent: EmptyPersistentNavigator? { nil }
-    var tabItem: Tab?
-    var selectedTabSubj: CurrentValueSubject<Tab?, Never> { .init(nil) }
-    var rootSubj: CurrentValueSubject<Destination?, Never> { .init(nil) }
-    var childSubj: CurrentValueSubject<EmptyPersistentNavigator?, Never> { .init(nil) }
-    var tabs: [EmptyPersistentNavigator] { [] }
-    var kind: NavigatorKind { .singleView }
-    var presentation: TypedNavigatorPresentation<Tag> { .sheet }
-    let id = UUID()
-    nonisolated var debugDescription: String { "" }
-
-    nonisolated init() {}
-
-    func getNavigator(data: NavigatorData) -> Self? {
-        return nil
-    }
-}
-
-extension EnvironmentValues {
-    @Entry public var baseNavigator: any BaseNavigator = emptyPersistentNavigator
-    @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
-
-    static let emptyPersistentNavigator = EmptyPersistentNavigator()
-}

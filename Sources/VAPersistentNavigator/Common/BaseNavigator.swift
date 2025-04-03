@@ -406,7 +406,7 @@ public extension BaseNavigator {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
-            return true
+            return false
         }
 
         replace(destination, isPopToRoot: isPopToRoot)
