@@ -44,8 +44,8 @@ struct NavigatorStack {
     func navigator_push_destinationsArray() {
         let expectedDestination: MockDestination = .second
         let sut = TestNavigator(root: .first)
-        sut.push(destination: expectedDestination)
 
+        #expect(true == sut.push(destination: expectedDestination))
         #expect([expectedDestination] == sut.destinationsSubj.value)
     }
 
