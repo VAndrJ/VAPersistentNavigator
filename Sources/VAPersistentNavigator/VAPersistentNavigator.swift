@@ -16,7 +16,7 @@ public final class CodablePersistentNavigator<
     SheetTag: PersistentSheetTag
 >: @preconcurrency Codable, @preconcurrency Identifiable, @preconcurrency Equatable, PersistentNavigator {
     public static func == (lhs: CodablePersistentNavigator, rhs: CodablePersistentNavigator) -> Bool {
-        lhs.id == rhs.id
+        return lhs.id == rhs.id
     }
 
     public private(set) var id: UUID
@@ -300,11 +300,11 @@ public final class CodablePersistentNavigator<
         }
     }
 
-    public func present(_ data: NavigatorData, strategy: PresentationStrategy) {
+    public func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy) {
         present(getNavigator(data: data), strategy: strategy)
     }
 
-    private func getNavigator(data: NavigatorData) -> CodablePersistentNavigator? {
+    private func getNavigator(data: PersistentNavigatorData) -> CodablePersistentNavigator? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             guard let destination = view as? Destination else {
@@ -324,6 +324,7 @@ public final class CodablePersistentNavigator<
         case let .stack(root, id, destinations, presentation, tabItem):
             guard let destination = root as? Destination else {
                 assertionFailure("Present only the specified `Destination` type.")
+
                 return nil
             }
 

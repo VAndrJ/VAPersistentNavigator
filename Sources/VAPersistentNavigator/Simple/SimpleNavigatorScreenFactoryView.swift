@@ -1,36 +1,30 @@
 //
-//  NavigatorScreenFactoryView.swift
+//  SimpleNavigatorScreenFactoryView.swift
 //  VAPersistentNavigator
 //
-//  Created by VAndrJ on 30.07.2024.
+//  Created by VAndrJ on 4/3/25.
 //
 
 import SwiftUI
 
-public struct NavigatorScreenFactoryView<
-    Content: View,
-    TabItem: View,
-    Destination: PersistentDestination,
-    TabItemTag: PersistentTabItemTag,
-    SheetTag: PersistentSheetTag
->: View {
-    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
-    private let rootReplaceAnimation: (Destination?) -> Animation?
-    @ViewBuilder private let buildView: (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content
-    @ViewBuilder private let buildTab: (TabItemTag?) -> TabItem
-    private let getDetents: (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+public struct SimpleNavigatorScreenFactoryView<Content: View, TabItem: View>: View {
+    private let navigator: any SimpleNavigator
+    private let rootReplaceAnimation: ((any Hashable)?) -> Animation?
+    @ViewBuilder private let buildView: (any Hashable, any SimpleNavigator) -> Content
+    @ViewBuilder private let buildTab: ((any Hashable)?) -> TabItem
+    private let getDetents: ((any Hashable)?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
-    @State private var destinations: [Destination]
-    @State private var root: Destination?
+    @State private var destinations: [AnyHashable]
+    @State private var root: AnyHashable?
     @State private var isFullScreenCoverPresented = false
     @State private var isSheetPresented = false
 
     public init(
-        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
-        @ViewBuilder buildView: @escaping (Destination, CodablePersistentNavigator<Destination, TabItemTag, SheetTag>) -> Content,
-        @ViewBuilder buildTab: @escaping (TabItemTag?) -> TabItem,
-        getDetents: @escaping (SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
-        getRootReplaceAnimation: @escaping (Destination?) -> Animation? = { _ in .default }
+        navigator: any SimpleNavigator,
+        @ViewBuilder buildView: @escaping (any Hashable, any SimpleNavigator) -> Content,
+        @ViewBuilder buildTab: @escaping ((any Hashable)?) -> TabItem,
+        getDetents: @escaping ((any Hashable)?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
+        getRootReplaceAnimation: @escaping ((any Hashable)?) -> Animation? = { _ in .default }
     ) {
         self.rootReplaceAnimation = getRootReplaceAnimation
         self.buildView = buildView
@@ -92,7 +86,7 @@ public struct NavigatorScreenFactoryView<
 #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
+                    SimpleNavigatorScreenFactoryView(
                         navigator: child,
                         buildView: buildView,
                         buildTab: buildTab,
@@ -104,7 +98,7 @@ public struct NavigatorScreenFactoryView<
 #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
+                    SimpleNavigatorScreenFactoryView(
                         navigator: child,
                         buildView: buildView,
                         buildTab: buildTab,
@@ -114,11 +108,11 @@ public struct NavigatorScreenFactoryView<
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
-            .environment(\.persistentNavigator, navigator)
+            .environment(\.simpleNavigator, navigator)
         case .tabView:
-            NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
-                ForEach(navigator.tabs) { tab in
-                    NavigatorScreenFactoryView(
+            SimpleNavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
+                ForEach(navigator.tabs, id: \.id) { tab in
+                    SimpleNavigatorScreenFactoryView(
                         navigator: tab,
                         buildView: buildView,
                         buildTab: buildTab,
@@ -131,12 +125,12 @@ public struct NavigatorScreenFactoryView<
                     .tag(tab.tabItem)
                 }
             }
-            .environment(\.persistentNavigator, navigator)
+            .environment(\.simpleNavigator, navigator)
         case .flow:
             NavigationStack(path: $destinations) {
                 if let root {
                     buildView(root, navigator)
-                        .navigationDestination(for: Destination.self) {
+                        .navigationDestination(for: AnyHashable.self) {
                             buildView($0, navigator)
                         }
                 } else {
@@ -186,7 +180,7 @@ public struct NavigatorScreenFactoryView<
 #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
+                    SimpleNavigatorScreenFactoryView(
                         navigator: child,
                         buildView: buildView,
                         buildTab: buildTab,
@@ -198,7 +192,7 @@ public struct NavigatorScreenFactoryView<
 #endif
             .sheet(isPresented: $isSheetPresented) {
                 if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
+                    SimpleNavigatorScreenFactoryView(
                         navigator: child,
                         buildView: buildView,
                         buildTab: buildTab,
@@ -208,7 +202,7 @@ public struct NavigatorScreenFactoryView<
                     .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
                 }
             }
-            .environment(\.persistentNavigator, navigator)
+            .environment(\.simpleNavigator, navigator)
         }
     }
 }

@@ -10,6 +10,20 @@ import Combine
 
 extension View {
 
+    func synchronize(
+        _ binding: Binding<Bool>,
+        with subject: CurrentValueSubject<(any SimpleNavigator)?, Never>,
+        isFirstAppearanceOccured: Binding<Bool>,
+        isFullScreen: Bool
+    ) -> some View {
+        modifier(SynchronizingSimpleNavigatorPresentationViewModifier(
+            binding: binding,
+            isFirstAppearanceOccured: isFirstAppearanceOccured,
+            subject: subject,
+            isFullScreen: isFullScreen
+        ))
+    }
+
     func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>(
         _ binding: Binding<Bool>,
         with subject: CurrentValueSubject<CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?, Never>,
@@ -131,6 +145,51 @@ struct DetentsViewModifier: ViewModifier {
                 .presentationDragIndicator(detents.dragIndicatorVisibility)
         } else {
             content
+        }
+    }
+}
+
+struct SynchronizingSimpleNavigatorPresentationViewModifier: ViewModifier {
+    @Binding var binding: Bool
+    @Binding var isFirstAppearanceOccured: Bool
+    let subject: CurrentValueSubject<(any SimpleNavigator)?, Never>
+    let isFullScreen: Bool
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            content
+                .onReceive(subject) { value in
+                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
+                }
+                .onChange(of: isFirstAppearanceOccured) { _, value in
+                    binding = getIsPresented(presentation: subject.value?.presentation) && value
+                }
+                .onChange(of: binding) { _, value in
+                    if !value {
+                        subject.send(nil)
+                    }
+                }
+        } else {
+            content
+                .onReceive(subject) { value in
+                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
+                }
+                .onChange(of: isFirstAppearanceOccured) { value in
+                    binding = getIsPresented(presentation: subject.value?.presentation) && value
+                }
+                .onChange(of: binding) { value in
+                    if !value {
+                        subject.send(nil)
+                    }
+                }
+        }
+    }
+
+    private func getIsPresented(presentation: SimpleNavigatorPresentation?) -> Bool {
+        switch presentation {
+        case .fullScreenCover: isFullScreen
+        case .sheet(_): !isFullScreen
+        case .none: false
         }
     }
 }

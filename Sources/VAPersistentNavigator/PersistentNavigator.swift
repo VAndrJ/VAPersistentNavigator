@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 @MainActor
 public protocol PersistentNavigator {
@@ -28,12 +29,12 @@ public protocol PersistentNavigator {
     @discardableResult
     func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
-    func present(_ data: NavigatorData, strategy: PresentationStrategy)
+    func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy)
 }
 
 public extension PersistentNavigator {
 
-    func present(_ data: NavigatorData) {
+    func present(_ data: PersistentNavigatorData) {
         present(data, strategy: .onTop)
     }
 
@@ -46,17 +47,7 @@ public extension PersistentNavigator {
     }
 }
 
-/// Defines strategies for presenting a new navigator in the app.
-public enum PresentationStrategy {
-    /// Presents a new navigator from the top-most available navigator.
-    case onTop
-    /// Replaces the currently presented navigator with a new one.
-    case replaceCurrent
-    /// Presents a new navigator from the current navigator.
-    case fromCurrent
-}
-
-public enum NavigatorData {
+public enum PersistentNavigatorData {
     case view(
         _ view: any PersistentDestination,
         id: UUID = .init(),
@@ -71,7 +62,7 @@ public enum NavigatorData {
         tabItem: (any PersistentTabItemTag)? = nil
     )
     indirect case tab(
-        tabs: [NavigatorData] = [],
+        tabs: [PersistentNavigatorData] = [],
         id: UUID = .init(),
         presentation: PersistentNavigatorPresentation = .sheet,
         selectedTab: (any PersistentTabItemTag)? = nil
@@ -83,3 +74,55 @@ public protocol PersistentDestination: Codable & Hashable {}
 public protocol PersistentTabItemTag: Codable & Hashable {}
 
 public protocol PersistentSheetTag: Codable & Hashable {}
+
+final class EmptyPersistentNavigator: PersistentNavigator {
+    var id: UUID { UUID() }
+    var isRootView: Bool { true }
+
+    nonisolated init() {}
+
+    func replace(root: any PersistentDestination, isPopToRoot: Bool) {}
+
+    func dismissTop() {}
+
+    func closeToInitial() {}
+
+    func dismiss(to destination: any PersistentDestination) -> Bool {
+        return false
+    }
+
+    func popToRoot() {}
+
+    func dismiss(to id: UUID) -> Bool {
+        return false
+    }
+
+    @discardableResult
+    func push(_ destination: any PersistentDestination) -> Bool {
+        return false
+    }
+
+    func pop() {}
+
+    func pop(to destination: any PersistentDestination, isFirst: Bool) -> Bool {
+        return false
+    }
+
+    func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy) {}
+
+    @discardableResult
+    func closeTo(destination: any PersistentDestination) -> Bool {
+        return false
+    }
+
+    @discardableResult
+    func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool {
+        return false
+    }
+}
+
+extension EnvironmentValues {
+    @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
+
+    private static let emptyPersistentNavigator = EmptyPersistentNavigator()
+}
