@@ -50,14 +50,18 @@ public extension PersistentNavigator {
     /// - Parameters:
     ///   - root: The new root destination.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    func replace(root destination: any PersistentDestination, isPopToRoot: Bool = true) {
+    /// - Returns: `true` if the destination was correct, otherwise `false`.
+    @discardableResult
+    func replace(root destination: any PersistentDestination, isPopToRoot: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
-            return
+            return false
         }
 
         replace(destination, isPopToRoot: isPopToRoot)
+
+        return true
     }
 
     /// Dismisses to a specific destination.
