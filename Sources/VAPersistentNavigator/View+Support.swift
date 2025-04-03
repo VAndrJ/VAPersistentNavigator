@@ -119,7 +119,7 @@ struct SynchronizingNavigatorPresentationViewModifier<
         }
     }
 
-    private func getIsPresented(presentation: NavigatorPresentation<SheetTag>?) -> Bool {
+    private func getIsPresented(presentation: TypedNavigatorPresentation<SheetTag>?) -> Bool {
         switch presentation {
         case .fullScreenCover: isFullScreen
         case .sheet(_): !isFullScreen
@@ -185,7 +185,7 @@ struct SynchronizingSimpleNavigatorPresentationViewModifier: ViewModifier {
         }
     }
 
-    private func getIsPresented(presentation: SimpleNavigatorPresentation?) -> Bool {
+    private func getIsPresented(presentation: NavigatorPresentation?) -> Bool {
         switch presentation {
         case .fullScreenCover: isFullScreen
         case .sheet(_): !isFullScreen

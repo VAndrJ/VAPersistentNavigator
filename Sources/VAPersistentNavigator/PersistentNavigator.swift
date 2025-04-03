@@ -29,12 +29,12 @@ public protocol PersistentNavigator {
     @discardableResult
     func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
-    func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy)
+    func present(_ data: NavigatorData, strategy: NavigatorPresentationStrategy)
 }
 
 public extension PersistentNavigator {
 
-    func present(_ data: PersistentNavigatorData) {
+    func present(_ data: NavigatorData) {
         present(data, strategy: .onTop)
     }
 
@@ -45,28 +45,6 @@ public extension PersistentNavigator {
     func replace(root: any PersistentDestination) {
         replace(root: root, isPopToRoot: true)
     }
-}
-
-public enum PersistentNavigatorData {
-    case view(
-        _ view: any PersistentDestination,
-        id: UUID = .init(),
-        presentation: PersistentNavigatorPresentation = .sheet,
-        tabItem: (any PersistentTabItemTag)? = nil
-    )
-    case stack(
-        root: any PersistentDestination,
-        id: UUID = .init(),
-        destinations: [any PersistentDestination] = [],
-        presentation: PersistentNavigatorPresentation = .sheet,
-        tabItem: (any PersistentTabItemTag)? = nil
-    )
-    indirect case tab(
-        tabs: [PersistentNavigatorData] = [],
-        id: UUID = .init(),
-        presentation: PersistentNavigatorPresentation = .sheet,
-        selectedTab: (any PersistentTabItemTag)? = nil
-    )
 }
 
 public protocol PersistentDestination: Codable & Hashable {}
@@ -108,7 +86,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
         return false
     }
 
-    func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy) {}
+    func present(_ data: NavigatorData, strategy: NavigatorPresentationStrategy) {}
 
     @discardableResult
     func closeTo(destination: any PersistentDestination) -> Bool {

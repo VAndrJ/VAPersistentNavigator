@@ -9,11 +9,14 @@ import Foundation
 import SwiftUI
 import Combine
 
-@MainActor
-public protocol SimpleNavigator: AnyObject, CustomDebugStringConvertible {
+@MainActor public protocol TypedNavigator: AnyObject, CustomDebugStringConvertible {
     var id: UUID { get }
     var isRootView: Bool { get }
-    var presentation: SimpleNavigatorPresentation { get }
+}
+
+@MainActor
+public protocol SimpleNavigator: TypedNavigator {
+    var presentation: NavigatorPresentation { get }
     var topChild: (any SimpleNavigator)? { get }
     var orTabChild: any SimpleNavigator { get }
     var kind: NavigatorKind { get }
@@ -29,7 +32,7 @@ public protocol SimpleNavigator: AnyObject, CustomDebugStringConvertible {
     var selectedTabSubj: CurrentValueSubject<AnyHashable?, Never> { get }
     var topNavigator: any SimpleNavigator { get }
 
-    func getNavigator(data: SimpleNavigatorData) -> (any SimpleNavigator)?
+    func getNavigator(data: NavigatorData) -> (any SimpleNavigator)?
 }
 
 public extension SimpleNavigator {
@@ -58,7 +61,7 @@ public extension SimpleNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
-    func present(_ data: SimpleNavigatorData, strategy: NavigatorPresentationStrategy = .onTop) {
+    func present(_ data: NavigatorData, strategy: NavigatorPresentationStrategy = .onTop) {
         present(child: getNavigator(data: data), strategy: strategy)
     }
 
@@ -315,32 +318,10 @@ public extension SimpleNavigator {
     }
 }
 
-public enum SimpleNavigatorData {
-    case view(
-        _ view: any Hashable,
-        id: UUID = .init(),
-        presentation: SimpleNavigatorPresentation = .sheet,
-        tabItem: (any Hashable)? = nil
-    )
-    case stack(
-        root: any Hashable,
-        id: UUID = .init(),
-        destinations: [any Hashable] = [],
-        presentation: SimpleNavigatorPresentation = .sheet,
-        tabItem: (any Hashable)? = nil
-    )
-    indirect case tab(
-        tabs: [SimpleNavigatorData] = [],
-        id: UUID = .init(),
-        presentation: SimpleNavigatorPresentation = .sheet,
-        selectedTab: (any Hashable)? = nil
-    )
-}
-
 final class EmptySimpleNavigator: SimpleNavigator {
     var id: UUID { UUID() }
     var isRootView: Bool { true }
-    var presentation: SimpleNavigatorPresentation { .sheet }
+    var presentation: NavigatorPresentation { .sheet }
     var topChild: (any SimpleNavigator)? { nil }
     var orTabChild: any SimpleNavigator { self }
     var kind: NavigatorKind { .singleView }
@@ -359,7 +340,7 @@ final class EmptySimpleNavigator: SimpleNavigator {
 
     nonisolated init() {}
 
-    func getNavigator(data: SimpleNavigatorData) -> (any SimpleNavigator)? {
+    func getNavigator(data: NavigatorData) -> (any SimpleNavigator)? {
         return nil
     }
 }

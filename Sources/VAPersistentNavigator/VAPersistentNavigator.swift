@@ -82,7 +82,7 @@ public final class CodablePersistentNavigator<
     }
     let childSubj: CurrentValueSubject<CodablePersistentNavigator?, Never>
     let kind: NavigatorKind
-    let presentation: NavigatorPresentation<SheetTag>
+    let presentation: TypedNavigatorPresentation<SheetTag>
     private(set) weak var parent: CodablePersistentNavigator?
 #if DEBUG
     var logDescription: String {
@@ -100,7 +100,7 @@ public final class CodablePersistentNavigator<
     public convenience init(
         id: UUID = .init(),
         view: Destination,
-        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil
     ) {
         self.init(
@@ -120,7 +120,7 @@ public final class CodablePersistentNavigator<
         id: UUID = .init(),
         root: Destination,
         destinations: [Destination] = [],
-        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil
     ) {
         self.init(
@@ -139,7 +139,7 @@ public final class CodablePersistentNavigator<
     public convenience init(
         id: UUID = .init(),
         tabs: [CodablePersistentNavigator] = [],
-        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
         selectedTab: TabItemTag? = nil
     ) {
         self.init(
@@ -158,7 +158,7 @@ public final class CodablePersistentNavigator<
         id: UUID = .init(),
         root: Destination?, // ignored when kind == .tabView
         destinations: [Destination] = [],
-        presentation: NavigatorPresentation<SheetTag> = .sheet,
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
         tabItem: TabItemTag? = nil,
         kind: NavigatorKind = .flow,
         tabs: [CodablePersistentNavigator] = [],
@@ -300,11 +300,11 @@ public final class CodablePersistentNavigator<
         }
     }
 
-    public func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy) {
+    public func present(_ data: NavigatorData, strategy: NavigatorPresentationStrategy) {
         present(getNavigator(data: data), strategy: strategy)
     }
 
-    private func getNavigator(data: PersistentNavigatorData) -> CodablePersistentNavigator? {
+    private func getNavigator(data: NavigatorData) -> CodablePersistentNavigator? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             guard let destination = view as? Destination else {
@@ -312,7 +312,7 @@ public final class CodablePersistentNavigator<
                 return nil
             }
 
-            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
             let tabItem = tabItem as? TabItemTag
 
             return .init(
@@ -329,7 +329,7 @@ public final class CodablePersistentNavigator<
             }
 
             let destinations = destinations.compactMap { $0 as? Destination }
-            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
             let tabItem = tabItem as? TabItemTag
 
             return .init(
@@ -340,7 +340,7 @@ public final class CodablePersistentNavigator<
                 tabItem: tabItem
             )
         case let .tab(tabs, id, presentation, selectedTab):
-            let presentation = NavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
             let selectedTab = selectedTab as? TabItemTag
 
             return .init(
@@ -597,7 +597,7 @@ public final class CodablePersistentNavigator<
         self.kind = try container.decode(NavigatorKind.self, forKey: .kind)
         self.id = try container.decode(UUID.self, forKey: .id)
         self.tabs = try container.decode([CodablePersistentNavigator].self, forKey: .tabs)
-        self.presentation = try container.decode(NavigatorPresentation.self, forKey: .presentation)
+        self.presentation = try container.decode(TypedNavigatorPresentation.self, forKey: .presentation)
 
         rebind()
     }

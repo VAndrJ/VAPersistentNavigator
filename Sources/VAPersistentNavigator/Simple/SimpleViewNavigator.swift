@@ -76,7 +76,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     }
     public let childSubj: CurrentValueSubject<(any SimpleNavigator)?, Never>
     public let kind: NavigatorKind
-    public let presentation: SimpleNavigatorPresentation
+    public let presentation: NavigatorPresentation
     public private(set) weak var parent: (any SimpleNavigator)?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
@@ -89,7 +89,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     public convenience init(
         id: UUID = .init(),
         view: any Hashable,
-        presentation: SimpleNavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation = .sheet,
         tabItem: (any Hashable)? = nil
     ) {
         self.init(
@@ -109,7 +109,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         id: UUID = .init(),
         root: any Hashable,
         destinations: [any Hashable] = [],
-        presentation: SimpleNavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation = .sheet,
         tabItem: (any Hashable)? = nil
     ) {
         self.init(
@@ -128,7 +128,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
     public convenience init(
         id: UUID = .init(),
         tabs: [any SimpleNavigator] = [],
-        presentation: SimpleNavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation = .sheet,
         selectedTab: (any Hashable)? = nil
     ) {
         self.init(
@@ -147,7 +147,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         id: UUID = .init(),
         root: (any Hashable)?, // ignored when kind == .tabView
         destinations: [any Hashable] = [],
-        presentation: SimpleNavigatorPresentation = .sheet,
+        presentation: NavigatorPresentation = .sheet,
         tabItem: (any Hashable)? = nil,
         kind: NavigatorKind = .flow,
         tabs: [any SimpleNavigator] = [],
@@ -164,7 +164,7 @@ public final class SimpleViewNavigator: @preconcurrency Identifiable, @preconcur
         self.selectedTabSubj = .init(selectedTab?.anyHashable)
     }
 
-    public func getNavigator(data: SimpleNavigatorData) -> (any SimpleNavigator)? {
+    public func getNavigator(data: NavigatorData) -> (any SimpleNavigator)? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             return SimpleViewNavigator(
