@@ -49,7 +49,7 @@ public extension BaseNavigator {
 
         return navigator
     }
-    public var currentTab: Tab? {
+    var currentTab: Tab? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
         set {
             if kind.isTabView {
@@ -62,7 +62,7 @@ public extension BaseNavigator {
 
     /// Pushes a new destination onto the navigation stack.
     @discardableResult
-    public func push(destination: Destination) -> Bool {
+    func push(destination: Destination) -> Bool {
 #if DEBUG
         navigatorLog?("push", "destination: \(destination)")
 #endif
@@ -93,7 +93,7 @@ public extension BaseNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator.
-    public func present(
+    func present(
         _ child: Self?,
         strategy: NavigatorPresentationStrategy = .onTop
     ) {
@@ -117,7 +117,7 @@ public extension BaseNavigator {
     }
 
     /// Pops the top destination from the navigation stack.
-    public func pop() {
+    func pop() {
         guard !isRootView else {
 #if DEBUG
             navigatorLog?("pop", "not possible, isRootView: \(isRootView)")
@@ -134,7 +134,7 @@ public extension BaseNavigator {
     }
 
     /// Pops the navigation stack to the root destination.
-    public func popToRoot() {
+    func popToRoot() {
         guard !isRootView else {
 #if DEBUG
             navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)")
@@ -155,7 +155,7 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    public func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
+    func pop(to destination: Destination, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
         if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
 #if DEBUG
@@ -178,7 +178,7 @@ public extension BaseNavigator {
     /// - Parameter id: The ID of the navigator to dismiss to.
     /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
-    public func dismiss(to id: UUID) -> Bool {
+    func dismiss(to id: UUID) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
@@ -204,7 +204,7 @@ public extension BaseNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    public func dismiss(to destination: Destination) -> Bool {
+    func dismiss(to destination: Destination) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.root == destination {
@@ -230,7 +230,7 @@ public extension BaseNavigator {
     /// - Parameters:
     ///   - root: The new root destination.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    public func replace(root: Destination, isPopToRoot: Bool = true) {
+    func replace(root: Destination, isPopToRoot: Bool = true) {
         if isPopToRoot {
 #if DEBUG
             navigatorLog?("replace root", "pop to root")
@@ -244,7 +244,7 @@ public extension BaseNavigator {
     }
 
     /// Dismisses the current top navigator.
-    public func dismissTop() {
+    func dismissTop() {
 #if DEBUG
         navigatorLog?("dismiss top")
 #endif
@@ -257,7 +257,7 @@ public extension BaseNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    public func close(to target: Destination) -> Bool {
+    func close(to target: Destination) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: { $0 == target }) == true {
@@ -274,7 +274,7 @@ public extension BaseNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    public func close(where predicate: (Destination) -> Bool) -> Bool {
+    func close(where predicate: (Destination) -> Bool) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: predicate) == true {
@@ -307,7 +307,7 @@ public extension BaseNavigator {
     }
 
     /// Closes the navigator to the initial first navigator.
-    public func closeToInitial() {
+    func closeToInitial() {
 #if DEBUG
         navigatorLog?("close to initial")
 #endif

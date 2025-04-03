@@ -15,7 +15,7 @@ public extension SimpleNavigator {
     /// Pushes a new destination onto the navigation stack.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
-    public func push(_ destination: any Hashable) -> Bool {
+    func push(_ destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Push only the specified `Destination` type.")
             
@@ -33,7 +33,7 @@ public extension SimpleNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    public func pop(to destination: any Hashable, isFirst: Bool = true) -> Bool {
+    func pop(to destination: any Hashable, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Pop only the specified `Destination` type.")
             
@@ -48,7 +48,7 @@ public extension SimpleNavigator {
     /// - Parameters:
     ///   - root: The new root destination.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    public func replace(root: any Hashable, isPopToRoot: Bool) {
+    func replace(root: any Hashable, isPopToRoot: Bool) {
         guard let destination = root as? Destination else {
             assertionFailure("Pop only the specified `Destination` type.")
 
@@ -63,7 +63,7 @@ public extension SimpleNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    public func dismiss(to destination: any Hashable) -> Bool {
+    func dismiss(to destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Pop only the specified `Destination` type.")
             
@@ -79,7 +79,7 @@ public extension SimpleNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    public func close(to destination: any Hashable) -> Bool {
+    func close(to destination: any Hashable) -> Bool {
         guard let destination = destination as? Destination else {
             assertionFailure("Close only the specified `Destination` type.")
             
@@ -94,7 +94,7 @@ public extension SimpleNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    public func close(where predicate: (any Hashable) -> Bool) -> Bool {
+    func closeTo(where predicate: (any Hashable) -> Bool) -> Bool {
         return close(where: predicate)
     }
 }
