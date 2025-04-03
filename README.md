@@ -26,8 +26,8 @@ Wrap everything in a `NavigatorStoringView`, which will save the current navigat
 
 
 ```swift
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
-    let navigatorStorage: Storage
+struct WindowView: View {
+    let navigatorStorage: DefaultsNavigatorStorage
     let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
 
     var body: some View {
