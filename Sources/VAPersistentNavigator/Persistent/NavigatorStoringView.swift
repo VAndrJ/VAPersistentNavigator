@@ -10,13 +10,11 @@ import Combine
 
 public struct NavigatorStoringView<
     Content,
-    Destination: PersistentDestination,
-    TabItemTag: PersistentTabItemTag,
-    SheetTag: PersistentSheetTag,
+    Navigator: PersistentNavigator,
     Storage: NavigatorStorage,
     S: Scheduler
->: View where Content: View, Storage.Destination == Destination, Storage.TabItemTag == TabItemTag, Storage.SheetTag == SheetTag {
-    private let navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>
+>: View where Content: View, Storage.Navigator == Navigator {
+    private let navigator: Navigator
     private let storage: Storage
     private let delay: S.SchedulerTimeType.Stride
     private let scheduler: S
@@ -24,7 +22,7 @@ public struct NavigatorStoringView<
     @ViewBuilder private let content: () -> Content
 
     public init(
-        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
+        navigator: Navigator,
         storage: Storage,
         delay: S.SchedulerTimeType.Stride = .seconds(5),
         options: S.SchedulerOptions? = nil,
@@ -39,7 +37,7 @@ public struct NavigatorStoringView<
     }
 
     public init(
-        navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetTag>,
+        navigator: Navigator,
         storage: Storage,
         delay: S.SchedulerTimeType.Stride = .seconds(5),
         scheduler: S,

@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-struct NavigatorTabView<Content: View, SelectionValue: Codable & Hashable>: View {
+struct NavigatorTabView<Content: View, SelectionValue: Hashable>: View {
     private let selectedTabSubj: CurrentValueSubject<SelectionValue?, Never>
     @ViewBuilder private let content: () -> Content
     @State private var selection: SelectionValue?

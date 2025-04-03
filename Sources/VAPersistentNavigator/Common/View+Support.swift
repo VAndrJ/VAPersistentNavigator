@@ -10,18 +10,19 @@ import Combine
 
 extension View {
 
-    func synchronize<Destination: Codable & Hashable, TabItemTag: Codable & Hashable, SheetTag: Codable & Hashable>(
-        _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?, Never>,
-        isFirstAppearanceOccured: Binding<Bool>,
-        isFullScreen: Bool
-    ) -> some View {
-        modifier(SynchronizingNavigatorPresentationViewModifier(
-            binding: binding,
-            isFirstAppearanceOccured: isFirstAppearanceOccured,
-            subject: subject,
-            isFullScreen: isFullScreen
-        ))
+    @ViewBuilder
+    func with(navigator: any BaseNavigator) -> some View {
+        switch navigator {
+        case let navigator as any PersistentNavigator:
+            self.environment(\.persistentNavigator, navigator)
+                .environment(\.baseNavigator, navigator)
+        default:
+            self.environment(\.baseNavigator, navigator)
+        }
+    }
+
+    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
+        modifier(DetentsViewModifier(detents: detents))
     }
 
     func synchronize<T: Equatable>(
@@ -29,6 +30,34 @@ extension View {
         with subject: CurrentValueSubject<T, Never>
     ) -> some View {
         modifier(SynchronizingViewModifier(binding: binding, subject: subject))
+    }
+
+    func synchronize<Navigator: BaseNavigator>(
+        _ binding: Binding<Bool>,
+        with subject: CurrentValueSubject<Navigator?, Never>,
+        isFirstAppearanceOccured: Binding<Bool>,
+        isFullScreen: Bool
+    ) -> some View {
+        modifier(SynchronizingBaseNavigatorPresentationViewModifier(
+            binding: binding,
+            isFirstAppearanceOccured: isFirstAppearanceOccured,
+            subject: subject,
+            isFullScreen: isFullScreen
+        ))
+    }
+}
+
+struct DetentsViewModifier: ViewModifier {
+    let detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+
+    func body(content: Content) -> some View {
+        if let detents {
+            content
+                .presentationDetents(detents.detents)
+                .presentationDragIndicator(detents.dragIndicatorVisibility)
+        } else {
+            content
+        }
     }
 }
 
@@ -65,14 +94,10 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
     }
 }
 
-struct SynchronizingNavigatorPresentationViewModifier<
-    Destination: PersistentDestination,
-    TabItemTag: PersistentTabItemTag,
-    SheetTag: PersistentSheetTag
->: ViewModifier {
+struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigator>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
-    let subject: CurrentValueSubject<CodablePersistentNavigator<Destination, TabItemTag, SheetTag>?, Never>
+    let subject: CurrentValueSubject<Navigator?, Never>
     let isFullScreen: Bool
 
     func body(content: Content) -> some View {
@@ -105,32 +130,11 @@ struct SynchronizingNavigatorPresentationViewModifier<
         }
     }
 
-    private func getIsPresented(presentation: NavigatorPresentation<SheetTag>?) -> Bool {
+    private func getIsPresented(presentation: TypedNavigatorPresentation<Navigator.Tag>?) -> Bool {
         switch presentation {
         case .fullScreenCover: isFullScreen
         case .sheet(_): !isFullScreen
         case .none: false
-        }
-    }
-}
-
-extension View {
-
-    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
-        modifier(DetentsViewModifier(detents: detents))
-    }
-}
-
-struct DetentsViewModifier: ViewModifier {
-    let detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
-
-    func body(content: Content) -> some View {
-        if let detents {
-            content
-                .presentationDetents(detents.detents)
-                .presentationDragIndicator(detents.dragIndicatorVisibility)
-        } else {
-            content
         }
     }
 }
