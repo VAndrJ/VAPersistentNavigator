@@ -103,7 +103,7 @@ struct WindowView: View {
                     case .greeting:
                         GreetingScreenView(context: .init(
                             start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
-                            hello: { navigator.replace(root: .hello) },
+                            hello: { navigator.replace(.hello) },
                             nextToAssert: {
                                 if !navigator.push(destination: .main) {
                                     assertionFailure("Push failed")
@@ -113,7 +113,7 @@ struct WindowView: View {
                     case .hello:
                         HelloScreenView(context: .init(
                             start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
-                            greeting: { navigator.replace(root: .greeting) },
+                            greeting: { navigator.replace(.greeting) },
                             nextToAssert: {
                                 if !navigator.push(destination: .main) {
                                     assertionFailure("Push failed")
@@ -124,7 +124,7 @@ struct WindowView: View {
                         RootScreenView(context: .init(
                             related: .init(isReplacementAvailable: navigator.onReplaceInitialNavigator != nil),
                             navigation: .init(
-                                replaceRoot: { navigator.replace(root: .otherRoot) },
+                                replaceRoot: { navigator.replace(.otherRoot) },
                                 replaceWindowWithTabView: {
                                     navigator.onReplaceInitialNavigator?(.init(
                                         tabs: [
@@ -141,7 +141,7 @@ struct WindowView: View {
                         ))
                     case .otherRoot:
                         OtherRootScreenView(context: .init(
-                            replaceRoot: { navigator.replace(root: .root) },
+                            replaceRoot: { navigator.replace(.root) },
                             next: { navigator.push(destination: .main) }
                         ))
                     case .root1:
@@ -157,7 +157,7 @@ struct WindowView: View {
                     case .root3:
                         Root3ScreenView(context: .init(
                             closeToInitial: { navigator.closeToInitial() },
-                            closeToRoot1: { navigator.close(to: .root1) },
+                            closeToRoot1: { navigator.close(target: .root1) },
                             dismiss: { navigator.dismissTop() }
                         ))
                     case .tab1:
@@ -194,7 +194,7 @@ struct WindowView: View {
                                         selectedTab: .second(.second)
                                     ))
                                 },
-                                popToMain: { navigator.pop(to: .main) },
+                                popToMain: { navigator.pop(target: .main) },
                                 changeTabs: {
                                     switch navigator.currentTab {
                                     case let .first(tabView):
