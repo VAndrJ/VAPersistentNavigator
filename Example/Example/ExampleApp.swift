@@ -84,8 +84,8 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 }
 
-struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == Destination, Storage.TabItemTag == TabTag, Storage.SheetTag == SheetTag {
-    let navigatorStorage: Storage
+struct WindowView: View {
+    let navigatorStorage: DefaultsNavigatorStorage
     let navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
 
     var body: some View {
@@ -104,13 +104,21 @@ struct WindowView<Storage: NavigatorStorage>: View where Storage.Destination == 
                         GreetingScreenView(context: .init(
                             start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
                             hello: { navigator.replace(root: .hello) },
-                            nextToAssert: { navigator.push(destination: .main) }
+                            nextToAssert: {
+                                if !navigator.push(destination: .main) {
+                                    assertionFailure("Push failed")
+                                }
+                            }
                         ))
                     case .hello:
                         HelloScreenView(context: .init(
                             start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
                             greeting: { navigator.replace(root: .greeting) },
-                            nextToAssert: { navigator.push(destination: .main) }
+                            nextToAssert: {
+                                if !navigator.push(destination: .main) {
+                                    assertionFailure("Push failed")
+                                }
+                            }
                         ))
                     case .root:
                         RootScreenView(context: .init(
