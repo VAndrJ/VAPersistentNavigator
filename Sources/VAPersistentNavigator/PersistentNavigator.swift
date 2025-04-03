@@ -29,7 +29,7 @@ public protocol PersistentNavigator {
     @discardableResult
     func closeTo(where predicate: (any PersistentDestination) -> Bool) -> Bool
     func replace(root: any PersistentDestination, isPopToRoot: Bool)
-    func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy)
+    func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy)
 }
 
 public extension PersistentNavigator {
@@ -108,7 +108,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
         return false
     }
 
-    func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy) {}
+    func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy) {}
 
     @discardableResult
     func closeTo(destination: any PersistentDestination) -> Bool {

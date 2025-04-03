@@ -279,7 +279,7 @@ public final class CodablePersistentNavigator<
     ///   - strategy: Defines strategy for presenting a new navigator.
     public func present(
         _ child: CodablePersistentNavigator?,
-        strategy: PresentationStrategy = .onTop
+        strategy: NavigatorPresentationStrategy = .onTop
     ) {
 #if DEBUG
         navigatorLog?("present", "child: \(child?.logDescription ?? "nil")", "strategy: \(strategy)")
@@ -300,7 +300,7 @@ public final class CodablePersistentNavigator<
         }
     }
 
-    public func present(_ data: PersistentNavigatorData, strategy: PresentationStrategy) {
+    public func present(_ data: PersistentNavigatorData, strategy: NavigatorPresentationStrategy) {
         present(getNavigator(data: data), strategy: strategy)
     }
 

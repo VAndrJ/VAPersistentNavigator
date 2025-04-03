@@ -58,7 +58,7 @@ public extension SimpleNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
-    func present(_ data: SimpleNavigatorData, strategy: PresentationStrategy = .onTop) {
+    func present(_ data: SimpleNavigatorData, strategy: NavigatorPresentationStrategy = .onTop) {
         present(child: getNavigator(data: data), strategy: strategy)
     }
 
@@ -69,7 +69,7 @@ public extension SimpleNavigator {
     ///   - strategy: Defines strategy for presenting a new navigator.
     public func present(
         child: (any SimpleNavigator)?,
-        strategy: PresentationStrategy = .onTop
+        strategy: NavigatorPresentationStrategy = .onTop
     ) {
 #if DEBUG
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
