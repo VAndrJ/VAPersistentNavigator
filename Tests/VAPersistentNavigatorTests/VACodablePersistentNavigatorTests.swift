@@ -252,6 +252,10 @@ struct CodablePersistentNavigatorChildrenTests {
         let expectedDestination: MockDestination = .fourth
 
         #expect(false == sut.push(expectedDestination))
+
+        let inCorrectDestination: IncorrectDestination = .empty
+
+        #expect(false == sut.push(inCorrectDestination))
     }
 
     @Test("Topmost navigator flow push failure")

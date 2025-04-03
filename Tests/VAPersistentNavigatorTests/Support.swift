@@ -17,6 +17,10 @@ enum MockDestination: Codable, Hashable, PersistentDestination {
     case fourth
 }
 
+enum IncorrectDestination: Codable, Hashable, PersistentDestination {
+    case empty
+}
+
 enum MockTabTag: Codable, Hashable, PersistentTabItemTag {
     case first
     case second
