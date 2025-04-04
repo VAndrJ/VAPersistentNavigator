@@ -20,10 +20,12 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     typealias TabItemTag = String
     typealias Tag = String
 
+    var childCancellable: AnyCancellable?
+    var bag: Set<AnyCancellable> = []
     var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
     var storeSubj: PassthroughSubject<Void, Never> { .init() }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
-    var parent: EmptyPersistentNavigator? { nil }
+    var parent: EmptyPersistentNavigator?
     var tabItem: TabItemTag?
     var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { .init(nil) }
     var rootSubj: CurrentValueSubject<Destination?, Never> { .init(nil) }
@@ -32,11 +34,19 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var kind: NavigatorKind { .singleView }
     var presentation: TypedNavigatorPresentation<Tag> { .sheet }
     let id = UUID()
+    var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
 
     nonisolated init() {}
 
-    func getNavigator(data: NavigatorData) -> Self? {
-        return nil
-    }
+    init(
+        id: UUID,
+        root: String?,
+        destinations: [String],
+        presentation: TypedNavigatorPresentation<String>,
+        tabItem: String?,
+        kind: NavigatorKind,
+        tabs: [EmptyPersistentNavigator],
+        selectedTab: String?
+    ) {}
 }

@@ -23,13 +23,84 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var childSubj: CurrentValueSubject<Self?, Never> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
-    var parent: Self? { get }
+    var parent: Self? { get set }
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
+    var childCancellable: AnyCancellable? { get set }
+    var bag: Set<AnyCancellable> { get set }
+    var onDeinit: (() -> Void)? { get set }
 
-    func getNavigator(data: NavigatorData) -> Self?
+    init(
+        id: UUID,
+        root: Destination?, // ignored when kind == .tabView
+        destinations: [Destination],
+        presentation: TypedNavigatorPresentation<SheetTag>,
+        tabItem: TabItemTag?,
+        kind: NavigatorKind,
+        tabs: [Self],
+        selectedTab: TabItemTag?
+    )
 }
 
 public extension BaseNavigator {
+
+    /// Initializer for a single `View` navigator.
+    init(
+        id: UUID = .init(),
+        view: Destination,
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: view,
+            destinations: [],
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .singleView,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
+
+    /// Initializer for a `NavigationStack` navigator.
+    init(
+        id: UUID = .init(),
+        root: Destination,
+        destinations: [Destination] = [],
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
+        tabItem: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: root,
+            destinations: destinations,
+            presentation: presentation,
+            tabItem: tabItem,
+            kind: .flow,
+            tabs: [],
+            selectedTab: nil
+        )
+    }
+
+    /// Initializer for a `TabView` navigator.
+    init(
+        id: UUID = .init(),
+        tabs: [Self] = [],
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
+        selectedTab: TabItemTag? = nil
+    ) {
+        self.init(
+            id: id,
+            root: nil,
+            destinations: [],
+            presentation: presentation,
+            tabItem: nil,
+            kind: .tabView,
+            tabs: tabs,
+            selectedTab: selectedTab
+        )
+    }
+
     var root: Destination? { rootSubj.value }
     var isRootView: Bool { destinationsSubj.value.isEmpty }
     var orTabChild: Self { tabChild ?? self }
@@ -358,6 +429,58 @@ public extension BaseNavigator {
         if navigator.childSubj.value != nil {
             navigator.present(nil, strategy: .fromCurrent)
         }
+    }
+
+    func getNavigator(data: NavigatorData) -> Self? {
+        switch data {
+        case let .view(view, id, presentation, tabItem):
+            guard let destination = view as? Destination else {
+                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: view)). Expecting: \(Destination.self)")
+
+                return nil
+            }
+
+            return .init(
+                id: id,
+                view: destination,
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                tabItem: tabItem as? TabItemTag
+            )
+        case let .stack(root, id, destinations, presentation, tabItem):
+            guard let destination = root as? Destination else {
+                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: root)). Expecting: \(Destination.self)")
+
+                return nil
+            }
+
+            return .init(
+                id: id,
+                root: destination,
+                destinations: destinations.compactMap { $0 as? Destination },
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                tabItem: tabItem as? TabItemTag
+            )
+        case let .tab(tabs, id, presentation, selectedTab):
+            return .init(
+                id: id,
+                tabs: tabs.compactMap { getNavigator(data: $0) },
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                selectedTab: selectedTab as? TabItemTag
+            )
+        }
+    }
+
+    func bind() {
+        tabs.forEach { $0.parent = self }
+        childSubj
+            .sink { [weak self] in
+                self?.bindChild(child: $0)
+            }
+            .store(in: &bag)
+    }
+
+    private func bindChild(child: Self?) {
+        child?.parent = self
     }
 }
 

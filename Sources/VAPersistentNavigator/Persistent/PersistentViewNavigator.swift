@@ -30,76 +30,18 @@ public final class PersistentViewNavigator<
     public let childSubj: CurrentValueSubject<PersistentViewNavigator?, Never>
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
-    public private(set) weak var parent: PersistentViewNavigator?
+    public weak var parent: PersistentViewNavigator?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
 
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
+    public var childCancellable: AnyCancellable?
+    public var bag: Set<AnyCancellable> = []
+    public var onDeinit: (() -> Void)?
 
-    private var childCancellable: AnyCancellable?
-    private var bag: Set<AnyCancellable> = []
-
-    /// Initializer for a single `View` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        view: Destination,
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        tabItem: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: view,
-            destinations: [],
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .singleView,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `NavigationStack` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        root: Destination,
-        destinations: [Destination] = [],
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        tabItem: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: root,
-            destinations: destinations,
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .flow,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `TabView` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        tabs: [PersistentViewNavigator] = [],
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        selectedTab: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: nil,
-            destinations: [],
-            presentation: presentation,
-            tabItem: nil,
-            kind: .tabView,
-            tabs: tabs,
-            selectedTab: selectedTab
-        )
-    }
-
-    init(
+    public init(
         id: UUID = .init(),
         root: Destination?, // ignored when kind == .tabView
         destinations: [Destination] = [],
@@ -119,56 +61,8 @@ public final class PersistentViewNavigator<
         self.childSubj = .init(nil)
         self.selectedTabSubj = .init(selectedTab)
 
-        rebind()
-    }
-
-    public func getNavigator(data: NavigatorData) -> PersistentViewNavigator? {
-        switch data {
-        case let .view(view, id, presentation, tabItem):
-            guard let destination = view as? Destination else {
-                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: view)). Expecting: \(Destination.self)")
-
-                return nil
-            }
-
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let tabItem = tabItem as? TabItemTag
-
-            return .init(
-                id: id,
-                view: destination,
-                presentation: presentation,
-                tabItem: tabItem
-            )
-        case let .stack(root, id, destinations, presentation, tabItem):
-            guard let destination = root as? Destination else {
-                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: root)). Expecting: \(Destination.self)")
-
-                return nil
-            }
-
-            let destinations = destinations.compactMap { $0 as? Destination }
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let tabItem = tabItem as? TabItemTag
-
-            return .init(
-                id: id,
-                root: destination,
-                destinations: destinations,
-                presentation: presentation,
-                tabItem: tabItem
-            )
-        case let .tab(tabs, id, presentation, selectedTab):
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let selectedTab = selectedTab as? TabItemTag
-
-            return .init(
-                id: id,
-                tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: presentation,
-                selectedTab: selectedTab
-            )
-        }
+        bind()
+        bindStoring()
     }
 
     enum CodingKeys: String, CodingKey {
@@ -208,13 +102,11 @@ public final class PersistentViewNavigator<
         self.tabs = try container.decode([PersistentViewNavigator].self, forKey: .tabs)
         self.presentation = try container.decode(TypedNavigatorPresentation.self, forKey: .presentation)
 
-        rebind()
+        bind()
+        bindStoring()
     }
 
-    private func rebind() {
-        bag.forEach { $0.cancel() }
-        bag = []
-
+    private func bindStoring() {
         Publishers
             .Merge3(
                 destinationsSubj
@@ -227,22 +119,20 @@ public final class PersistentViewNavigator<
             .sink(receiveValue: storeSubj.send)
             .store(in: &bag)
         tabs.forEach { child in
-            child.parent = self
             child.storeSubj
                 .sink(receiveValue: storeSubj.send)
                 .store(in: &bag)
         }
         childSubj
             .sink { [weak self] in
-                self?.rebindChild(child: $0)
+                self?.bindChildStoring($0)
             }
             .store(in: &bag)
     }
 
-    private func rebindChild(child: PersistentViewNavigator?) {
+    private func bindChildStoring(_ child: PersistentViewNavigator?) {
         childCancellable?.cancel()
-        if let child = childSubj.value {
-            child.parent = self
+        if let child {
             childCancellable = child.storeSubj
                 .sink(receiveValue: storeSubj.send)
         } else {
@@ -256,6 +146,7 @@ public final class PersistentViewNavigator<
         guard Thread.isMainThread else { return }
 
         MainActor.assumeIsolated {
+            onDeinit?()
             navigatorLog?(#function, debugDescription, id)
         }
     }
