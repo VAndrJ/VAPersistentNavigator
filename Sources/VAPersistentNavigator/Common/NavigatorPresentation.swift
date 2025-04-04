@@ -30,7 +30,7 @@ public enum TypedNavigatorPresentation<SheetTag: Hashable>: Hashable {
 
     public static var sheet: TypedNavigatorPresentation { .sheet() }
 
-    init(from presentation: NavigatorPresentation) {
+    public init(presentation: NavigatorPresentation) {
         switch presentation {
         case let .sheet(tag):
             if let tag {

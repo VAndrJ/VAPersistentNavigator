@@ -39,10 +39,12 @@ struct ExampleApp: App {
     }
 }
 
+typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
+
 @MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
     let navigatorStorage: DefaultsNavigatorStorage
-    @Published var navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
+    @Published var navigator: Navigator
 
     init(navigatorStorage: DefaultsNavigatorStorage) {
         self.navigatorStorage = navigatorStorage
@@ -51,7 +53,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         bindReplacement()
     }
 
-    func replaceNavigator(_ navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>) {
+    func replaceNavigator(_ navigator: Navigator) {
         self.navigator = navigator
         bindReplacement()
     }
@@ -86,7 +88,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
 
 struct WindowView: View {
     let navigatorStorage: DefaultsNavigatorStorage
-    let navigator: CodablePersistentNavigator<Destination, TabTag, SheetTag>
+    let navigator: Navigator
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, delay: .seconds(3)) {

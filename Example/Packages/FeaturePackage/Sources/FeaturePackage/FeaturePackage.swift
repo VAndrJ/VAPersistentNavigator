@@ -12,12 +12,12 @@ public struct FeaturePackageScreenFactoryView<
     TabViewTag: PersistentTabItemTag,
     SheetTag: PersistentSheetTag
 >: View {
-    let navigator: CodablePersistentNavigator<OuterDestination, TabViewTag, SheetTag>
+    let navigator: PersistentViewNavigator<OuterDestination, TabViewTag, SheetTag>
     let destination: FeaturePackageDestination
     let getOuterDestination: (FeaturePackageDestination) -> OuterDestination
 
     public init(
-        navigator: CodablePersistentNavigator<OuterDestination, TabViewTag, SheetTag>,
+        navigator: PersistentViewNavigator<OuterDestination, TabViewTag, SheetTag>,
         destination: FeaturePackageDestination,
         getOuterDestination: @escaping (FeaturePackageDestination) -> OuterDestination
     ) {

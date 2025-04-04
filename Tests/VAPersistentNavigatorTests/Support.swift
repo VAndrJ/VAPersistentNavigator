@@ -51,12 +51,12 @@ class MockNavigatorStorage: NavigatorStorage {
 
     var navigator: Data?
 
-    func store(navigator: CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>) {
+    func store(navigator: PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>) {
         self.navigator = try! encoder.encode(navigator)
     }
     
-    func getNavigator() -> CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>? {
-        navigator.flatMap { try! decoder.decode(CodablePersistentNavigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
+    func getNavigator() -> PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>? {
+        navigator.flatMap { try! decoder.decode(PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
     }
 }
 

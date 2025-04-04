@@ -17,15 +17,15 @@ extension EnvironmentValues {
 
 final class EmptyPersistentNavigator: PersistentNavigator {
     typealias Destination = String
-    typealias Tab = String
+    typealias TabItemTag = String
     typealias Tag = String
 
     var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
     var storeSubj: PassthroughSubject<Void, Never> { .init() }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
     var parent: EmptyPersistentNavigator? { nil }
-    var tabItem: Tab?
-    var selectedTabSubj: CurrentValueSubject<Tab?, Never> { .init(nil) }
+    var tabItem: TabItemTag?
+    var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { .init(nil) }
     var rootSubj: CurrentValueSubject<Destination?, Never> { .init(nil) }
     var childSubj: CurrentValueSubject<EmptyPersistentNavigator?, Never> { .init(nil) }
     var tabs: [EmptyPersistentNavigator] { [] }

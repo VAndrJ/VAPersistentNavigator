@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import VAPersistentNavigator
 
-typealias TestNavigator = CodablePersistentNavigator<MockDestination, MockTabTag, SheetTag>
+typealias TestNavigator = PersistentViewNavigator<MockDestination, MockTabTag, SheetTag>
 
 @Suite("Navigator initial")
 @MainActor
