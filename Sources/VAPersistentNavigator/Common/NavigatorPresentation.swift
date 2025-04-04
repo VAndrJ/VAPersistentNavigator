@@ -13,7 +13,7 @@ public enum NavigatorPresentation {
 
     public static var sheet: NavigatorPresentation { .sheet() }
 
-    var sheetTag: (any Hashable)? {
+    public var sheetTag: (any Hashable)? {
         switch self {
         case let .sheet(tag): tag
         case .fullScreenCover: nil
@@ -48,7 +48,7 @@ public enum TypedNavigatorPresentation<SheetTag: Hashable>: Hashable {
         }
     }
 
-    var sheetTag: SheetTag? {
+    public var sheetTag: SheetTag? {
         switch self {
         case let .sheet(tag): tag
         case .fullScreenCover: nil
