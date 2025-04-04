@@ -37,7 +37,6 @@ public final class PersistentViewNavigator<
 
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
-
     private var childCancellable: AnyCancellable?
     private var bag: Set<AnyCancellable> = []
 
@@ -131,14 +130,11 @@ public final class PersistentViewNavigator<
                 return nil
             }
 
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let tabItem = tabItem as? TabItemTag
-
             return .init(
                 id: id,
                 view: destination,
-                presentation: presentation,
-                tabItem: tabItem
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                tabItem: tabItem as? TabItemTag
             )
         case let .stack(root, id, destinations, presentation, tabItem):
             guard let destination = root as? Destination else {
@@ -147,26 +143,19 @@ public final class PersistentViewNavigator<
                 return nil
             }
 
-            let destinations = destinations.compactMap { $0 as? Destination }
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let tabItem = tabItem as? TabItemTag
-
             return .init(
                 id: id,
                 root: destination,
-                destinations: destinations,
-                presentation: presentation,
-                tabItem: tabItem
+                destinations: destinations.compactMap { $0 as? Destination },
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                tabItem: tabItem as? TabItemTag
             )
         case let .tab(tabs, id, presentation, selectedTab):
-            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
-            let selectedTab = selectedTab as? TabItemTag
-
             return .init(
                 id: id,
                 tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: presentation,
-                selectedTab: selectedTab
+                presentation: TypedNavigatorPresentation(presentation: presentation),
+                selectedTab: selectedTab as? TabItemTag
             )
         }
     }
