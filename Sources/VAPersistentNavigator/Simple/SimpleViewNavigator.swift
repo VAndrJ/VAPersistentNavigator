@@ -118,7 +118,7 @@ public final class SimpleViewNavigator: BaseNavigator, Identifiable, @preconcurr
             return .init(
                 id: id,
                 view: view,
-                presentation: TypedNavigatorPresentation(from: presentation),
+                presentation: TypedNavigatorPresentation(presentation: presentation),
                 tabItem: tabItem
             )
         case let .stack(root, id, destinations, presentation, tabItem):
@@ -126,14 +126,14 @@ public final class SimpleViewNavigator: BaseNavigator, Identifiable, @preconcurr
                 id: id,
                 root: root,
                 destinations: destinations,
-                presentation: TypedNavigatorPresentation(from: presentation),
+                presentation: TypedNavigatorPresentation(presentation: presentation),
                 tabItem: tabItem
             )
         case let .tab(tabs, id, presentation, selectedTab):
             return .init(
                 id: id,
                 tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: TypedNavigatorPresentation(from: presentation),
+                presentation: TypedNavigatorPresentation(presentation: presentation),
                 selectedTab: selectedTab
             )
         }

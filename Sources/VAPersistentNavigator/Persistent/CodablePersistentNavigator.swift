@@ -131,7 +131,7 @@ public final class CodablePersistentNavigator<
                 return nil
             }
 
-            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
             let tabItem = tabItem as? TabItemTag
 
             return .init(
@@ -148,7 +148,7 @@ public final class CodablePersistentNavigator<
             }
 
             let destinations = destinations.compactMap { $0 as? Destination }
-            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
             let tabItem = tabItem as? TabItemTag
 
             return .init(
@@ -159,7 +159,7 @@ public final class CodablePersistentNavigator<
                 tabItem: tabItem
             )
         case let .tab(tabs, id, presentation, selectedTab):
-            let presentation = TypedNavigatorPresentation<SheetTag>(from: presentation)
+            let presentation = TypedNavigatorPresentation<SheetTag>(presentation: presentation)
             let selectedTab = selectedTab as? TabItemTag
 
             return .init(
