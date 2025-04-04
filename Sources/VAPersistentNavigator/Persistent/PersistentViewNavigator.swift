@@ -37,68 +37,10 @@ public final class PersistentViewNavigator<
 
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
-    private var childCancellable: AnyCancellable?
-    private var bag: Set<AnyCancellable> = []
+    public var childCancellable: AnyCancellable?
+    public var bag: Set<AnyCancellable> = []
 
-    /// Initializer for a single `View` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        view: Destination,
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        tabItem: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: view,
-            destinations: [],
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .singleView,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `NavigationStack` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        root: Destination,
-        destinations: [Destination] = [],
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        tabItem: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: root,
-            destinations: destinations,
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .flow,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `TabView` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        tabs: [PersistentViewNavigator] = [],
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        selectedTab: TabItemTag? = nil
-    ) {
-        self.init(
-            id: id,
-            root: nil,
-            destinations: [],
-            presentation: presentation,
-            tabItem: nil,
-            kind: .tabView,
-            tabs: tabs,
-            selectedTab: selectedTab
-        )
-    }
-
-    init(
+    public init(
         id: UUID = .init(),
         root: Destination?, // ignored when kind == .tabView
         destinations: [Destination] = [],
@@ -119,45 +61,6 @@ public final class PersistentViewNavigator<
         self.selectedTabSubj = .init(selectedTab)
 
         rebind()
-    }
-
-    public func getNavigator(data: NavigatorData) -> PersistentViewNavigator? {
-        switch data {
-        case let .view(view, id, presentation, tabItem):
-            guard let destination = view as? Destination else {
-                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: view)). Expecting: \(Destination.self)")
-
-                return nil
-            }
-
-            return .init(
-                id: id,
-                view: destination,
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                tabItem: tabItem as? TabItemTag
-            )
-        case let .stack(root, id, destinations, presentation, tabItem):
-            guard let destination = root as? Destination else {
-                navigatorLog?("Present only the specified `Destination` type. Found: \(type(of: root)). Expecting: \(Destination.self)")
-
-                return nil
-            }
-
-            return .init(
-                id: id,
-                root: destination,
-                destinations: destinations.compactMap { $0 as? Destination },
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                tabItem: tabItem as? TabItemTag
-            )
-        case let .tab(tabs, id, presentation, selectedTab):
-            return .init(
-                id: id,
-                tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                selectedTab: selectedTab as? TabItemTag
-            )
-        }
     }
 
     enum CodingKeys: String, CodingKey {

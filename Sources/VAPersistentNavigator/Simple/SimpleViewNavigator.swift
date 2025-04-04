@@ -5,149 +5,89 @@
 //  Created by VAndrJ on 4/3/25.
 //
 
-import Foundation
 import Combine
+import Foundation
+
+public typealias SimpleViewNavigator = TypedViewNavigator<AnyHashable, AnyHashable, AnyHashable>
 
 /// A class representing a navigator that manages navigation states and presentations.
 @MainActor
-public final class SimpleViewNavigator: BaseNavigator, Identifiable, @preconcurrency Equatable, @preconcurrency CustomDebugStringConvertible {
-    public static func == (lhs: SimpleViewNavigator, rhs: SimpleViewNavigator) -> Bool {
+public final class TypedViewNavigator<
+    Destination: Hashable,
+    TabItemTag: Hashable,
+    SheetTag: Hashable
+>: BaseNavigator, Identifiable, @preconcurrency Equatable, @preconcurrency CustomDebugStringConvertible {
+    public static func == (lhs: TypedViewNavigator, rhs: TypedViewNavigator) -> Bool {
         return lhs.id == rhs.id
     }
 
     public let id: UUID
-    public var _onReplaceInitialNavigator: ((_ newNavigator: SimpleViewNavigator) -> Void)?
-    public let rootSubj: CurrentValueSubject<AnyHashable?, Never>
-    public let selectedTabSubj: CurrentValueSubject<AnyHashable?, Never>
-    public private(set) var tabItem: AnyHashable?
-    public let tabs: [SimpleViewNavigator]
-    public let destinationsSubj: CurrentValueSubject<[AnyHashable], Never>
-    public let childSubj: CurrentValueSubject<SimpleViewNavigator?, Never>
+    public var _onReplaceInitialNavigator: ((_ newNavigator: TypedViewNavigator) -> Void)?
+    public let rootSubj: CurrentValueSubject<Destination?, Never>
+    public let selectedTabSubj: CurrentValueSubject<TabItemTag?, Never>
+    public private(set) var tabItem: TabItemTag?
+    public let tabs: [TypedViewNavigator]
+    public let destinationsSubj: CurrentValueSubject<[Destination], Never>
+    public let childSubj: CurrentValueSubject<TypedViewNavigator?, Never>
     public let kind: NavigatorKind
-    public let presentation: TypedNavigatorPresentation<AnyHashable>
-    public private(set) weak var parent: SimpleViewNavigator?
+    public let presentation: TypedNavigatorPresentation<SheetTag>
+    public private(set) weak var parent: TypedViewNavigator?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
 
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
+    public var childCancellable: AnyCancellable?
+    public var bag: Set<AnyCancellable> = []
 
-    /// Initializer for a single `View` navigator.
-    public convenience init(
+    public init(
         id: UUID = .init(),
-        view: any Hashable,
-        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
-        tabItem: (any Hashable)? = nil
-    ) {
-        self.init(
-            id: id,
-            root: view,
-            destinations: [],
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .singleView,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `NavigationStack` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        root: any Hashable,
-        destinations: [any Hashable] = [],
-        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
-        tabItem: (any Hashable)? = nil
-    ) {
-        self.init(
-            id: id,
-            root: root,
-            destinations: destinations,
-            presentation: presentation,
-            tabItem: tabItem,
-            kind: .flow,
-            tabs: [],
-            selectedTab: nil
-        )
-    }
-
-    /// Initializer for a `TabView` navigator.
-    public convenience init(
-        id: UUID = .init(),
-        tabs: [SimpleViewNavigator] = [],
-        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
-        selectedTab: (any Hashable)? = nil
-    ) {
-        self.init(
-            id: id,
-            root: nil,
-            destinations: [],
-            presentation: presentation,
-            tabItem: nil,
-            kind: .tabView,
-            tabs: tabs,
-            selectedTab: selectedTab
-        )
-    }
-
-    init(
-        id: UUID = .init(),
-        root: (any Hashable)?, // ignored when kind == .tabView
-        destinations: [any Hashable] = [],
-        presentation: TypedNavigatorPresentation<AnyHashable> = .sheet,
-        tabItem: (any Hashable)? = nil,
+        root: Destination?, // ignored when kind == .tabView
+        destinations: [Destination] = [],
+        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
+        tabItem: TabItemTag? = nil,
         kind: NavigatorKind = .flow,
-        tabs: [SimpleViewNavigator] = [],
-        selectedTab: (any Hashable)? = nil
+        tabs: [TypedViewNavigator] = [],
+        selectedTab: TabItemTag? = nil
     ) {
         self.id = id
-        self.rootSubj = .init(root?.anyHashable)
-        self.destinationsSubj = .init(destinations.map(\.anyHashable))
-        self.tabItem = tabItem?.anyHashable
+        self.rootSubj = .init(root)
+        self.destinationsSubj = .init(destinations)
+        self.tabItem = tabItem
         self.kind = kind
         self.tabs = tabs
         self.presentation = presentation
         self.childSubj = .init(nil)
-        self.selectedTabSubj = .init(selectedTab?.anyHashable)
+        self.selectedTabSubj = .init(selectedTab)
+
+        rebind()
     }
 
-    public func getNavigator(data: NavigatorData) -> SimpleViewNavigator? {
-        switch data {
-        case let .view(view, id, presentation, tabItem):
-            return .init(
-                id: id,
-                view: view,
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                tabItem: tabItem
-            )
-        case let .stack(root, id, destinations, presentation, tabItem):
-            return .init(
-                id: id,
-                root: root,
-                destinations: destinations,
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                tabItem: tabItem
-            )
-        case let .tab(tabs, id, presentation, selectedTab):
-            return .init(
-                id: id,
-                tabs: tabs.compactMap { getNavigator(data: $0) },
-                presentation: TypedNavigatorPresentation(presentation: presentation),
-                selectedTab: selectedTab
-            )
+    private func rebind() {
+        tabs.forEach { $0.parent = self }
+        childSubj
+            .sink { [weak self] in
+                self?.rebindChild(child: $0)
+            }
+            .store(in: &bag)
+    }
+
+    private func rebindChild(child: TypedViewNavigator?) {
+        if let child = childSubj.value {
+            child.parent = self
         }
     }
 
-#if DEBUG
-    deinit {
-        guard Thread.isMainThread else { return }
+    #if DEBUG
+        deinit {
+            guard Thread.isMainThread else { return }
 
-        MainActor.assumeIsolated {
-            navigatorLog?(#function, debugDescription, id)
+            MainActor.assumeIsolated {
+                navigatorLog?(#function, debugDescription, id)
+            }
         }
-    }
-#endif
+    #endif
 }
 
 extension Hashable {
