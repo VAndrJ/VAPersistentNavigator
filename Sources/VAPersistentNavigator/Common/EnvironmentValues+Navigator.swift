@@ -34,6 +34,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var kind: NavigatorKind { .singleView }
     var presentation: TypedNavigatorPresentation<Tag> { .sheet }
     let id = UUID()
+    var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
 
     nonisolated init() {}

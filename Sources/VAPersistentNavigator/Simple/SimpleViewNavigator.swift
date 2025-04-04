@@ -40,6 +40,7 @@ public final class TypedViewNavigator<
     }
     public var childCancellable: AnyCancellable?
     public var bag: Set<AnyCancellable> = []
+    public var onDeinit: (() -> Void)?
 
     public init(
         id: UUID = .init(),
@@ -84,6 +85,7 @@ public final class TypedViewNavigator<
             guard Thread.isMainThread else { return }
 
             MainActor.assumeIsolated {
+                onDeinit?()
                 navigatorLog?(#function, debugDescription, id)
             }
         }

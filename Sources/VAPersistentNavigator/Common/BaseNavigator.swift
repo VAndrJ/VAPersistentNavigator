@@ -27,6 +27,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
     var childCancellable: AnyCancellable? { get set }
     var bag: Set<AnyCancellable> { get set }
+    var onDeinit: (() -> Void)? { get set }
 
     init(
         id: UUID,
