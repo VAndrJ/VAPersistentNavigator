@@ -8,7 +8,7 @@
 import SwiftUI
 import Combine
 
-extension View {
+public extension View {
 
     @ViewBuilder
     func with(navigator: any BaseNavigator) -> some View {
