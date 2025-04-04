@@ -130,7 +130,7 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
         }
     }
 
-    private func getIsPresented(presentation: TypedNavigatorPresentation<Navigator.Tag>?) -> Bool {
+    private func getIsPresented(presentation: TypedNavigatorPresentation<Navigator.SheetTag>?) -> Bool {
         switch presentation {
         case .fullScreenCover: isFullScreen
         case .sheet(_): !isFullScreen

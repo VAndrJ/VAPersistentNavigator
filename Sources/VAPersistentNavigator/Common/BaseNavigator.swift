@@ -10,16 +10,16 @@ import Combine
 
 @MainActor
 public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable {
-    associatedtype Tab: Hashable
     associatedtype Destination: Hashable
-    associatedtype Tag: Hashable
+    associatedtype TabItemTag: Hashable
+    associatedtype SheetTag: Hashable
 
     var id: UUID { get }
     var kind: NavigatorKind { get }
     var tabs: [Self] { get }
-    var presentation: TypedNavigatorPresentation<Tag> { get }
-    var tabItem: Tab? { get }
-    var selectedTabSubj: CurrentValueSubject<Tab?, Never> { get }
+    var presentation: TypedNavigatorPresentation<SheetTag> { get }
+    var tabItem: TabItemTag? { get }
+    var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { get }
     var childSubj: CurrentValueSubject<Self?, Never> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
@@ -50,7 +50,7 @@ public extension BaseNavigator {
 
         return navigator
     }
-    var currentTab: Tab? {
+    var currentTab: TabItemTag? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
         set {
             if kind.isTabView {

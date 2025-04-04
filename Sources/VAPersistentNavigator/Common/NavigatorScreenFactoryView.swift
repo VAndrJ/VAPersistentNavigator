@@ -15,8 +15,8 @@ public struct NavigatorScreenFactoryView<
     private let navigator: Navigator
     private let rootReplaceAnimation: (Navigator.Destination?) -> Animation?
     @ViewBuilder private let buildView: (Navigator.Destination, Navigator) -> Content
-    @ViewBuilder private let buildTab: (Navigator.Tab?) -> TabItem
-    private let getDetents: (Navigator.Tag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+    @ViewBuilder private let buildTab: (Navigator.TabItemTag?) -> TabItem
+    private let getDetents: (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
     @State private var destinations: [Navigator.Destination]
     @State private var root: Navigator.Destination?
@@ -26,8 +26,8 @@ public struct NavigatorScreenFactoryView<
     public init(
         navigator: Navigator,
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
-        @ViewBuilder buildTab: @escaping (Navigator.Tab?) -> TabItem,
-        getDetents: @escaping (Navigator.Tag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
+        @ViewBuilder buildTab: @escaping (Navigator.TabItemTag?) -> TabItem,
+        getDetents: @escaping (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Navigator.Destination?) -> Animation? = { _ in .default }
     ) {
         self.rootReplaceAnimation = getRootReplaceAnimation
