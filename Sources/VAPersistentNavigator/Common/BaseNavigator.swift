@@ -23,7 +23,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var childSubj: CurrentValueSubject<Self?, Never> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
-    var parent: Self? { get }
+    var parent: Self? { get set }
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
     var childCancellable: AnyCancellable? { get set }
     var bag: Set<AnyCancellable> { get set }
@@ -468,6 +468,19 @@ public extension BaseNavigator {
                 selectedTab: selectedTab as? TabItemTag
             )
         }
+    }
+
+    func bind() {
+        tabs.forEach { $0.parent = self }
+        childSubj
+            .sink { [weak self] in
+                self?.bindChild(child: $0)
+            }
+            .store(in: &bag)
+    }
+
+    private func bindChild(child: Self?) {
+        child?.parent = self
     }
 }
 

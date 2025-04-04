@@ -25,7 +25,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
     var storeSubj: PassthroughSubject<Void, Never> { .init() }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
-    var parent: EmptyPersistentNavigator? { nil }
+    var parent: EmptyPersistentNavigator?
     var tabItem: TabItemTag?
     var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { .init(nil) }
     var rootSubj: CurrentValueSubject<Destination?, Never> { .init(nil) }

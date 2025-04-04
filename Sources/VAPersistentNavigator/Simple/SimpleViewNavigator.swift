@@ -31,7 +31,7 @@ public final class TypedViewNavigator<
     public let childSubj: CurrentValueSubject<TypedViewNavigator?, Never>
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
-    public private(set) weak var parent: TypedViewNavigator?
+    public weak var parent: TypedViewNavigator?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
@@ -62,22 +62,7 @@ public final class TypedViewNavigator<
         self.childSubj = .init(nil)
         self.selectedTabSubj = .init(selectedTab)
 
-        rebind()
-    }
-
-    private func rebind() {
-        tabs.forEach { $0.parent = self }
-        childSubj
-            .sink { [weak self] in
-                self?.rebindChild(child: $0)
-            }
-            .store(in: &bag)
-    }
-
-    private func rebindChild(child: TypedViewNavigator?) {
-        if let child = childSubj.value {
-            child.parent = self
-        }
+        bind()
     }
 
     #if DEBUG

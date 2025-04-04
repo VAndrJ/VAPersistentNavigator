@@ -30,7 +30,7 @@ public final class PersistentViewNavigator<
     public let childSubj: CurrentValueSubject<PersistentViewNavigator?, Never>
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
-    public private(set) weak var parent: PersistentViewNavigator?
+    public weak var parent: PersistentViewNavigator?
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
@@ -61,7 +61,8 @@ public final class PersistentViewNavigator<
         self.childSubj = .init(nil)
         self.selectedTabSubj = .init(selectedTab)
 
-        rebind()
+        bind()
+        bindStoring()
     }
 
     enum CodingKeys: String, CodingKey {
@@ -101,13 +102,11 @@ public final class PersistentViewNavigator<
         self.tabs = try container.decode([PersistentViewNavigator].self, forKey: .tabs)
         self.presentation = try container.decode(TypedNavigatorPresentation.self, forKey: .presentation)
 
-        rebind()
+        bind()
+        bindStoring()
     }
 
-    private func rebind() {
-        bag.forEach { $0.cancel() }
-        bag = []
-
+    private func bindStoring() {
         Publishers
             .Merge3(
                 destinationsSubj
@@ -120,22 +119,20 @@ public final class PersistentViewNavigator<
             .sink(receiveValue: storeSubj.send)
             .store(in: &bag)
         tabs.forEach { child in
-            child.parent = self
             child.storeSubj
                 .sink(receiveValue: storeSubj.send)
                 .store(in: &bag)
         }
         childSubj
             .sink { [weak self] in
-                self?.rebindChild(child: $0)
+                self?.bindChildStoring($0)
             }
             .store(in: &bag)
     }
 
-    private func rebindChild(child: PersistentViewNavigator?) {
+    private func bindChildStoring(_ child: PersistentViewNavigator?) {
         childCancellable?.cancel()
-        if let child = childSubj.value {
-            child.parent = self
+        if let child {
             childCancellable = child.storeSubj
                 .sink(receiveValue: storeSubj.send)
         } else {
