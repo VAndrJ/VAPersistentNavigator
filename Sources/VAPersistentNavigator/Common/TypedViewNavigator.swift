@@ -44,7 +44,7 @@ public final class TypedViewNavigator<
 
     public required init(
         id: UUID,
-        root: Destination?, // ignored when kind == .tabView
+        root: Destination?,
         destinations: [Destination],
         presentation: TypedNavigatorPresentation<SheetTag>,
         tabItem: TabItemTag?,

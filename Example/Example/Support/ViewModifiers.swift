@@ -29,3 +29,7 @@ struct OnFirstAppearViewModifier: ViewModifier {
             }
     }
 }
+
+extension EnvironmentValues {
+    var navigator: Navigator { persistentNavigator as! Navigator }
+}
