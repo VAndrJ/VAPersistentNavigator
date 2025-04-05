@@ -37,7 +37,8 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
         tabItem: TabItemTag?,
         kind: NavigatorKind,
         tabs: [Self],
-        selectedTab: TabItemTag?
+        selectedTab: TabItemTag?,
+        child: Self?
     )
 }
 
@@ -58,7 +59,8 @@ public extension BaseNavigator {
             tabItem: tabItem,
             kind: .singleView,
             tabs: [],
-            selectedTab: nil
+            selectedTab: nil,
+            child: nil
         )
     }
 
@@ -78,7 +80,8 @@ public extension BaseNavigator {
             tabItem: tabItem,
             kind: .flow,
             tabs: [],
-            selectedTab: nil
+            selectedTab: nil,
+            child: nil
         )
     }
 
@@ -97,7 +100,8 @@ public extension BaseNavigator {
             tabItem: nil,
             kind: .tabView,
             tabs: tabs,
-            selectedTab: selectedTab
+            selectedTab: selectedTab,
+            child: nil
         )
     }
 

@@ -47,6 +47,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
         tabItem: String?,
         kind: NavigatorKind,
         tabs: [EmptyPersistentNavigator],
-        selectedTab: String?
+        selectedTab: String?,
+        child: EmptyPersistentNavigator?
     ) {}
 }
