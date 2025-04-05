@@ -473,6 +473,9 @@ public extension BaseNavigator {
             )
         }
     }
+}
+
+extension BaseNavigator {
 
     func bind() {
         tabs.forEach { $0.parent = self }

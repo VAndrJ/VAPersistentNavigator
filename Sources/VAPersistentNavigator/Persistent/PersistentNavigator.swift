@@ -102,6 +102,9 @@ public extension PersistentNavigator {
     func close(where predicate: ((any PersistentDestination)?) -> Bool) -> Bool {
         return close(predicate: { predicate($0 as? any PersistentDestination) })
     }
+}
+
+extension PersistentNavigator {
 
     func bindStoring() {
         Publishers
