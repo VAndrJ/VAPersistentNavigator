@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 /// A typealis representing a navigator that manages navigation states and presentations and can also be persisted.
-typealias PersistentViewNavigator<
+public typealias PersistentViewNavigator<
     Destination: PersistentDestination,
     TabItemTag: PersistentTabItemTag,
     SheetTag: PersistentSheetTag
