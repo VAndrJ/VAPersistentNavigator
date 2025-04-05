@@ -117,7 +117,8 @@ extension TypedViewNavigator: PersistentNavigator, @preconcurrency Codable where
             tabItem: try container.decodeIfPresent(TabItemTag.self, forKey: .tabItem),
             kind: try container.decode(NavigatorKind.self, forKey: .kind),
             tabs: try container.decode([TypedViewNavigator].self, forKey: .tabs),
-            selectedTab: try container.decodeIfPresent(TabItemTag.self, forKey: .selectedTab)
+            selectedTab: try container.decodeIfPresent(TabItemTag.self, forKey: .selectedTab),
+            child: try container.decodeIfPresent(TypedViewNavigator.self, forKey: .navigator)
         )
     }
 }
