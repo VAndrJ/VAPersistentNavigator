@@ -42,16 +42,16 @@ public final class TypedViewNavigator<
 
     private let _storeSubj = PassthroughSubject<Void, Never>()
 
-    public init(
-        id: UUID = .init(),
+    public required init(
+        id: UUID,
         root: Destination?, // ignored when kind == .tabView
-        destinations: [Destination] = [],
-        presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
-        tabItem: TabItemTag? = nil,
-        kind: NavigatorKind = .flow,
-        tabs: [TypedViewNavigator] = [],
-        selectedTab: TabItemTag? = nil,
-        child: TypedViewNavigator? = nil
+        destinations: [Destination],
+        presentation: TypedNavigatorPresentation<SheetTag>,
+        tabItem: TabItemTag?,
+        kind: NavigatorKind,
+        tabs: [TypedViewNavigator],
+        selectedTab: TabItemTag?,
+        child: TypedViewNavigator?
     ) {
         self.id = id
         self.rootSubj = .init(root)
