@@ -102,6 +102,41 @@ public extension PersistentNavigator {
     func close(where predicate: ((any PersistentDestination)?) -> Bool) -> Bool {
         return close(predicate: { predicate($0 as? any PersistentDestination) })
     }
+
+    func bindStoring() {
+        Publishers
+            .Merge3(
+                destinationsSubj
+                    .map { _ in },
+                rootSubj
+                    .map { _ in },
+                selectedTabSubj
+                    .map { _ in }
+            )
+            .sink(receiveValue: storeSubj.send)
+            .store(in: &bag)
+        tabs.forEach { child in
+            child.storeSubj
+                .sink(receiveValue: storeSubj.send)
+                .store(in: &bag)
+        }
+        childSubj
+            .sink { [weak self] in
+                self?.bindChildStoring($0)
+            }
+            .store(in: &bag)
+    }
+
+    private func bindChildStoring(_ child: Self?) {
+        childCancellable?.cancel()
+        if let child {
+            childCancellable = child.storeSubj
+                .sink(receiveValue: storeSubj.send)
+        } else {
+            childCancellable = nil
+        }
+        storeSubj.send(())
+    }
 }
 
 public protocol PersistentDestination: Codable & Hashable {}

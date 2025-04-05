@@ -62,7 +62,6 @@ public final class PersistentViewNavigator<
         self.selectedTabSubj = .init(selectedTab)
 
         bind()
-        bindStoring()
     }
 
     enum CodingKeys: String, CodingKey {
@@ -103,42 +102,6 @@ public final class PersistentViewNavigator<
         self.presentation = try container.decode(TypedNavigatorPresentation.self, forKey: .presentation)
 
         bind()
-        bindStoring()
-    }
-
-    private func bindStoring() {
-        Publishers
-            .Merge3(
-                destinationsSubj
-                    .map { _ in },
-                rootSubj
-                    .map { _ in },
-                selectedTabSubj
-                    .map { _ in }
-            )
-            .sink(receiveValue: storeSubj.send)
-            .store(in: &bag)
-        tabs.forEach { child in
-            child.storeSubj
-                .sink(receiveValue: storeSubj.send)
-                .store(in: &bag)
-        }
-        childSubj
-            .sink { [weak self] in
-                self?.bindChildStoring($0)
-            }
-            .store(in: &bag)
-    }
-
-    private func bindChildStoring(_ child: PersistentViewNavigator?) {
-        childCancellable?.cancel()
-        if let child {
-            childCancellable = child.storeSubj
-                .sink(receiveValue: storeSubj.send)
-        } else {
-            childCancellable = nil
-        }
-        storeSubj.send(())
     }
 
 #if DEBUG

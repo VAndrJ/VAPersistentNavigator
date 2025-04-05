@@ -474,13 +474,10 @@ public extension BaseNavigator {
         tabs.forEach { $0.parent = self }
         childSubj
             .sink { [weak self] in
-                self?.bindChild(child: $0)
+                $0?.parent = self
             }
             .store(in: &bag)
-    }
-
-    private func bindChild(child: Self?) {
-        child?.parent = self
+        (self as? any PersistentNavigator)?.bindStoring()
     }
 }
 
