@@ -26,6 +26,7 @@ extension EnvironmentValues {
     static let emptyPersistentNavigator = EmptyPersistentNavigator()
 }
 
+/// Dummy class to get around the `Main actor-isolated default value in a nonisolated context` in `EnvironmentValues`.
 final class EmptyPersistentNavigator: PersistentNavigator {
     typealias Destination = String
     typealias TabItemTag = String

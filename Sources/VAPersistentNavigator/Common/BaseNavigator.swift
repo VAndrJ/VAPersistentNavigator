@@ -472,26 +472,14 @@ public extension BaseNavigator {
         switch firstNavigator.kind {
         case .tabView:
             firstNavigator.tabs.forEach {
-                dismissIfNeeded(in: $0)
-                popToRootIfNeeded(in: $0)
+                $0.present(nil, strategy: .fromCurrent)
+                $0.popToRoot()
             }
         case .flow:
-            dismissIfNeeded(in: firstNavigator)
-            popToRootIfNeeded(in: firstNavigator)
+            firstNavigator.present(nil, strategy: .fromCurrent)
+            firstNavigator.popToRoot()
         case .singleView:
-            dismissIfNeeded(in: firstNavigator)
-        }
-    }
-
-    private func popToRootIfNeeded(in navigator: Self) {
-        if !navigator.destinationsSubj.value.isEmpty {
-            navigator.popToRoot()
-        }
-    }
-
-    private func dismissIfNeeded(in navigator: Self) {
-        if navigator.childSubj.value != nil {
-            navigator.present(nil, strategy: .fromCurrent)
+            firstNavigator.present(nil, strategy: .fromCurrent)
         }
     }
 
