@@ -9,7 +9,6 @@ import Combine
 import Foundation
 
 /// A class representing a navigator that manages navigation states and presentations.
-@MainActor
 public final class TypedViewNavigator<
     Destination: Hashable,
     TabItemTag: Hashable,

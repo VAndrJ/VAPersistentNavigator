@@ -8,7 +8,6 @@
 import Foundation
 import Combine
 
-@MainActor
 public protocol PersistentNavigator: BaseNavigator {
     var storeSubj: PassthroughSubject<Void, Never> { get }
 }
