@@ -18,7 +18,6 @@ import Foundation
 ///   - Destination: A type representing the navigable destinations in the app.
 ///   - TabItemTag: A type representing unique identifiers for tab items.
 ///   - SheetTag: A type used to differentiate between different sheet presentations.
-
 public final class TypedViewNavigator<
     Destination: Hashable,
     TabItemTag: Hashable,

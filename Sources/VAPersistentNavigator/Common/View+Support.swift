@@ -5,10 +5,10 @@
 //  Created by VAndrJ on 8/6/24.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
-public extension View {
+extension View {
 
     @ViewBuilder
     func with(navigator: any BaseNavigator) -> some View {
@@ -27,14 +27,14 @@ public extension View {
         modifier(DetentsViewModifier(detents: detents))
     }
 
-    func synchronize<T: Equatable>(
+    public func synchronize<T: Equatable>(
         _ binding: Binding<T>,
         with subject: CurrentValueSubject<T, Never>
     ) -> some View {
         modifier(SynchronizingViewModifier(binding: binding, subject: subject))
     }
 
-    func synchronize<Navigator: BaseNavigator>(
+    public func synchronize<Navigator: BaseNavigator>(
         _ binding: Binding<Bool>,
         with subject: CurrentValueSubject<Navigator?, Never>,
         isFirstAppearanceOccured: Binding<Bool>,
