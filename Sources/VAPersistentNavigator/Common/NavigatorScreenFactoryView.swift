@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+/// A generic View responsible for building and managing screens within a `BaseNavigator` navigation system.
+///
+/// `NavigatorScreenFactoryView` acts as the entry point for rendering views based on a navigation model.
+/// It supports single view, tab-based, and navigation stack flows depending on the `Navigator` type configuration.
+///
+/// - Parameters:
+///   - Navigator: A type conforming to `BaseNavigator` that drives the navigation logic.
+///   - Content: The type of the content view rendered for each destination.
+///   - TabContent: The type of the view rendered for each tab item.
 public struct NavigatorScreenFactoryView<
     Navigator: BaseNavigator,
     Content: View,
@@ -23,6 +32,15 @@ public struct NavigatorScreenFactoryView<
     @State private var isFullScreenCoverPresented = false
     @State private var isSheetPresented = false
 
+    /// Initializes a view for navigators without tab support.
+    ///
+    /// This initializer is intended for simple use cases without tab navigation. It defaults the tab content to `EmptyView`.
+    ///
+    /// - Parameters:
+    ///   - navigator: The navigation model providing navigation state and destinations.
+    ///   - buildView: A closure that returns a content view for a given destination.
+    ///   - getDetents: A closure that returns presentation detents and drag indicator visibility for sheets (optional).
+    ///   - getRootReplaceAnimation: A closure that provides animation when the root view is replaced (optional).
     public init(
         navigator: Navigator,
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
@@ -38,6 +56,16 @@ public struct NavigatorScreenFactoryView<
         )
     }
 
+    /// Initializes a view for navigators.
+    ///
+    /// This initializer is used for navigators that support tab navigation and require tab views.
+    ///
+    /// - Parameters:
+    ///   - navigator: The navigation model providing navigation state and destinations.
+    ///   - buildView: A closure that returns a content view for a given destination.
+    ///   - buildTab: A closure that returns a tab view for a given tab item tag.
+    ///   - getDetents: A closure that returns presentation detents and drag indicator visibility for sheets (optional).
+    ///   - getRootReplaceAnimation: A closure that provides animation when the root view is replaced (optional).
     public init(
         navigator: Navigator,
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
