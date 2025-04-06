@@ -25,6 +25,14 @@ struct WindowView: View {
                     /// And rule them all in one place.
                     /// Or use `\.persistentNavigator` environment variable to use in-place, like ``FeatureScreenFactoryView`` example
                     switch destination {
+                    case let .feature(destination):
+                        FeatureScreenFactoryView(destination: destination)
+                    case let .featurePackage(destination):
+                        FeaturePackageScreenFactoryView(
+                            navigator: navigator,
+                            destination: destination,
+                            getOuterDestination: { .featurePackage($0) }
+                        )
                     case .greeting:
                         GreetingScreenView(context: .init(
                             start: { navigator.onReplaceInitialNavigator?(.init(root: .root)) },
@@ -146,14 +154,6 @@ struct WindowView: View {
                                 }
                             )
                         ))
-                    case let .feature(destination):
-                        FeatureScreenFactoryView(destination: destination)
-                    case let .featurePackage(destination):
-                        FeaturePackageScreenFactoryView(
-                            navigator: navigator,
-                            destination: destination,
-                            getOuterDestination: { .featurePackage($0) }
-                        )
                     }
                 },
                 buildTab: { tag in
