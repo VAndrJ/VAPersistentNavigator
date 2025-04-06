@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import VAPersistentNavigator
 
 enum FeatureDestination: Codable, Hashable {
     case root
@@ -51,14 +50,14 @@ struct FeatureRootScreenView: View {
 }
 
 struct FeatureDetailsScreenView: View {
-    @Environment(\.persistentNavigator) var navigator
+    @Environment(\.navigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Some separate feature flow details")
                 .multilineTextAlignment(.center)
             Button("More") {
-                navigator.present(.view(Destination.feature(.more)))
+                navigator.present(.init(view: .feature(.more)))
             }
             Button("Pop") {
                 navigator.pop()

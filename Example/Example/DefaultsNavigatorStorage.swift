@@ -24,7 +24,7 @@ final class DefaultsNavigatorStorage: NavigatorStorage {
 
     func getNavigator() -> Navigator? {
         defaults.data(forKey: key).flatMap {
-            try? decoder.decode(PersistentViewNavigator.self, from: $0)
+            try? decoder.decode(Navigator.self, from: $0)
         }
     }
 }

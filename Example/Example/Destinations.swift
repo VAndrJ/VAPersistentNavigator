@@ -9,6 +9,8 @@ import Foundation
 import FeaturePackage
 import VAPersistentNavigator
 
+typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
+
 enum Destination: PersistentDestination {
     case greeting
     case hello
@@ -20,6 +22,7 @@ enum Destination: PersistentDestination {
     case tab1
     case tab2
     case main
+    case navigationLinks
     case shortcutExample
     case notificationExample(title: String, body: String)
     case detail(number: Int)

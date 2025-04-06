@@ -8,8 +8,15 @@
 import Foundation
 import Combine
 
-@MainActor
+/// A navigator that supports persistence by emitting store signals through a subject.
+///
+/// Conforming types are expected to emit to `storeSubj` whenever their internal state changes
+/// in a way that should be persisted. This enables external systems (e.g., storage layers) to
+/// observe and debounce state saves efficiently.
+///
+/// Combine this with `NavigatorStoringView` for automatic persistence.
 public protocol PersistentNavigator: BaseNavigator {
+    /// A subject that emits whenever the navigator’s state should be stored.
     var storeSubj: PassthroughSubject<Void, Never> { get }
 }
 
@@ -104,8 +111,55 @@ public extension PersistentNavigator {
     }
 }
 
+extension PersistentNavigator {
+
+    func bindStoring() {
+        Publishers
+            .Merge3(
+                destinationsSubj
+                    .map { _ in },
+                rootSubj
+                    .map { _ in },
+                selectedTabSubj
+                    .map { _ in }
+            )
+            .sink(receiveValue: storeSubj.send)
+            .store(in: &bag)
+        tabs.forEach { child in
+            child.storeSubj
+                .sink(receiveValue: storeSubj.send)
+                .store(in: &bag)
+        }
+        childSubj
+            .sink { [weak self] in
+                self?.bindChildStoring($0)
+            }
+            .store(in: &bag)
+    }
+
+    private func bindChildStoring(_ child: Self?) {
+        childCancellable?.cancel()
+        if let child {
+            childCancellable = child.storeSubj
+                .sink(receiveValue: storeSubj.send)
+        } else {
+            childCancellable = nil
+        }
+        storeSubj.send(())
+    }
+}
+
+/// A persistable navigation destination.
+///
+/// Use this protocol to mark navigation destinations that can be encoded and decoded.
 public protocol PersistentDestination: Codable & Hashable {}
 
+/// A tag for identifying a tab item in a persistable navigation context.
+///
+/// Use this protocol to mark tab tags that can be encoded and decoded.
 public protocol PersistentTabItemTag: Codable & Hashable {}
 
+/// A tag for identifying a sheet presentation in a persistable navigation context.
+///
+/// Use this protocol to mark sheet tags that can be encoded and decoded.
 public protocol PersistentSheetTag: Codable & Hashable {}

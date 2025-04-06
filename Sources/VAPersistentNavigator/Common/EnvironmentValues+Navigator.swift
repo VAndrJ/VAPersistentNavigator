@@ -9,7 +9,18 @@ import SwiftUI
 import Combine
 
 extension EnvironmentValues {
+    /// The current `BaseNavigator` available in the environment.
+    ///
+    /// This provides access to a generic navigation context, allowing views to interact
+    /// with the navigation system (e.g., pushing destinations or accessing navigation state)
+    /// without requiring direct injection of a concrete navigator.
     @Entry public var baseNavigator: any BaseNavigator = emptyPersistentNavigator
+
+    /// The current `PersistentNavigator` available in the environment.
+    ///
+    /// This provides access to a generic navigation context, allowing views to interact
+    /// with the navigation system (e.g., pushing destinations or accessing navigation state)
+    /// without requiring direct injection of a concrete navigator.
     @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
 
     static let emptyPersistentNavigator = EmptyPersistentNavigator()
@@ -18,7 +29,7 @@ extension EnvironmentValues {
 final class EmptyPersistentNavigator: PersistentNavigator {
     typealias Destination = String
     typealias TabItemTag = String
-    typealias Tag = String
+    typealias SheetTag = String
 
     var childCancellable: AnyCancellable?
     var bag: Set<AnyCancellable> = []
@@ -32,7 +43,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var childSubj: CurrentValueSubject<EmptyPersistentNavigator?, Never> { .init(nil) }
     var tabs: [EmptyPersistentNavigator] { [] }
     var kind: NavigatorKind { .singleView }
-    var presentation: TypedNavigatorPresentation<Tag> { .sheet }
+    var presentation: TypedNavigatorPresentation<SheetTag> { .sheet }
     let id = UUID()
     var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
@@ -41,12 +52,13 @@ final class EmptyPersistentNavigator: PersistentNavigator {
 
     init(
         id: UUID,
-        root: String?,
-        destinations: [String],
-        presentation: TypedNavigatorPresentation<String>,
-        tabItem: String?,
+        root: Destination?,
+        destinations: [Destination],
+        presentation: TypedNavigatorPresentation<SheetTag>,
+        tabItem: TabItemTag?,
         kind: NavigatorKind,
         tabs: [EmptyPersistentNavigator],
-        selectedTab: String?
+        selectedTab: TabItemTag?,
+        child: EmptyPersistentNavigator?
     ) {}
 }
