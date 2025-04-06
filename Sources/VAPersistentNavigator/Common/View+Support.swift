@@ -21,7 +21,9 @@ public extension View {
         }
     }
 
-    func withDetentsIfNeeded(_ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?) -> some View {
+    func withDetentsIfNeeded(
+        _ detents: (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
+    ) -> some View {
         modifier(DetentsViewModifier(detents: detents))
     }
 

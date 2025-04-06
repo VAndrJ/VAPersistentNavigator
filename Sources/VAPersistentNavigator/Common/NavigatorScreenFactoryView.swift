@@ -10,12 +10,12 @@ import SwiftUI
 public struct NavigatorScreenFactoryView<
     Navigator: BaseNavigator,
     Content: View,
-    TabItem: View
+    TabContent: View
 >: View {
     private let navigator: Navigator
     private let rootReplaceAnimation: (Navigator.Destination?) -> Animation?
     @ViewBuilder private let buildView: (Navigator.Destination, Navigator) -> Content
-    @ViewBuilder private let buildTab: (Navigator.TabItemTag?) -> TabItem
+    @ViewBuilder private let buildTab: (Navigator.TabItemTag?) -> TabContent
     private let getDetents: (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
     @State private var destinations: [Navigator.Destination]
@@ -28,7 +28,7 @@ public struct NavigatorScreenFactoryView<
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
         getDetents: @escaping (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Navigator.Destination?) -> Animation? = { _ in .default }
-    ) where Navigator.TabItemTag == EmptyTabItemTag, TabItem == EmptyView {
+    ) where Navigator.TabItemTag == EmptyTabItemTag, TabContent == EmptyView {
         self.init(
             navigator: navigator,
             buildView: buildView,
@@ -41,7 +41,7 @@ public struct NavigatorScreenFactoryView<
     public init(
         navigator: Navigator,
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
-        @ViewBuilder buildTab: @escaping (Navigator.TabItemTag?) -> TabItem,
+        @ViewBuilder buildTab: @escaping (Navigator.TabItemTag?) -> TabContent,
         getDetents: @escaping (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Navigator.Destination?) -> Animation? = { _ in .default }
     ) {

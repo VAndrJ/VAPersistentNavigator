@@ -18,7 +18,7 @@ extension EnvironmentValues {
 final class EmptyPersistentNavigator: PersistentNavigator {
     typealias Destination = String
     typealias TabItemTag = String
-    typealias Tag = String
+    typealias SheetTag = String
 
     var childCancellable: AnyCancellable?
     var bag: Set<AnyCancellable> = []
@@ -32,7 +32,7 @@ final class EmptyPersistentNavigator: PersistentNavigator {
     var childSubj: CurrentValueSubject<EmptyPersistentNavigator?, Never> { .init(nil) }
     var tabs: [EmptyPersistentNavigator] { [] }
     var kind: NavigatorKind { .singleView }
-    var presentation: TypedNavigatorPresentation<Tag> { .sheet }
+    var presentation: TypedNavigatorPresentation<SheetTag> { .sheet }
     let id = UUID()
     var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
@@ -41,13 +41,13 @@ final class EmptyPersistentNavigator: PersistentNavigator {
 
     init(
         id: UUID,
-        root: String?,
-        destinations: [String],
-        presentation: TypedNavigatorPresentation<String>,
-        tabItem: String?,
+        root: Destination?,
+        destinations: [Destination],
+        presentation: TypedNavigatorPresentation<SheetTag>,
+        tabItem: TabItemTag?,
         kind: NavigatorKind,
         tabs: [EmptyPersistentNavigator],
-        selectedTab: String?,
+        selectedTab: TabItemTag?,
         child: EmptyPersistentNavigator?
     ) {}
 }
