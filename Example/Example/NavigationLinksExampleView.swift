@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct NavigationLinksExampleView: View {
+struct NavigationLinksExampleScreenView: View {
     var body: some View {
         List {
             Text("You can also use NavigationLink to navigate to another view.")

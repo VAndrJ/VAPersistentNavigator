@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import VAPersistentNavigator
 
 enum FeatureDestination: Codable, Hashable {
     case root

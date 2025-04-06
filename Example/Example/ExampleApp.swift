@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import VAPersistentNavigator
 
 @main
 struct ExampleApp: App {
@@ -37,8 +36,6 @@ struct ExampleApp: App {
         }
     }
 }
-
-typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
 
 @MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
