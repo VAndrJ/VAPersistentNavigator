@@ -8,6 +8,10 @@
 import Foundation
 import Combine
 
+public struct EmptyTabItemTag: PersistentTabItemTag {}
+
+public struct EmptySheetTag: PersistentSheetTag {}
+
 @MainActor
 public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable {
     associatedtype Destination: Hashable

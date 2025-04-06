@@ -26,6 +26,21 @@ public struct NavigatorScreenFactoryView<
     public init(
         navigator: Navigator,
         @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
+        getDetents: @escaping (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
+        getRootReplaceAnimation: @escaping (Navigator.Destination?) -> Animation? = { _ in .default }
+    ) where Navigator.TabItemTag == EmptyTabItemTag, TabItem == EmptyView {
+        self.init(
+            navigator: navigator,
+            buildView: buildView,
+            buildTab: { _ in EmptyView() },
+            getDetents: getDetents,
+            getRootReplaceAnimation: getRootReplaceAnimation
+        )
+    }
+
+    public init(
+        navigator: Navigator,
+        @ViewBuilder buildView: @escaping (Navigator.Destination, Navigator) -> Content,
         @ViewBuilder buildTab: @escaping (Navigator.TabItemTag?) -> TabItem,
         getDetents: @escaping (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)? = { _ in ([], .automatic) },
         getRootReplaceAnimation: @escaping (Navigator.Destination?) -> Animation? = { _ in .default }
