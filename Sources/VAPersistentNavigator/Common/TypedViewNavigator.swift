@@ -8,7 +8,17 @@
 import Combine
 import Foundation
 
-/// A class representing a navigator that manages navigation states and presentations.
+/// A concrete implementation of `BaseNavigator` for managing navigation state in a SwiftUI application.
+///
+/// `TypedViewNavigator` handles view-based navigation by keeping track of the root view, child navigators, presentation state,
+/// navigation destinations, and tab configurations. It is fully generic over destination types, tab tags, and sheet tags,
+/// providing strong type safety across navigation flows.
+///
+/// - Parameters:
+///   - Destination: A type representing the navigable destinations in the app.
+///   - TabItemTag: A type representing unique identifiers for tab items.
+///   - SheetTag: A type used to differentiate between different sheet presentations.
+
 public final class TypedViewNavigator<
     Destination: Hashable,
     TabItemTag: Hashable,
@@ -41,6 +51,18 @@ public final class TypedViewNavigator<
 
     private let _storeSubj = PassthroughSubject<Void, Never>()
 
+    /// Initializes a new instance of `TypedViewNavigator` with all required state for navigation.
+    ///
+    /// - Parameters:
+    ///   - id: A unique identifier for the navigator instance.
+    ///   - root: The initial root destination of the navigator.
+    ///   - destinations: The current stack of pushed destinations.
+    ///   - presentation: Presentation information such as sheet tags or full-screen cover state.
+    ///   - tabItem: The tab identifier this navigator represents (if part of a tab view).
+    ///   - kind: The kind of navigator (e.g., `.singleView`, `.tabView`, `.flow`).
+    ///   - tabs: The list of child navigators used in a tab-based navigation setup.
+    ///   - selectedTab: The currently selected tab identifier (if applicable).
+    ///   - child: A reference to a currently presented child navigator (for modals or sheets).
     public required init(
         id: UUID,
         root: Destination?,
