@@ -8,9 +8,9 @@
 import SwiftUI
 
 public struct NavigatorScreenFactoryView<
+    Navigator: BaseNavigator,
     Content: View,
-    TabItem: View,
-    Navigator: BaseNavigator
+    TabItem: View
 >: View {
     private let navigator: Navigator
     private let rootReplaceAnimation: (Navigator.Destination?) -> Animation?

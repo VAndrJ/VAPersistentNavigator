@@ -9,11 +9,11 @@ import Combine
 import SwiftUI
 
 public struct NavigatorStoringView<
-    Content,
     Navigator: PersistentNavigator,
     Storage: NavigatorStorage,
-    S: Scheduler
->: View where Content: View, Storage.Navigator == Navigator {
+    S: Scheduler,
+    Content: View
+>: View where Storage.Navigator == Navigator {
     private let navigator: Navigator
     private let storage: Storage
     private let delay: S.SchedulerTimeType.Stride
