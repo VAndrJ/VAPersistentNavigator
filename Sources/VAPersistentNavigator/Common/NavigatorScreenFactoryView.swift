@@ -85,77 +85,71 @@ public struct NavigatorScreenFactoryView<
     public var body: some View {
         switch navigator.kind {
         case .singleView:
-            ZStack {
-                if let root {
-                    buildView(root, navigator)
-                } else {
-                    EmptyView()
-                }
-            }
-            .animation(rootReplaceAnimation(root), value: root)
-            .synchronize($root, with: navigator.rootSubj)
-            .synchronize(
-                $isFullScreenCoverPresented,
-                with: navigator.childSubj,
-                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: true
-            )
-            .synchronize(
-                $isSheetPresented,
-                with: navigator.childSubj,
-                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: false
-            )
-            .onAppear {
-                guard !isFirstAppearanceOccurred else { return }
+            rootView
+                .animation(rootReplaceAnimation(root), value: root)
+                .synchronize($root, with: navigator.rootSubj)
+                .synchronize(
+                    $isFullScreenCoverPresented,
+                    with: navigator.childSubj,
+                    isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                    isFullScreen: true
+                )
+                .synchronize(
+                    $isSheetPresented,
+                    with: navigator.childSubj,
+                    isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                    isFullScreen: false
+                )
+                .onAppear {
+                    guard !isFirstAppearanceOccurred else { return }
 
 #if os(iOS)
-                // Crutch to avoid iOS 16.0+ 💩 issue
-                if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
-                    UIView.setAnimationsEnabled(false)
-                }
-                Task {
-                    await MainActor.run {
-                        isFirstAppearanceOccurred = true
-                        Task {
-                            await MainActor.run {
-                                if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
-                                    UIView.setAnimationsEnabled(true)
+                    // Crutch to avoid iOS 16.0+ 💩 issue
+                    if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
+                        UIView.setAnimationsEnabled(false)
+                    }
+                    Task {
+                        await MainActor.run {
+                            isFirstAppearanceOccurred = true
+                            Task {
+                                await MainActor.run {
+                                    if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
+                                        UIView.setAnimationsEnabled(true)
+                                    }
                                 }
                             }
                         }
                     }
-                }
 #else
-                isFirstAppearanceOccurred = true
+                    isFirstAppearanceOccurred = true
 #endif
-            }
+                }
 #if os(iOS) || os(watchOS) || os(tvOS)
-            .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
-                if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
-                        navigator: child,
-                        buildView: buildView,
-                        buildTab: buildTab,
-                        getDetents: getDetents,
-                        getRootReplaceAnimation: rootReplaceAnimation
-                    )
+                .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
+                    if let child = navigator.childSubj.value {
+                        NavigatorScreenFactoryView(
+                            navigator: child,
+                            buildView: buildView,
+                            buildTab: buildTab,
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
+                        )
+                    }
                 }
-            }
 #endif
-            .sheet(isPresented: $isSheetPresented) {
-                if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
-                        navigator: child,
-                        buildView: buildView,
-                        buildTab: buildTab,
-                        getDetents: getDetents,
-                        getRootReplaceAnimation: rootReplaceAnimation
-                    )
-                    .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
+                .sheet(isPresented: $isSheetPresented) {
+                    if let child = navigator.childSubj.value {
+                        NavigatorScreenFactoryView(
+                            navigator: child,
+                            buildView: buildView,
+                            buildTab: buildTab,
+                            getDetents: getDetents,
+                            getRootReplaceAnimation: rootReplaceAnimation
+                        )
+                        .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
+                    }
                 }
-            }
-            .with(navigator: navigator)
+                .with(navigator: navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -175,14 +169,7 @@ public struct NavigatorScreenFactoryView<
             .with(navigator: navigator)
         case .flow:
             NavigationStack(path: $destinations) {
-                if let root {
-                    buildView(root, navigator)
-                        .navigationDestination(for: Navigator.Destination.self) {
-                            buildView($0, navigator)
-                        }
-                } else {
-                    EmptyView()
-                }
+                rootStackView
             }
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj)
@@ -250,6 +237,27 @@ public struct NavigatorScreenFactoryView<
                 }
             }
             .with(navigator: navigator)
+        }
+    }
+
+    @ViewBuilder
+    private var rootView: some View {
+        if let root {
+            buildView(root, navigator)
+        } else {
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder
+    private var rootStackView: some View {
+        if let root {
+            buildView(root, navigator)
+                .navigationDestination(for: Navigator.Destination.self) {
+                    buildView($0, navigator)
+                }
+        } else {
+            EmptyView()
         }
     }
 }
