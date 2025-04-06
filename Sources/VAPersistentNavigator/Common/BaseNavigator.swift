@@ -8,10 +8,21 @@
 import Foundation
 import Combine
 
+/// A placeholder type representing the absence of a specific tab item tag.
+///
+/// Used when no tab item identification is needed.
 public struct EmptyTabItemTag: PersistentTabItemTag {}
 
+/// A placeholder type representing the absence of a specific sheet tag.
+///
+/// Used when no sheet differentiation is required.
 public struct EmptySheetTag: PersistentSheetTag {}
 
+/// A protocol defining a type-safe abstraction for handling navigation logic.
+///
+/// `BaseNavigator` supports multiple navigation styles, including single views,
+/// navigation stacks, and tabbed views. It manages hierarchical relationships
+/// and tracks navigation state.
 @MainActor
 public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable {
     associatedtype Destination: Hashable
@@ -33,6 +44,18 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var bag: Set<AnyCancellable> { get set }
     var onDeinit: (() -> Void)? { get set }
 
+    /// Designated initializer for creating a navigator instance with full configuration.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier for the navigator.
+    ///   - root: The initial root destination.
+    ///   - destinations: List of additional destinations (used in `.flow` kind).
+    ///   - presentation: Presentation options for modals and sheets.
+    ///   - tabItem: Tab identifier if used inside a tab view.
+    ///   - kind: The navigation kind this instance represents.
+    ///   - tabs: Child navigators if this is a tab view.
+    ///   - selectedTab: The currently selected tab item tag.
+    ///   - child: A presented child navigator, if any.
     init(
         id: UUID,
         root: Destination?, // ignored when kind == .tabView
@@ -48,7 +71,13 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
 
 public extension BaseNavigator {
 
-    /// Initializer for a single `View` navigator.
+    /// Convenience initializer for creating a `.singleView` style navigator.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier for the navigator.
+    ///   - view: The single view destination.
+    ///   - presentation: Presentation options for this navigator (e.g., sheet).
+    ///   - tabItem: Optional tab identifier if embedded in a tab view.
     init(
         id: UUID = .init(),
         view: Destination,
@@ -68,7 +97,14 @@ public extension BaseNavigator {
         )
     }
 
-    /// Initializer for a `NavigationStack` navigator.
+    /// Convenience initializer for creating a `.flow` style navigator with a stack of destinations.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier for the navigator.
+    ///   - root: The root view in the navigation stack.
+    ///   - destinations: Additional destinations to push.
+    ///   - presentation: Presentation options for this navigator.
+    ///   - tabItem: Optional tab identifier if embedded in a tab view.
     init(
         id: UUID = .init(),
         root: Destination,
@@ -89,7 +125,13 @@ public extension BaseNavigator {
         )
     }
 
-    /// Initializer for a `TabView` navigator.
+    /// Convenience initializer for creating a `.tabView` style navigator.
+    ///
+    /// - Parameters:
+    ///   - id: Unique identifier for the navigator.
+    ///   - tabs: Child navigators representing each tab.
+    ///   - presentation: Presentation options for the entire tab view.
+    ///   - selectedTab: Initially selected tab.
     init(
         id: UUID = .init(),
         tabs: [Self] = [],
@@ -158,7 +200,21 @@ public extension BaseNavigator {
         }
     }
 
-    /// Pushes a new destination onto the navigation stack.
+    /// Pushes a new destination onto the navigation stack if supported by the current navigator.
+    ///
+    /// This method operates only when the `topNavigator` (or its selected tab child)
+    /// is of kind `.flow`. In such cases, the provided `destination` is appended
+    /// to the list of current destinations, triggering a UI update.
+    ///
+    /// - Parameter destination: The destination to be pushed onto the navigation stack.
+    /// - Returns: `true` if the destination was successfully pushed; `false` otherwise.
+    ///
+    /// Example:
+    /// ```swift
+    /// navigator.push(destination: .detailsView)
+    /// ```
+    ///
+    /// - Note: This method is a no-op for `.singleView` and `.tabView` navigators.
     @discardableResult
     func push(destination: Destination) -> Bool {
 #if DEBUG
