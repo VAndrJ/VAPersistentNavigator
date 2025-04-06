@@ -66,34 +66,50 @@ struct WindowView: View {
 More detailed information can be found in the example project.
 
 
-## Implemented
+## Navigation methods
 
 
-- `push`. Using `NavigationStack`.
+- `push`. Pushes a new `Destination` onto the `NavigationStack`.
 
-- `pop`.
+- `pop`. Pops the top-most view off the `NavigationStack`, returning to the previous view. This is equivalent to tapping the back button in a standard navigation interface.
 
-- `pop(to:)`. Pops to the specified `Destination`.
+- `pop(to:)`. Pops to a specified `Destination` in the `NavigationStack`. Useful for skipping intermediate views and jumping directly to a particular destination.
 
-- `popToRoot`.
+- `popToRoot`. Pops all views off the `NavigationStack` until the root view is reached. This resets the navigation stack to the initial state.
 
-- `replace(root:isPopToRoot:)`. Replaces the root view in `NavigationStack`.
+- `replace(root:isPopToRoot:)`. Replaces the current root view in the `NavigationStack` with a new root `Destination`. Optionally, you can choose to pop to the root after replacement.
 
-- `present`. `sheet` and `fullScreenCover`.
+- `present`. Presents a new view as a `sheet` or `fullScreenCover`. This is used to modally display views on top of the current screen.
 
-- `dismissTop`. Dismisses the presented `sheet` or `fullScreenCover`.
+- `dismissTop`. Dismisses the top-most presented `sheet` or `fullScreenCover`, returning to the previous screen. This is commonly used to close modally presented views.
 
-- `dismiss(to:)`. Dismisses presented `sheet`s or `fullScreenCover`s to specified `Destination` or `id`.
+- `dismiss(to:)`. Dismisses presented `sheets` or `fullScreenCovers` until a specified `Destination` or `id` is reached. This allows for more controlled dismissal in cases with multiple modal presentations.
 
-- `closeToInitial`. Dismisses all presented `sheet`s and `fullScreenCover`s, and clears the initial `NavigationStack`'s navigation path.
+- `closeToInitial`. Dismisses all presented `sheets` and `fullScreenCovers`, and resets the initial `NavigationStack`'s navigation path to its root state. This is useful for completely resetting the navigation flow.
 
-- `close(to:)`. Attempts to navigate to a specified target `Destination`.
+- `close(to:)`. Attempts to navigate to and close all modally presented views, while navigating to a specified target `Destination`. This can be used to programmatically close views and move to a specific part of the navigation flow.
 
-- `close(where:)`. Attempts to navigate to a specified target `Destination` using predicate.
+- `close(where:)`. Similar to `close(to:)`, but allows for specifying a predicate to determine which `Destination` to navigate to and close. This offers more flexibility in choosing the navigation target.
 
-- `onReplaceInitialNavigator`. Callback to replace the initial `Navigator` with a new one.
+- `onReplaceInitialNavigator`. A callback that is triggered when the initial `Navigator` needs to be replaced with a new one. This allows for dynamic changes in the navigator setup.
 
-- `currentTab`. Variable to get and change the current tab in `TabView`.
+- `currentTab`. A variable that holds the current tab in a `TabView`. This allows for both getting and setting the active tab programmatically.
+
+
+## Navigation using NavigationLink
+
+
+In addition to the `Navigator`'s methods, you can also use SwiftUI's standard `NavigationLink` for navigation. This integrates seamlessly with the navigator as long as your destinations conform to `PersistentDestination` for `PersistentNavigator` or `Hashable` for `TypedNavigator`.
+
+
+Example:
+
+
+```
+NavigationLink(value: Destination.player(file.url)) {
+    FileView(file: file)
+}
+```
 
 
 ## Environment values for simplified usage
@@ -124,7 +140,7 @@ struct FeatureDetailsScreenView: View {
 }
 
 struct FeatureDetailsScreenView: View {
-    @Environment(\.simpleNavigator) var navigator
+    @Environment(\.baseNavigator) var navigator
 
     var body: some View {
         VStack(spacing: 16) {
