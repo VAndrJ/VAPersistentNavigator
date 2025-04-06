@@ -145,6 +145,35 @@ struct FeatureDetailsScreenView: View {
         }
     }
 }
+
+// If you need a concrete type of navigator
+
+extension EnvironmentValues {
+    var navigator: Navigator { persistentNavigator as! Navigator }
+}
+
+struct FeatureDetailsScreenView: View {
+    @Environment(\.navigator) var navigator
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Current: Some separate feature flow details")
+                .multilineTextAlignment(.center)
+            Button("More") {
+                navigator.present(.view(Destination.feature(.more)))
+            }
+            Button("Pop") {
+                navigator.pop()
+            }
+            Button("Dismiss") {
+                navigator.dismissTop()
+            }
+            Button("Close all") {
+                navigator.closeToInitial()
+            }
+        }
+    }
+}
 ```
 
 
@@ -154,11 +183,10 @@ More detailed information can be found in the example project.
 ## TBD
 
 
-- Documentation.
+- Description.
 
-- Split.
 
-- Simple navigator usage example.
+- Examples.
 
 
 ## Author
