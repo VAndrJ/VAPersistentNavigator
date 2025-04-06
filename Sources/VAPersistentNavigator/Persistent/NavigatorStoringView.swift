@@ -8,6 +8,10 @@
 import Combine
 import SwiftUI
 
+/// A view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
+///
+/// This view wraps content and automatically stores the navigator’s state after a specified debounce delay.
+/// Useful for persisting navigation state across app launches.
 public struct NavigatorStoringView<
     Navigator: PersistentNavigator,
     Storage: NavigatorStorage,
@@ -21,6 +25,18 @@ public struct NavigatorStoringView<
     private let options: S.SchedulerOptions?
     @ViewBuilder private let content: () -> Content
 
+    /// Init the view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
+    ///
+    /// This view wraps content and automatically stores the navigator’s state after a specified debounce delay.
+    /// Useful for persisting navigation state across app launches.
+    ///
+    /// - Parameters:
+    ///   - navigator: The persistent navigator whose state should be tracked and stored.
+    ///   - storage: The storage backend responsible for saving the navigator's state.
+    ///   - delay: The debounce duration to wait before persisting changes. Defaults to 5 seconds.
+    ///   - scheduler: The scheduler on which debounce timing and storage execution occurs.
+    ///   - options: Optional scheduler options passed to the debounce operator.
+    ///   - content: A view builder producing the content of this view.
     public init(
         navigator: Navigator,
         storage: Storage,
