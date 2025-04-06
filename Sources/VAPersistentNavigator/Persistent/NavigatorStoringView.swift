@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 30.07.2024.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 public struct NavigatorStoringView<
     Content,
@@ -57,13 +57,12 @@ public struct NavigatorStoringView<
             .onReceive(
                 navigator.storeSubj
                     .prepend(())
-                    .debounce(for: delay, scheduler: scheduler, options: options),
-                perform: {
-                    #if DEBUG
+                    .debounce(for: delay, scheduler: scheduler, options: options)
+            ) {
+                #if DEBUG
                     navigatorLog?("Navigation storing...")
-                    #endif
-                    storage.store(navigator: navigator)
-                }
-            )
+                #endif
+                storage.store(navigator: navigator)
+            }
     }
 }
