@@ -75,9 +75,7 @@ public struct NavigatorStoringView<
                     .prepend(())
                     .debounce(for: delay, scheduler: scheduler, options: options)
             ) {
-                #if DEBUG
-                    navigatorLog?("Navigation storing...")
-                #endif
+                navigatorLog?("Navigation storing...")
                 storage.store(navigator: navigator)
             }
     }

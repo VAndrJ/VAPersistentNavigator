@@ -26,7 +26,7 @@ public final class TypedViewNavigator<
     public static func == (lhs: TypedViewNavigator, rhs: TypedViewNavigator) -> Bool {
         return lhs.id == rhs.id
     }
-
+    
     public let id: UUID
     public var _onReplaceInitialNavigator: ((_ newNavigator: TypedViewNavigator) -> Void)?
     public let rootSubj: CurrentValueSubject<Destination?, Never>
@@ -41,15 +41,15 @@ public final class TypedViewNavigator<
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
-
+        
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
     public var childCancellable: AnyCancellable?
     public var bag: Set<AnyCancellable> = []
     public var onDeinit: (() -> Void)?
-
+    
     private let _storeSubj = PassthroughSubject<Void, Never>()
-
+    
     /// Initializes a new instance of `TypedViewNavigator` with all required state for navigation.
     ///
     /// - Parameters:
@@ -82,20 +82,18 @@ public final class TypedViewNavigator<
         self.presentation = presentation
         self.childSubj = .init(child)
         self.selectedTabSubj = .init(selectedTab)
-
+        
         bind()
     }
-
-    #if DEBUG
-        deinit {
-            guard Thread.isMainThread else { return }
-
-            MainActor.assumeIsolated {
-                onDeinit?()
-                navigatorLog?(#function, debugDescription, id)
-            }
+    
+    deinit {
+        guard Thread.isMainThread else { return }
+        
+        MainActor.assumeIsolated {
+            onDeinit?()
+            navigatorLog?(#function, debugDescription, id)
         }
-    #endif
+    }
 }
 
 extension TypedViewNavigator: PersistentNavigator, @preconcurrency Codable where Destination: PersistentDestination, TabItemTag: PersistentTabItemTag, SheetTag: PersistentSheetTag {

@@ -217,9 +217,7 @@ public extension BaseNavigator {
     /// - Note: This method is a no-op for `.singleView` and `.tabView` navigators.
     @discardableResult
     func push(destination: Destination) -> Bool {
-#if DEBUG
         navigatorLog?("push", "destination: \(destination)")
-#endif
         let topNavigator = self.topNavigator.orTabChild
         switch topNavigator.kind {
         case .flow:
@@ -251,9 +249,7 @@ public extension BaseNavigator {
         _ child: Self?,
         strategy: NavigatorPresentationStrategy = .onTop
     ) {
-#if DEBUG
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
-#endif
         switch strategy {
         case .onTop:
             topNavigator.childSubj.send(child)
@@ -273,32 +269,26 @@ public extension BaseNavigator {
     /// Pops the top destination from the navigation stack.
     func pop() {
         guard !isRootView else {
-#if DEBUG
             navigatorLog?("pop", "not possible, isRootView: \(isRootView)")
-#endif
+
             return
         }
 
         var destinationsValue = destinationsSubj.value
         let destination = destinationsValue.popLast()
-#if DEBUG
         navigatorLog?("pop", "destination: \(String(describing: destination))")
-#endif
         destinationsSubj.send(destinationsValue)
     }
 
     /// Pops the navigation stack to the root destination.
     func popToRoot() {
         guard !isRootView else {
-#if DEBUG
             navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)")
-#endif
+
             return
         }
 
-#if DEBUG
         navigatorLog?("popToRoot")
-#endif
         destinationsSubj.send([])
     }
 
@@ -312,17 +302,14 @@ public extension BaseNavigator {
     func pop(target destination: Destination, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
         if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
-#if DEBUG
             navigatorLog?("pop", "destination: \(destination)")
-#endif
             destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
             destinationsSubj.send(destinationsValue)
 
             return true
         } else {
-#if DEBUG
             navigatorLog?("pop", "not possible, destination: \(destination) not found")
-#endif
+
             return false
         }
     }
@@ -336,9 +323,7 @@ public extension BaseNavigator {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
-#if DEBUG
                 navigatorLog?("dismiss to", "id: \(id)")
-#endif
                 topNavigator?.present(nil, strategy: .fromCurrent)
 
                 return true
@@ -346,9 +331,7 @@ public extension BaseNavigator {
 
             topNavigator = topNavigator?.parent
         }
-#if DEBUG
         navigatorLog?("dismiss to", "not possible, id: \(id) not found")
-#endif
 
         return false
     }
@@ -362,9 +345,7 @@ public extension BaseNavigator {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.root == destination {
-#if DEBUG
                 navigatorLog?("dismiss to", "destination: \(destination)")
-#endif
                 topNavigator?.present(nil, strategy: .fromCurrent)
 
                 return true
@@ -372,9 +353,7 @@ public extension BaseNavigator {
 
             topNavigator = topNavigator?.parent
         }
-#if DEBUG
         navigatorLog?("dismiss to", "not possible, destination: \(destination) not found")
-#endif
 
         return false
     }
@@ -386,22 +365,16 @@ public extension BaseNavigator {
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     func replace(_ root: Destination, isPopToRoot: Bool = true) {
         if isPopToRoot {
-#if DEBUG
             navigatorLog?("replace root", "pop to root")
-#endif
             popToRoot()
         }
-#if DEBUG
         navigatorLog?("replace root", "destination: \(root)")
-#endif
         rootSubj.send(root)
     }
 
     /// Dismisses the current top navigator.
     func dismissTop() {
-#if DEBUG
         navigatorLog?("dismiss top")
-#endif
         parent?.present(nil, strategy: .fromCurrent)
     }
 
@@ -462,9 +435,7 @@ public extension BaseNavigator {
 
     /// Closes the navigator to the initial first navigator.
     func closeToInitial() {
-#if DEBUG
         navigatorLog?("close to initial")
-#endif
         var firstNavigator: Self! = self
         while firstNavigator.parent != nil {
             firstNavigator = firstNavigator.parent

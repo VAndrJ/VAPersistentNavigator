@@ -5,10 +5,10 @@
 //  Created by VAndrJ on 12/24/24.
 //
 
-#if DEBUG
 import Foundation
 import OSLog
 
+#if DEBUG
 nonisolated(unsafe) public var navigatorLog: ((_ items: Any...) -> Void)? = navigatorLogger.log(_:)
 
 private let navigatorLogger = Logger.navigator
@@ -20,4 +20,6 @@ extension Logger {
         self.info("\(items.map { String(describing: $0) }.joined(separator: " | "), privacy: .private)")
     }
 }
+#else
+nonisolated(unsafe) public var navigatorLog: ((_ items: Any...) -> Void)?
 #endif
