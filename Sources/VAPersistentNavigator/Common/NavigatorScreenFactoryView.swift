@@ -172,8 +172,8 @@ public struct NavigatorScreenFactoryView<
                 rootStackView
             }
             .animation(rootReplaceAnimation(root), value: root)
-            .synchronize($root, with: navigator.rootSubj)
-            .synchronize($destinations, with: navigator.destinationsSubj)
+            .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
+            .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,

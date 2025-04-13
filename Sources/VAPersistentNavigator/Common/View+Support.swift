@@ -34,6 +34,14 @@ extension View {
         modifier(SynchronizingViewModifier(binding: binding, subject: subject))
     }
 
+    public func synchronize<T: Equatable>(
+        _ binding: Binding<T>,
+        with subject: CurrentValueSubject<T, Never>,
+        animated: CurrentValueSubject<Bool, Never>
+    ) -> some View {
+        modifier(AnimatedSynchronizingViewModifier(binding: binding, subject: subject, animated: animated))
+    }
+
     public func synchronize<Navigator: BaseNavigator>(
         _ binding: Binding<Bool>,
         with subject: CurrentValueSubject<Navigator?, Never>,
@@ -92,6 +100,47 @@ struct SynchronizingViewModifier<T: Equatable>: ViewModifier {
 
                     binding = value
                 }
+        }
+    }
+}
+
+struct AnimatedSynchronizingViewModifier<T: Equatable>: ViewModifier {
+    @Binding var binding: T
+    let subject: CurrentValueSubject<T, Never>
+    let animated: CurrentValueSubject<Bool, Never>
+
+    func body(content: Content) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            content
+                .onChange(of: binding) { _, value in
+                    guard subject.value != value else { return }
+
+                    subject.send(value)
+                }
+                .onReceive(subject) {
+                    update(value: $0)
+                }
+        } else {
+            content
+                .onChange(of: binding) { value in
+                    guard subject.value != value else { return }
+
+                    subject.send(value)
+                }
+                .onReceive(subject) {
+                    update(value: $0)
+                }
+        }
+    }
+
+    private func update(value: T) {
+        guard binding != value else { return }
+
+        var transaction = Transaction()
+        transaction.disablesAnimations = !animated.value
+        animated.send(true)
+        withTransaction(transaction) {
+            binding = value
         }
     }
 }

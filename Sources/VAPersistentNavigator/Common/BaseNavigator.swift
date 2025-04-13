@@ -69,6 +69,9 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     )
 }
 
+@MainActor
+let isAnimatedSubj = CurrentValueSubject<Bool, Never>(true)
+
 public extension BaseNavigator {
 
     /// Convenience initializer for creating a `.singleView` style navigator.
@@ -187,7 +190,7 @@ public extension BaseNavigator {
         set {
             if parent == nil {
                 _onReplaceInitialNavigator = { [weak self] navigator in
-                    self?.closeToInitial()
+                    self?.closeToInitial(animated: true)
                     //: To avoid presented TabView issue
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(100))
@@ -216,13 +219,14 @@ public extension BaseNavigator {
     ///
     /// - Note: This method is a no-op for `.singleView` and `.tabView` navigators.
     @discardableResult
-    func push(destination: Destination) -> Bool {
-        navigatorLog?("push", "destination: \(destination)")
+    func push(destination: Destination, animated: Bool = true) -> Bool {
+        navigatorLog?("push", "destination: \(destination)", "animated: \(animated)")
         let topNavigator = self.topNavigator.orTabChild
         switch topNavigator.kind {
         case .flow:
             var destinationsValue = topNavigator.destinationsSubj.value
             destinationsValue.append(destination)
+            isAnimatedSubj.send(animated)
             topNavigator.destinationsSubj.send(destinationsValue)
 
             return true
@@ -267,28 +271,30 @@ public extension BaseNavigator {
     }
 
     /// Pops the top destination from the navigation stack.
-    func pop() {
+    func pop(animated: Bool = true) {
         guard !isRootView else {
-            navigatorLog?("pop", "not possible, isRootView: \(isRootView)")
+            navigatorLog?("pop", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
 
             return
         }
 
         var destinationsValue = destinationsSubj.value
         let destination = destinationsValue.popLast()
-        navigatorLog?("pop", "destination: \(String(describing: destination))")
+        navigatorLog?("pop", "destination: \(String(describing: destination))", "animated: \(animated)")
+        isAnimatedSubj.send(animated)
         destinationsSubj.send(destinationsValue)
     }
 
     /// Pops the navigation stack to the root destination.
-    func popToRoot() {
+    func popToRoot(animated: Bool = true) {
         guard !isRootView else {
-            navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)")
+            navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
 
             return
         }
 
-        navigatorLog?("popToRoot")
+        navigatorLog?("popToRoot", "animated: \(animated)")
+        isAnimatedSubj.send(animated)
         destinationsSubj.send([])
     }
 
@@ -299,16 +305,35 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(target destination: Destination, isFirst: Bool = true) -> Bool {
+    func pop(target destination: Destination, animated: Bool = true, isFirst: Bool = true) -> Bool {
+        return pop(predicate: { $0 == destination }, animated: animated, isFirst: isFirst)
+    }
+
+    /// Pops the navigation stack to a specific destination using predicate.
+    ///
+    /// - Parameters:
+    ///   - predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
+    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    @discardableResult
+    func pop(predicate: (Destination) -> Bool, animated: Bool = true, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
-        if let index = isFirst ? destinationsValue.firstIndex(of: destination) : destinationsValue.lastIndex(of: destination), index + 1 < destinationsValue.count {
-            navigatorLog?("pop", "destination: \(destination)")
+
+        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate), index + 1 < destinationsValue.count {
+            navigatorLog?("pop", "destination: \(destinationsValue[index])", "animated: \(animated)")
             destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+            isAnimatedSubj.send(animated)
             destinationsSubj.send(destinationsValue)
 
             return true
         } else {
-            navigatorLog?("pop", "not possible, destination: \(destination) not found")
+            if let root, predicate(root) {
+                popToRoot(animated: animated)
+
+                return true
+            }
+
+            navigatorLog?("pop", "not possible, destination not found", "animated: \(animated)")
 
             return false
         }
@@ -362,14 +387,18 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - root: The new root destination.
+    ///   - animated: Indicates whether the transition should be animated.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    func replace(_ root: Destination, isPopToRoot: Bool = true) {
+    func replace(_ root: Destination, animated: Bool = true, isPopToRoot: Bool = true) {
         if isPopToRoot {
             navigatorLog?("replace root", "pop to root")
-            popToRoot()
+            popToRoot(animated: animated)
         }
-        navigatorLog?("replace root", "destination: \(root)")
-        rootSubj.send(root)
+        Task { @MainActor in
+            navigatorLog?("replace root", "destination: \(root)")
+            isAnimatedSubj.send(animated)
+            rootSubj.send(root)
+        }
     }
 
     /// Dismisses the current top navigator.
@@ -384,10 +413,10 @@ public extension BaseNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(target: Destination) -> Bool {
+    func close(target: Destination, animated: Bool) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
-            if navigator?.closeIn(where: { $0 == target }) == true {
+            if navigator?.closeIn(where: { $0 == target }, animated: animated) == true {
                 return true
             }
             navigator = navigator?.parent
@@ -401,10 +430,10 @@ public extension BaseNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(predicate: (Destination) -> Bool) -> Bool {
+    func close(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
-            if navigator?.closeIn(where: predicate) == true {
+            if navigator?.closeIn(where: predicate, animated: animated) == true {
                 return true
             }
 
@@ -414,18 +443,18 @@ public extension BaseNavigator {
         return false
     }
 
-    private func closeIn(where predicate: (Destination) -> Bool) -> Bool {
+    private func closeIn(where predicate: (Destination) -> Bool, animated: Bool) -> Bool {
         for destination in destinationsSubj.value.reversed() {
             if predicate(destination) {
                 present(nil, strategy: .fromCurrent)
-                pop(target: destination)
+                pop(predicate: predicate, animated: animated)
 
                 return true
             }
         }
         if let destination = root, predicate(destination) {
             present(nil, strategy: .fromCurrent)
-            popToRoot()
+            popToRoot(animated: animated)
 
             return true
         }
@@ -434,7 +463,7 @@ public extension BaseNavigator {
     }
 
     /// Closes the navigator to the initial first navigator.
-    func closeToInitial() {
+    func closeToInitial(animated: Bool) {
         navigatorLog?("close to initial")
         var firstNavigator: Self! = self
         while firstNavigator.parent != nil {
@@ -444,11 +473,11 @@ public extension BaseNavigator {
         case .tabView:
             firstNavigator.tabs.forEach {
                 $0.present(nil, strategy: .fromCurrent)
-                $0.popToRoot()
+                $0.popToRoot(animated: animated)
             }
         case .flow:
             firstNavigator.present(nil, strategy: .fromCurrent)
-            firstNavigator.popToRoot()
+            firstNavigator.popToRoot(animated: animated)
         case .singleView:
             firstNavigator.present(nil, strategy: .fromCurrent)
         }
@@ -514,14 +543,14 @@ public extension BaseNavigator {
     /// Pushes a new destination onto the navigation stack.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
-    func push(_ destination: any Hashable) -> Bool {
+    func push(_ destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return push(destination: destination)
+        return push(destination: destination, animated: animated)
     }
 
     /// Pops the navigation stack to a specific destination.
@@ -531,14 +560,14 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(to destination: any Hashable, isFirst: Bool = true) -> Bool {
+    func pop(to destination: any Hashable, animated: Bool, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return pop(target: destination, isFirst: isFirst)
+        return pop(target: destination, animated: animated, isFirst: isFirst)
     }
 
     /// Replaces the root destination.
@@ -548,14 +577,14 @@ public extension BaseNavigator {
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     /// - Returns: `true` if the destination was correct, otherwise `false`.
     @discardableResult
-    func replace(root destination: any Hashable, isPopToRoot: Bool = true) -> Bool {
+    func replace(root destination: any Hashable, animated: Bool, isPopToRoot: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        replace(destination, isPopToRoot: isPopToRoot)
+        replace(destination, animated: animated, isPopToRoot: isPopToRoot)
 
         return true
     }
@@ -581,14 +610,14 @@ public extension BaseNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(to destination: any Hashable) -> Bool {
+    func close(to destination: any Hashable, animated: Bool) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return close(target: destination)
+        return close(target: destination, animated: animated)
     }
 
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
@@ -596,7 +625,7 @@ public extension BaseNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(where predicate: (any Hashable) -> Bool) -> Bool {
-        return close(predicate: predicate)
+    func close(where predicate: (any Hashable) -> Bool, animated: Bool) -> Bool {
+        return close(predicate: predicate, animated: animated)
     }
 }
