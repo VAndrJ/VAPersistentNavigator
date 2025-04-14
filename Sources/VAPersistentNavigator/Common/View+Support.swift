@@ -46,13 +46,15 @@ extension View {
         _ binding: Binding<Bool>,
         with subject: CurrentValueSubject<Navigator?, Never>,
         isFirstAppearanceOccured: Binding<Bool>,
-        isFullScreen: Bool
+        isFullScreen: Bool,
+        animated: CurrentValueSubject<Bool, Never>
     ) -> some View {
         modifier(SynchronizingBaseNavigatorPresentationViewModifier(
             binding: binding,
             isFirstAppearanceOccured: isFirstAppearanceOccured,
             subject: subject,
-            isFullScreen: isFullScreen
+            isFullScreen: isFullScreen,
+            animated: animated
         ))
     }
 }
@@ -150,15 +152,16 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
     @Binding var isFirstAppearanceOccured: Bool
     let subject: CurrentValueSubject<Navigator?, Never>
     let isFullScreen: Bool
+    let animated: CurrentValueSubject<Bool, Never>
 
     func body(content: Content) -> some View {
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
             content
                 .onReceive(subject) { value in
-                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
+                    update(value: value, isFirstAppearanceOccured: isFirstAppearanceOccured)
                 }
                 .onChange(of: isFirstAppearanceOccured) { _, value in
-                    binding = getIsPresented(presentation: subject.value?.presentation) && value
+                    update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { _, value in
                     if !value {
@@ -168,16 +171,32 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
         } else {
             content
                 .onReceive(subject) { value in
-                    binding = getIsPresented(presentation: value?.presentation) && isFirstAppearanceOccured
+                    update(value: value, isFirstAppearanceOccured: isFirstAppearanceOccured)
                 }
                 .onChange(of: isFirstAppearanceOccured) { value in
-                    binding = getIsPresented(presentation: subject.value?.presentation) && value
+                    update(value: subject.value, isFirstAppearanceOccured: isFirstAppearanceOccured)
                 }
                 .onChange(of: binding) { value in
                     if !value {
                         subject.send(nil)
                     }
                 }
+        }
+    }
+
+    private func update(value: Navigator?, isFirstAppearanceOccured: Bool) {
+        if isFirstAppearanceOccured {
+            var transaction = Transaction()
+            transaction.disablesAnimations = !animated.value
+            let isPresented = getIsPresented(presentation: value?.presentation)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [animated] in
+                animated.send(true)
+            }
+            withTransaction(transaction) {
+                binding = isPresented
+            }
+        } else {
+            binding = false
         }
     }
 

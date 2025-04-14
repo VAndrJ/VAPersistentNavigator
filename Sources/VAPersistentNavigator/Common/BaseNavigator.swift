@@ -24,7 +24,7 @@ public struct EmptySheetTag: PersistentSheetTag {}
 /// navigation stacks, and tabbed views. It manages hierarchical relationships
 /// and tracks navigation state.
 @MainActor
-public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable {
+public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable, Equatable {
     associatedtype Destination: Hashable
     associatedtype TabItemTag: Hashable
     associatedtype SheetTag: Hashable
@@ -160,6 +160,28 @@ public extension BaseNavigator {
     var tabChild: Self? {
         tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
     }
+    var isPresentedTab: Bool {
+        if isTab {
+            return parent?.parent != nil
+        } else {
+            return false
+        }
+    }
+    var isPresented: Bool {
+        if isTab {
+            return false
+        } else {
+            return parent != nil
+        }
+    }
+    var isTab: Bool { parent?.tabs.isEmpty == false }
+    var orTabParent: Self? {
+        if parent?.tabs.isEmpty == false {
+            return parent?.parent
+        } else {
+            return parent
+        }
+    }
     var topChild: Self? {
         switch kind {
         case .tabView: tabChild
@@ -240,8 +262,16 @@ public extension BaseNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
-    func present(_ data: NavigatorData, strategy: NavigatorPresentationStrategy = .onTop) {
-        present(getNavigator(data: data), strategy: strategy)
+    func present(
+        _ data: NavigatorData,
+        strategy: NavigatorPresentationStrategy = .onTop,
+        animated: Bool = true
+    ) {
+        present(
+            getNavigator(data: data),
+            strategy: strategy,
+            animated: animated
+        )
     }
 
     /// Presents a child navigator.
@@ -251,9 +281,11 @@ public extension BaseNavigator {
     ///   - strategy: Defines strategy for presenting a new navigator.
     func present(
         _ child: Self?,
-        strategy: NavigatorPresentationStrategy = .onTop
+        strategy: NavigatorPresentationStrategy = .onTop,
+        animated: Bool
     ) {
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
+        isAnimatedSubj.send(animated)
         switch strategy {
         case .onTop:
             topNavigator.childSubj.send(child)
@@ -344,12 +376,12 @@ public extension BaseNavigator {
     /// - Parameter id: The ID of the navigator to dismiss to.
     /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismissTo(id: UUID) -> Bool {
+    func dismissTo(id: UUID, animated: Bool = true) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
                 navigatorLog?("dismiss to", "id: \(id)")
-                topNavigator?.present(nil, strategy: .fromCurrent)
+                topNavigator?.present(nil, strategy: .fromCurrent, animated: animated)
 
                 return true
             }
@@ -366,12 +398,12 @@ public extension BaseNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(target destination: Destination) -> Bool {
+    func dismiss(target destination: Destination, animated: Bool = true) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.root == destination {
                 navigatorLog?("dismiss to", "destination: \(destination)")
-                topNavigator?.present(nil, strategy: .fromCurrent)
+                topNavigator?.present(nil, strategy: .fromCurrent, animated: animated)
 
                 return true
             }
@@ -402,9 +434,13 @@ public extension BaseNavigator {
     }
 
     /// Dismisses the current top navigator.
-    func dismissTop() {
-        navigatorLog?("dismiss top")
-        parent?.present(nil, strategy: .fromCurrent)
+    func dismissTop(includingTabView: Bool = false, animated: Bool = true) {
+        navigatorLog?("dismiss top", "animated: \(animated)")
+        if parent?.tabs.isEmpty == false && includingTabView {
+            parent?.parent?.present(nil, strategy: .fromCurrent, animated: animated)
+        } else {
+            parent?.present(nil, strategy: .fromCurrent, animated: animated)
+        }
     }
 
     /// Attempts to navigate to a specified target destination by traversing
@@ -446,14 +482,14 @@ public extension BaseNavigator {
     private func closeIn(where predicate: (Destination) -> Bool, animated: Bool) -> Bool {
         for destination in destinationsSubj.value.reversed() {
             if predicate(destination) {
-                present(nil, strategy: .fromCurrent)
+                present(nil, strategy: .fromCurrent, animated: animated)
                 pop(predicate: predicate, animated: animated)
 
                 return true
             }
         }
         if let destination = root, predicate(destination) {
-            present(nil, strategy: .fromCurrent)
+            present(nil, strategy: .fromCurrent, animated: animated)
             popToRoot(animated: animated)
 
             return true
@@ -472,14 +508,14 @@ public extension BaseNavigator {
         switch firstNavigator.kind {
         case .tabView:
             firstNavigator.tabs.forEach {
-                $0.present(nil, strategy: .fromCurrent)
+                $0.present(nil, strategy: .fromCurrent, animated: animated)
                 $0.popToRoot(animated: animated)
             }
         case .flow:
-            firstNavigator.present(nil, strategy: .fromCurrent)
+            firstNavigator.present(nil, strategy: .fromCurrent, animated: animated)
             firstNavigator.popToRoot(animated: animated)
         case .singleView:
-            firstNavigator.present(nil, strategy: .fromCurrent)
+            firstNavigator.present(nil, strategy: .fromCurrent, animated: animated)
         }
     }
 
@@ -594,14 +630,14 @@ public extension BaseNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(to destination: any Hashable) -> Bool {
+    func dismiss(to destination: any Hashable, animated: Bool) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return dismiss(target: destination)
+        return dismiss(target: destination, animated: animated)
     }
 
     /// Attempts to navigate to a specified target destination by traversing

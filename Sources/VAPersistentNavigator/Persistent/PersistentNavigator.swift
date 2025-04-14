@@ -90,14 +90,14 @@ public extension PersistentNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(to destination: any PersistentDestination) -> Bool {
+    func dismiss(to destination: any PersistentDestination, animated: Bool) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return dismiss(target: destination)
+        return dismiss(target: destination, animated: animated)
     }
 
     /// Attempts to navigate to a specified target destination by traversing

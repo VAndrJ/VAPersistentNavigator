@@ -87,18 +87,20 @@ public struct NavigatorScreenFactoryView<
         case .singleView:
             rootView
                 .animation(rootReplaceAnimation(root), value: root)
-                .synchronize($root, with: navigator.rootSubj)
+                .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
                 .synchronize(
                     $isFullScreenCoverPresented,
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: true
+                    isFullScreen: true,
+                    animated: isAnimatedSubj
                 )
                 .synchronize(
                     $isSheetPresented,
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: false
+                    isFullScreen: false,
+                    animated: isAnimatedSubj
                 )
                 .onAppear {
                     guard !isFirstAppearanceOccurred else { return }
@@ -178,13 +180,15 @@ public struct NavigatorScreenFactoryView<
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: true
+                isFullScreen: true,
+                animated: isAnimatedSubj
             )
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: false
+                isFullScreen: false,
+                animated: isAnimatedSubj
             )
             .onAppear {
                 guard !isFirstAppearanceOccurred else { return }
