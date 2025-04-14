@@ -37,9 +37,7 @@ public struct FeaturePackageScreenFactoryView<
                 more: { navigator.present(.init(root: getOuterDestination(.more))) }
             ))
         case .more:
-            FeatureMoreScreenView(context: .init(
-                dismiss: { navigator.dismissTop() }
-            ))
+            FeatureMoreScreenView()
         }
     }
 }
@@ -77,17 +75,18 @@ struct FeatureDetailsScreenView: View {
 }
 
 struct FeatureMoreScreenView: View {
-    struct Context {
-        let dismiss: () -> Void
-    }
-
-    let context: Context
+    @Environment(\.baseNavigator) private var navigator
 
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Some package feature flow presented more")
                 .multilineTextAlignment(.center)
-            Button("Dismiss", action: context.dismiss)
+            Button("Dismiss") {
+                navigator.dismissTop()
+            }
+            Button("Close all") {
+                navigator.closeToInitial()
+            }
         }
     }
 }

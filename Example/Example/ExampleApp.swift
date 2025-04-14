@@ -9,30 +9,38 @@ import SwiftUI
 
 @main
 struct ExampleApp: App {
-    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
-    @StateObject private var viewModel: TestStateNavRestoreAppViewModel
-
-    private let shortcutService = ShortcutService.shared
-    private let notificationService = NotificationService.shared
-
-    init() {
-        self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage()))
-    }
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                WindowView(navigatorStorage: viewModel.navigatorStorage, navigator: viewModel.navigator)
-                    .transition(.slide.combined(with: .opacity).combined(with: .scale))
-                    .id(viewModel.navigator.id)
+            WindowReaderView { window in
+                GroupView(sceneId: window.windowScene?.session.persistentIdentifier)
             }
-            .animation(.easeInOut, value: viewModel.navigator.id)
-            .onReceive(shortcutService.shortcutPubl) {
-                viewModel.handle(shortcut: $0)
-            }
-            .onReceive(notificationService.notificationPubl) {
-                viewModel.handle(notification: $0)
-            }
+        }
+    }
+}
+
+struct GroupView: View {
+    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
+    @StateObject private var viewModel: TestStateNavRestoreAppViewModel
+    private let shortcutService = ShortcutService.shared
+    private let notificationService = NotificationService.shared
+
+    init(sceneId: String?) {
+        self._viewModel = .init(wrappedValue: .init(navigatorStorage: DefaultsNavigatorStorage(sceneId: sceneId)))
+    }
+
+    var body: some View {
+        Group {
+            WindowView(navigatorStorage: viewModel.navigatorStorage, navigator: viewModel.navigator)
+                .transition(.slide.combined(with: .opacity).combined(with: .scale))
+                .id(viewModel.navigator.id)
+        }
+        .animation(.easeInOut, value: viewModel.navigator.id)
+        .onReceive(shortcutService.shortcutPubl) {
+            viewModel.handle(shortcut: $0)
+        }
+        .onReceive(notificationService.notificationPubl) {
+            viewModel.handle(notification: $0)
         }
     }
 }
@@ -44,7 +52,7 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
 
     init(navigatorStorage: DefaultsNavigatorStorage) {
         self.navigatorStorage = navigatorStorage
-        self._navigator = .init(wrappedValue: navigatorStorage.getNavigator() ?? .init(view: .greeting))
+        self._navigator = .init(wrappedValue: navigatorStorage.getNavigator() ?? .init(root: .main))
 
         bindReplacement()
     }

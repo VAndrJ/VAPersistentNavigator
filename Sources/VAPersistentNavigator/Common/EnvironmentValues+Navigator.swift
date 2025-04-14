@@ -27,10 +27,14 @@ extension EnvironmentValues {
 }
 
 /// Dummy class to get around the `Main actor-isolated default value in a nonisolated context` in `EnvironmentValues`.
-final class EmptyPersistentNavigator: PersistentNavigator {
+final class EmptyPersistentNavigator: PersistentNavigator, @preconcurrency Equatable {
     typealias Destination = String
     typealias TabItemTag = String
     typealias SheetTag = String
+
+    static func == (lhs: EmptyPersistentNavigator, rhs: EmptyPersistentNavigator) -> Bool {
+        return lhs.id == rhs.id
+    }
 
     var childCancellable: AnyCancellable?
     var bag: Set<AnyCancellable> = []

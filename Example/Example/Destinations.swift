@@ -12,37 +12,21 @@ import VAPersistentNavigator
 typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
 
 enum Destination: PersistentDestination {
-    case greeting
-    case hello
-    case root
-    case root1
-    case root2
-    case root3
-    case otherRoot
+    case main
+    case navigationStackExamples(Int)
+    case sheetExamples(Int)
+    case fullScreenCoverExamples(Int)
     case tab1
     case tab2
-    case main
-    case navigationLinks
     case shortcutExample
     case notificationExample(title: String, body: String)
-    case detail(number: Int)
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)
 }
 
 enum TabTag: PersistentTabItemTag {
-    enum FirstTabView: Codable, Hashable {
-        case first
-        case second
-    }
-
-    enum SecondTabView: Codable, Hashable {
-        case first
-        case second
-    }
-
-    case first(FirstTabView)
-    case second(SecondTabView)
+    case first
+    case second
 }
 
 enum SheetTag: PersistentSheetTag {

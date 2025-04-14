@@ -9,13 +9,16 @@ import Foundation
 import VAPersistentNavigator
 
 final class DefaultsNavigatorStorage: NavigatorStorage {
+    private static let key = "com.vandrj.navigator"
+
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
-    private let key = "com.vandrj.navigator"
     private let defaults: UserDefaults
+    private let key: String
 
-    init(defaults: UserDefaults = .standard) {
+    init(sceneId: String? = nil, defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        self.key = Self.key + (sceneId ?? "")
     }
 
     func store(navigator: Navigator) {

@@ -87,43 +87,22 @@ public struct NavigatorScreenFactoryView<
         case .singleView:
             rootView
                 .animation(rootReplaceAnimation(root), value: root)
-                .synchronize($root, with: navigator.rootSubj)
+                .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
                 .synchronize(
                     $isFullScreenCoverPresented,
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: true
+                    isFullScreen: true,
+                    animated: isAnimatedSubj
                 )
                 .synchronize(
                     $isSheetPresented,
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: false
+                    isFullScreen: false,
+                    animated: isAnimatedSubj
                 )
-                .onAppear {
-                    guard !isFirstAppearanceOccurred else { return }
-
-#if os(iOS)
-                    // Crutch to avoid iOS 16.0+ 💩 issue
-                    if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
-                        UIView.setAnimationsEnabled(false)
-                    }
-                    Task {
-                        await MainActor.run {
-                            isFirstAppearanceOccurred = true
-                            Task {
-                                await MainActor.run {
-                                    if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
-                                        UIView.setAnimationsEnabled(true)
-                                    }
-                                }
-                            }
-                        }
-                    }
-#else
-                    isFirstAppearanceOccurred = true
-#endif
-                }
+                .onAppear { checkFirstAppearance() }
 #if os(iOS) || os(watchOS) || os(tvOS)
                 .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                     if let child = navigator.childSubj.value {
@@ -172,45 +151,23 @@ public struct NavigatorScreenFactoryView<
                 rootStackView
             }
             .animation(rootReplaceAnimation(root), value: root)
-            .synchronize($root, with: navigator.rootSubj)
-            .synchronize($destinations, with: navigator.destinationsSubj)
+            .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
+            .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: true
+                isFullScreen: true,
+                animated: isAnimatedSubj
             )
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                isFullScreen: false
+                isFullScreen: false,
+                animated: isAnimatedSubj
             )
-            .onAppear {
-                guard !isFirstAppearanceOccurred else { return }
-
-#if os(iOS)
-                // Crutch to avoid iOS 16.0+ 💩 issue
-                if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
-                    UIView.setAnimationsEnabled(false)
-                }
-                // To guarantee delays.
-                Task {
-                    await MainActor.run {
-                        isFirstAppearanceOccurred = true
-                        Task {
-                            await MainActor.run {
-                                if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
-                                    UIView.setAnimationsEnabled(true)
-                                }
-                            }
-                        }
-                    }
-                }
-#else
-                isFirstAppearanceOccurred = true
-#endif
-            }
+            .onAppear { checkFirstAppearance() }
 #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
@@ -238,6 +195,28 @@ public struct NavigatorScreenFactoryView<
             }
             .with(navigator: navigator)
         }
+    }
+
+    private func checkFirstAppearance() {
+        guard !isFirstAppearanceOccurred else { return }
+
+#if os(iOS)
+        // Crutch to avoid iOS 16.0+ 💩 issue
+        if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
+            UIView.setAnimationsEnabled(false)
+        }
+        Task { @MainActor in
+            isFirstAppearanceOccurred = true
+            if navigator.childSubj.value == nil && !UIView.areAnimationsEnabled {
+                Task {
+                    try? await Task.sleep(for: .milliseconds(100))
+                    UIView.setAnimationsEnabled(true)
+                }
+            }
+        }
+#else
+        isFirstAppearanceOccurred = true
+#endif
     }
 
     @ViewBuilder

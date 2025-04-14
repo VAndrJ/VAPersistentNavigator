@@ -14,7 +14,13 @@ struct Tab1ScreenView: View {
         VStack(spacing: 16) {
             Text("Current: Tab1")
             Button("Next") {
-                navigator.push(destination: .main)
+                navigator.push(destination: .tab1)
+            }
+            Button("Switch to tab 2") {
+                navigator.currentTab = TabTag.second
+            }
+            Button("Replace with main menu") {
+                navigator.onReplaceInitialNavigator?(.init(root: .main))
             }
         }
         .navigationTitle("Tab 1")
@@ -23,33 +29,20 @@ struct Tab1ScreenView: View {
 
 struct Tab2ScreenView: View {
     @Environment(\.navigator) private var navigator
-    @StateObject private var viewModel = Tab2ScreenViewViewModel()
 
     var body: some View {
         VStack(spacing: 16) {
             Text("Current: Tab2")
             Button("Next") {
-                navigator.push(destination: .main)
+                navigator.push(destination: .tab2)
+            }
+            Button("Switch to tab 1") {
+                navigator.currentTab = TabTag.first
+            }
+            Button("Replace with main menu") {
+                navigator.onReplaceInitialNavigator?(.init(root: .main))
             }
         }
         .navigationTitle("Tab 2")
-        .onFirstAppear {
-            viewModel.onFirstAppear()
-        }
-    }
-}
-
-final class Tab2ScreenViewViewModel: ObservableObject {
-
-    init() {
-        print(#function, Self.self)
-    }
-
-    func onFirstAppear() {
-        print(#function, Self.self)
-    }
-
-    deinit {
-        print(#function, Self.self)
     }
 }
