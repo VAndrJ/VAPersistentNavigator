@@ -435,11 +435,9 @@ public extension BaseNavigator {
             navigatorLog?("replace root", "pop to root")
             popToRoot(animated: animated)
         }
-        Task { @MainActor in
-            navigatorLog?("replace root", "destination: \(root)")
-            isAnimatedSubj.send(animated)
-            rootSubj.send(root)
-        }
+        navigatorLog?("replace root", "destination: \(root)")
+        isAnimatedSubj.send(animated)
+        rootSubj.send(root)
     }
 
     /// Dismisses the current top navigator.
