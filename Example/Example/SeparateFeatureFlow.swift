@@ -82,3 +82,10 @@ struct FeatureMoreScreenView: View {
         }
     }
 }
+
+#Preview {
+    WindowView(
+        navigatorStorage: .init(),
+        navigator: .init(root: .feature(.root))
+    )
+}
