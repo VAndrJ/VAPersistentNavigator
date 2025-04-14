@@ -399,9 +399,18 @@ public extension BaseNavigator {
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     func dismiss(target destination: Destination, animated: Bool = true) -> Bool {
+        return dismiss(predicate: { $0 == destination }, animated: animated)
+    }
+
+    /// Dismisses to a specific destination.
+    ///
+    /// - Parameter predicate: The predicate to dismiss to.
+    /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
+    @discardableResult
+    func dismiss(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
-            if topNavigator?.root == destination {
+            if let destination = topNavigator?.root, predicate(destination) {
                 navigatorLog?("dismiss to", "destination: \(destination)")
                 topNavigator?.present(nil, strategy: .fromCurrent, animated: animated)
 
@@ -410,7 +419,7 @@ public extension BaseNavigator {
 
             topNavigator = topNavigator?.parent
         }
-        navigatorLog?("dismiss to", "not possible, destination: \(destination) not found")
+        navigatorLog?("dismiss to", "not possible, destination not found")
 
         return false
     }
@@ -449,7 +458,7 @@ public extension BaseNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(target: Destination, animated: Bool) -> Bool {
+    func close(target: Destination, animated: Bool = true) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: { $0 == target }, animated: animated) == true {
@@ -499,7 +508,12 @@ public extension BaseNavigator {
     }
 
     /// Closes the navigator to the initial first navigator.
-    func closeToInitial(animated: Bool) {
+    ///
+    /// This method traverses up the navigator hierarchy to find the root navigator (the first created one),
+    /// then dismisses any presented views and resets the navigation stack based on the kind of navigator.
+    ///
+    /// - Parameter animated: Indicates whether the transition should be animated. Defaults to `true`.
+    func closeToInitial(animated: Bool = true) {
         navigatorLog?("close to initial")
         var firstNavigator: Self! = self
         while firstNavigator.parent != nil {
