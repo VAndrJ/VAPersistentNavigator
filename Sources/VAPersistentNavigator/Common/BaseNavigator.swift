@@ -212,7 +212,7 @@ public extension BaseNavigator {
         set {
             if parent == nil {
                 _onReplaceInitialNavigator = { [weak self] navigator in
-                    self?.closeToInitial(animated: true)
+                    self?.closeToInitial()
                     //: To avoid presented TabView issue
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(100))
@@ -282,7 +282,7 @@ public extension BaseNavigator {
     func present(
         _ child: Self?,
         strategy: NavigatorPresentationStrategy = .onTop,
-        animated: Bool
+        animated: Bool = true
     ) {
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
         isAnimatedSubj.send(animated)
@@ -488,7 +488,7 @@ public extension BaseNavigator {
         return false
     }
 
-    private func closeIn(where predicate: (Destination) -> Bool, animated: Bool) -> Bool {
+    private func closeIn(where predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         for destination in destinationsSubj.value.reversed() {
             if predicate(destination) {
                 present(nil, strategy: .fromCurrent, animated: animated)
@@ -610,7 +610,7 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(to destination: any Hashable, animated: Bool, isFirst: Bool = true) -> Bool {
+    func pop(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -627,7 +627,7 @@ public extension BaseNavigator {
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     /// - Returns: `true` if the destination was correct, otherwise `false`.
     @discardableResult
-    func replace(root destination: any Hashable, animated: Bool, isPopToRoot: Bool = true) -> Bool {
+    func replace(root destination: any Hashable, animated: Bool = true, isPopToRoot: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -644,7 +644,7 @@ public extension BaseNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(to destination: any Hashable, animated: Bool) -> Bool {
+    func dismiss(to destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -660,7 +660,7 @@ public extension BaseNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(to destination: any Hashable, animated: Bool) -> Bool {
+    func close(to destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -675,7 +675,7 @@ public extension BaseNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(where predicate: (any Hashable) -> Bool, animated: Bool) -> Bool {
+    func close(where predicate: (any Hashable) -> Bool, animated: Bool = true) -> Bool {
         return close(predicate: predicate, animated: animated)
     }
 }
