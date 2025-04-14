@@ -138,11 +138,15 @@ struct AnimatedSynchronizingViewModifier<T: Equatable>: ViewModifier {
     private func update(value: T) {
         guard binding != value else { return }
 
-        var transaction = Transaction()
-        transaction.disablesAnimations = !animated.value
-        animated.send(true)
-        withTransaction(transaction) {
+        if animated.value {
             binding = value
+        } else {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            animated.send(true)
+            withTransaction(transaction) {
+                binding = value
+            }
         }
     }
 }
@@ -174,7 +178,7 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
                     update(value: value, isFirstAppearanceOccured: isFirstAppearanceOccured)
                 }
                 .onChange(of: isFirstAppearanceOccured) { value in
-                    update(value: subject.value, isFirstAppearanceOccured: isFirstAppearanceOccured)
+                    update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { value in
                     if !value {
@@ -186,16 +190,25 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
 
     private func update(value: Navigator?, isFirstAppearanceOccured: Bool) {
         if isFirstAppearanceOccured {
-            var transaction = Transaction()
-            transaction.disablesAnimations = !animated.value
             let isPresented = getIsPresented(presentation: value?.presentation)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [animated] in
-                animated.send(true)
-            }
-            withTransaction(transaction) {
+            guard binding != isPresented else { return }
+
+            if animated.value {
                 binding = isPresented
+            } else {
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                Task {
+                    try? await Task.sleep(for: .milliseconds(50))
+                    animated.send(true)
+                }
+                withTransaction(transaction) {
+                    binding = isPresented
+                }
             }
         } else {
+            guard binding else { return }
+            
             binding = false
         }
     }
