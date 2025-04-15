@@ -52,6 +52,7 @@ final class EmptyPersistentNavigator: PersistentNavigator, @preconcurrency Equat
     let id = UUID()
     var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
+    var urlPubl: PassthroughSubject<URL, Never> { .init() }
 
     nonisolated init() {}
 

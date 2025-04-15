@@ -12,6 +12,7 @@ struct ListTileView: View {
         case forward = "chevron.forward"
         case backward = "chevron.backward"
         case replace = "gobackward"
+        case apple = "apple.logo"
     }
 
     let title: String

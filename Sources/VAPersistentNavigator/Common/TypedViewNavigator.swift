@@ -47,7 +47,8 @@ public final class TypedViewNavigator<
     public var childCancellable: AnyCancellable?
     public var bag: Set<AnyCancellable> = []
     public var onDeinit: (() -> Void)?
-    
+    public let urlPubl: PassthroughSubject<URL, Never> = .init()
+
     private let _storeSubj = PassthroughSubject<Void, Never>()
     
     /// Initializes a new instance of `TypedViewNavigator` with all required state for navigation.

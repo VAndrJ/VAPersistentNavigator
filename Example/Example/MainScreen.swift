@@ -48,6 +48,12 @@ struct MainScreen: View {
                         navigator.present(.init(root: .featurePackage(.root)))
                     }
                 }
+
+                Section {
+                    ListTileView(title: "Open URL", style: .apple) {
+                        navigator.open(url: .apple)
+                    }
+                }
             }
         }
         .navigationTitle("Navigator")

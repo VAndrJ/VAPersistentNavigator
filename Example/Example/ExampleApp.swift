@@ -30,7 +30,7 @@ struct GroupView: View {
     }
 
     var body: some View {
-        Group {
+        ZStack {
             WindowView(navigatorStorage: viewModel.navigatorStorage, navigator: viewModel.navigator)
                 .transition(.slide.combined(with: .opacity).combined(with: .scale))
                 .id(viewModel.navigator.id)
