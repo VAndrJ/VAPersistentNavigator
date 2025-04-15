@@ -233,9 +233,9 @@ public extension BaseNavigator {
         environmentPubl.send(.openURL(url))
     }
 
-    /// Opens a given Window by `id`.
+    /// Opens a new window with the specified identifier.
     ///
-    /// - Parameter window: The Window `id` to open.
+    /// - Parameter window: The identifier of the window to open.
     @available(iOS 16.0, macOS 13.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
@@ -243,9 +243,9 @@ public extension BaseNavigator {
         environmentPubl.send(.openWindow(id: window))
     }
 
-    /// Opens a given Window by `id`.
+    /// Dismisses a window with the specified identifier.
     ///
-    /// - Parameter window: The Window `id` to dismiss.
+    /// - Parameter window: The identifier of the window to dismiss.
     @available(iOS 17.0, macOS 14.0, visionOS 1.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
@@ -335,6 +335,12 @@ public extension BaseNavigator {
     }
 
     /// Pops the top destination from the navigation stack.
+    ///
+    /// This method removes the last destination in the current navigator’s stack,
+    /// simulating a back navigation. If the navigator is already at its root
+    /// (`isRootView == true`), the operation is skipped and no changes are made.
+    ///
+    /// - Parameter animated: A Boolean indicating whether the pop transition should be animated. Defaults to `true`.
     func pop(animated: Bool = true) {
         guard !isRootView else {
             navigatorLog?("pop", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
@@ -349,7 +355,13 @@ public extension BaseNavigator {
         destinationsSubj.send(destinationsValue)
     }
 
-    /// Pops the navigation stack to the root destination.
+    /// Pops the navigation stack back to the root destination.
+    ///
+    /// This method clears all destinations in the current navigator’s stack,
+    /// returning to the root. If the current navigator represents
+    /// a root view (i.e., `isRootView == true`), the operation is skipped.
+    ///
+    /// - Parameter animated: A Boolean indicating whether the pop transition should be animated. Defaults to `true`.
     func popToRoot(animated: Bool = true) {
         guard !isRootView else {
             navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
@@ -407,7 +419,9 @@ public extension BaseNavigator {
 
     /// Dismisses to a specific navigator by ID.
     ///
-    /// - Parameter id: The ID of the navigator to dismiss to.
+    /// - Parameters:
+    ///   - id: The unique identifier of the navigator to dismiss to.
+    ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
     func dismissTo(id: UUID, animated: Bool = true) -> Bool {
@@ -429,7 +443,9 @@ public extension BaseNavigator {
 
     /// Dismisses to a specific destination.
     ///
-    /// - Parameter destination: The destination to dismiss to.
+    /// - Parameters:
+    ///   - destination: The specific `Destination` to dismiss to.
+    ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     func dismiss(target destination: Destination, animated: Bool = true) -> Bool {
@@ -438,7 +454,9 @@ public extension BaseNavigator {
 
     /// Dismisses to a specific destination.
     ///
-    /// - Parameter predicate: The predicate to dismiss to.
+    /// - Parameters:
+    ///   - predicate: A closure that takes a `Destination` and returns `true` if it matches the target for dismissal.
+    ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     func dismiss(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
@@ -474,7 +492,16 @@ public extension BaseNavigator {
         rootSubj.send(root)
     }
 
-    /// Dismisses the current top navigator.
+    /// Dismisses the current top navigator from its parent, optionally including tab-based navigators.
+    ///
+    /// This method removes the current navigator from presentation by asking its parent
+    /// to present `nil` using a `.fromCurrent` strategy. If the current navigator is part of a tab view,
+    /// and `includingTabView` is `true`, the parent of the tab container will dismiss instead.
+    ///
+    /// - Parameters:
+    ///   - includingTabView: If `true`, and the current navigator is inside a tab view,
+    ///     the entire tab container will be dismissed from its parent. Defaults to `false`.
+    ///   - animated: A Boolean indicating whether the dismissal should be animated. Defaults to `true`.
     func dismissTop(includingTabView: Bool = false, animated: Bool = true) {
         navigatorLog?("dismiss top", "animated: \(animated)")
         if parent?.tabs.isEmpty == false && includingTabView {
@@ -487,7 +514,9 @@ public extension BaseNavigator {
     /// Attempts to navigate to a specified target destination by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Parameters:
+    ///   - target: The destination to close to. Must match exactly with an existing destination in the hierarchy.
+    ///   - animated: A Boolean indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
     func close(target: Destination, animated: Bool = true) -> Bool {
@@ -505,7 +534,9 @@ public extension BaseNavigator {
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Parameters:
+    ///   - predicate: A closure that takes a `Destination` as input and returns `true` if the destination matches the desired condition.
+    ///   - animated: A Bool indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
     func close(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         var navigator: Self? = topNavigator
