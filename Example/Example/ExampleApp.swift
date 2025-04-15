@@ -9,6 +9,7 @@ import SwiftUI
 
 @main
 struct ExampleApp: App {
+    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
 
     var body: some Scene {
         WindowGroup {
@@ -16,11 +17,13 @@ struct ExampleApp: App {
                 GroupView(sceneId: window.windowScene?.session.persistentIdentifier)
             }
         }
+        WindowGroup("Auxiliary", id: .auxiliaryWindowId) {
+            Text("Auxiliary")
+        }
     }
 }
 
 struct GroupView: View {
-    @UIApplicationDelegateAdaptor(CustomAppDelegate.self) private var appDelegate
     @StateObject private var viewModel: TestStateNavRestoreAppViewModel
     private let shortcutService = ShortcutService.shared
     private let notificationService = NotificationService.shared

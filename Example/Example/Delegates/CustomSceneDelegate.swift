@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
+final class CustomSceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func windowScene(
         _ windowScene: UIWindowScene,

@@ -8,7 +8,7 @@
 import UIKit
 import UserNotifications
 
-class CustomAppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+final class CustomAppDelegate: NSObject, UIApplicationDelegate {
 
     func application(
         _ application: UIApplication,

@@ -32,3 +32,7 @@ enum TabTag: PersistentTabItemTag {
 enum SheetTag: PersistentSheetTag {
     case first
 }
+
+extension String {
+    static let auxiliaryWindowId = "auxiliary"
+}
