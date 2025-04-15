@@ -239,7 +239,9 @@ public extension BaseNavigator {
     /// is of kind `.flow`. In such cases, the provided `destination` is appended
     /// to the list of current destinations, triggering a UI update.
     ///
-    /// - Parameter destination: The destination to be pushed onto the navigation stack.
+    /// - Parameters:
+    ///   - destination: The destination to be pushed onto the navigation stack.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was successfully pushed; `false` otherwise.
     ///
     /// Example:
@@ -270,6 +272,7 @@ public extension BaseNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     func present(
         _ data: NavigatorData,
         strategy: NavigatorPresentationStrategy = .onTop,
@@ -287,6 +290,7 @@ public extension BaseNavigator {
     /// - Parameters:
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     func present(
         _ child: Self?,
         strategy: NavigatorPresentationStrategy = .onTop,
@@ -342,6 +346,7 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - destination: The destination to pop to.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
@@ -353,6 +358,7 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
@@ -436,7 +442,7 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - root: The new root destination.
-    ///   - animated: Indicates whether the transition should be animated.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     func replace(_ root: Destination, animated: Bool = true, isPopToRoot: Bool = true) {
         if isPopToRoot {
@@ -597,6 +603,9 @@ extension BaseNavigator {
 public extension BaseNavigator {
 
     /// Pushes a new destination onto the navigation stack.
+    /// - Parameters:
+    ///   - destination: The destination to push onto the navigation stack. Must conform to the navigator’s `Destination` type.
+    ///   - animated: A Bool value indicating whether the push transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
     func push(_ destination: any Hashable, animated: Bool = true) -> Bool {
@@ -613,6 +622,7 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - destination: The destination to pop to.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
@@ -630,6 +640,7 @@ public extension BaseNavigator {
     ///
     /// - Parameters:
     ///   - root: The new root destination.
+    ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     /// - Returns: `true` if the destination was correct, otherwise `false`.
     @discardableResult
@@ -647,7 +658,9 @@ public extension BaseNavigator {
 
     /// Dismisses to a specific destination.
     ///
-    /// - Parameter destination: The destination to dismiss to.
+    /// - Parameters:
+    ///   - destination: The target destination to dismiss to. Must be of the navigator's `Destination` type.
+    ///   - animated: A Bool value indicating whether the dismissals should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
     func dismiss(to destination: any Hashable, animated: Bool = true) -> Bool {
@@ -663,7 +676,9 @@ public extension BaseNavigator {
     /// Attempts to navigate to a specified target destination by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Parameters:
+    ///   - destination: The target destination to navigate back to. Must be of the same type as the navigator's `Destination`.
+    ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
     func close(to destination: any Hashable, animated: Bool = true) -> Bool {
@@ -679,7 +694,10 @@ public extension BaseNavigator {
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Parameters:
+    ///   - predicate: A closure that takes a `Destination` (of type `any Hashable`)
+    ///     and returns `true` if the destination should be closed to.
+    ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
     func close(where predicate: (any Hashable) -> Bool, animated: Bool = true) -> Bool {
         return close(predicate: predicate, animated: animated)
