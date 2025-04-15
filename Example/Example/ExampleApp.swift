@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 @main
 struct ExampleApp: App {
@@ -18,7 +19,7 @@ struct ExampleApp: App {
             }
         }
         WindowGroup("Auxiliary", id: .auxiliaryWindowId) {
-            Text("Auxiliary")
+            SecondGroupView()
         }
     }
 }
@@ -90,5 +91,26 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
         navigator.onReplaceInitialNavigator = { [weak self] in
             self?.replaceNavigator($0)
         }
+    }
+}
+
+struct SecondGroupView: View {
+    private let navigator = Navigator(view: .main)
+
+    var body: some View {
+        NavigatorScreenFactoryView(
+            navigator: navigator,
+            buildView: { _, navigator in
+                VStack(spacing: 44) {
+                    Text("Auxiliary window")
+                    if #available(iOS 17, *) {
+                        Button("Dismiss me") {
+                            navigator.dismiss(window: .auxiliaryWindowId)
+                        }
+                    }
+                }
+            },
+            buildTab: { _ in EmptyView() }
+        )
     }
 }
