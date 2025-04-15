@@ -243,6 +243,16 @@ public extension BaseNavigator {
         environmentPubl.send(.openWindow(id: window))
     }
 
+    /// Opens a given Window by `id`.
+    ///
+    /// - Parameter window: The Window `id` to dismiss.
+    @available(iOS 17.0, macOS 14.0, visionOS 1.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    func dismiss(window: String) {
+        environmentPubl.send(.dismissWindow(id: window))
+    }
+
     /// Pushes a new destination onto the navigation stack if supported by the current navigator.
     ///
     /// This method operates only when the `topNavigator` (or its selected tab child)
