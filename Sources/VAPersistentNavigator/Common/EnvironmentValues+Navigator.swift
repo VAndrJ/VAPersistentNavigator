@@ -26,6 +26,11 @@ extension EnvironmentValues {
     static let emptyPersistentNavigator = EmptyPersistentNavigator()
 }
 
+public enum EnvironmentAction {
+    case openURL(URL)
+    case openWindow(id: String)
+}
+
 /// Dummy class to get around the `Main actor-isolated default value in a nonisolated context` in `EnvironmentValues`.
 final class EmptyPersistentNavigator: PersistentNavigator, @preconcurrency Equatable {
     typealias Destination = String
@@ -52,7 +57,7 @@ final class EmptyPersistentNavigator: PersistentNavigator, @preconcurrency Equat
     let id = UUID()
     var onDeinit: (() -> Void)?
     nonisolated var debugDescription: String { "" }
-    var urlPubl: PassthroughSubject<URL, Never> { .init() }
+    var environmentPubl: PassthroughSubject<EnvironmentAction, Never> { .init() }
 
     nonisolated init() {}
 

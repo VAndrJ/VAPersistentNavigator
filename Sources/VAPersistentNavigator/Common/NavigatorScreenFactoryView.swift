@@ -103,10 +103,8 @@ public struct NavigatorScreenFactoryView<
                     isFullScreen: false,
                     animated: isAnimatedSubj
                 )
-                .onReceive(navigator.urlPubl) { url in
-                    environment.openURL(url)
-                }
-                .onAppear { checkFirstAppearance() }
+                .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
+                .onAppear(perform: checkFirstAppearance)
 #if os(iOS) || os(watchOS) || os(tvOS)
                 .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                     if let child = navigator.childSubj.value {
@@ -171,10 +169,8 @@ public struct NavigatorScreenFactoryView<
                 isFullScreen: false,
                 animated: isAnimatedSubj
             )
-            .onReceive(navigator.urlPubl) { url in
-                environment.openURL(url)
-            }
-            .onAppear { checkFirstAppearance() }
+            .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
+            .onAppear(perform: checkFirstAppearance)
 #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
                 if let child = navigator.childSubj.value {
@@ -201,6 +197,15 @@ public struct NavigatorScreenFactoryView<
                 }
             }
             .with(navigator: navigator)
+        }
+    }
+
+    private func handleEnvironment(action: EnvironmentAction) {
+        switch action {
+        case let .openURL(url):
+            environment.openURL(url)
+        case let .openWindow(id):
+            environment.openWindow(id: id)
         }
     }
 

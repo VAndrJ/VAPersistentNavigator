@@ -53,6 +53,14 @@ struct MainScreen: View {
                     ListTileView(title: "Open URL", style: .apple) {
                         navigator.open(url: .apple)
                     }
+                    ListTileView(title: "Open App settings", style: .settings) {
+                        navigator.open(url: .settings)
+                    }
+                    if UIDevice.current.userInterfaceIdiom == .pad {
+                        ListTileView(title: "Open second window", style: .openWindow) {
+                            navigator.open(window: .auxiliaryWindowId)
+                        }
+                    }
                 }
             }
         }
