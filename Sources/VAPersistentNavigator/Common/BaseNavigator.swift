@@ -236,6 +236,9 @@ public extension BaseNavigator {
     /// Opens a given Window by `id`.
     ///
     /// - Parameter window: The Window `id` to open.
+    @available(iOS 16.0, macOS 13.0, *)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     func open(window: String) {
         environmentPubl.send(.openWindow(id: window))
     }
