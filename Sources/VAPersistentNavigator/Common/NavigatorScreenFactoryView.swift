@@ -206,6 +206,10 @@ public struct NavigatorScreenFactoryView<
             environment.openURL(url)
         case let .openWindow(id):
             environment.openWindow(id: id)
+        case let .dismissWindow(id):
+            if #available(iOS 17.0, macOS 14.0, visionOS 1.0, *) {
+                environment.dismissWindow(id: id)
+            }
         }
     }
 

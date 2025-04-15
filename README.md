@@ -95,6 +95,14 @@ More detailed information can be found in the example project.
 
 - `currentTab`. A variable that holds the current tab in a `TabView`. This allows for both getting and setting the active tab programmatically.
 
+- `open(url:)`. Opens a given URL.
+
+
+- `open(window:)`. Opens a new window with the specified identifier.
+
+
+- `dismiss(window:)`. Dismisses a window with the specified identifier.
+
 
 ## Navigation using NavigationLink
 
