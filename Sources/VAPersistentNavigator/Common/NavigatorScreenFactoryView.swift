@@ -31,6 +31,7 @@ public struct NavigatorScreenFactoryView<
     @State private var root: Navigator.Destination?
     @State private var isFullScreenCoverPresented = false
     @State private var isSheetPresented = false
+    @Environment(\.self) private var environment
 
     /// Initializes a view for navigators without tab support.
     ///
@@ -102,6 +103,9 @@ public struct NavigatorScreenFactoryView<
                     isFullScreen: false,
                     animated: isAnimatedSubj
                 )
+                .onReceive(navigator.urlPubl) { url in
+                    environment.openURL(url)
+                }
                 .onAppear { checkFirstAppearance() }
 #if os(iOS) || os(watchOS) || os(tvOS)
                 .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
@@ -167,6 +171,9 @@ public struct NavigatorScreenFactoryView<
                 isFullScreen: false,
                 animated: isAnimatedSubj
             )
+            .onReceive(navigator.urlPubl) { url in
+                environment.openURL(url)
+            }
             .onAppear { checkFirstAppearance() }
 #if os(iOS) || os(watchOS) || os(tvOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented) {

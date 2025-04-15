@@ -43,6 +43,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var childCancellable: AnyCancellable? { get set }
     var bag: Set<AnyCancellable> { get set }
     var onDeinit: (() -> Void)? { get set }
+    var urlPubl: PassthroughSubject<URL, Never> { get }
 
     /// Designated initializer for creating a navigator instance with full configuration.
     ///
@@ -223,6 +224,13 @@ public extension BaseNavigator {
                 parent?.onReplaceInitialNavigator = newValue
             }
         }
+    }
+
+    /// Opens a given URL
+    ///
+    /// - Parameter url: The URL to open.
+    func open(url: URL) {
+        urlPubl.send(url)
     }
 
     /// Pushes a new destination onto the navigation stack if supported by the current navigator.
