@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 struct ExampleFullScreen: View {
     let number: Int
@@ -14,6 +15,9 @@ struct ExampleFullScreen: View {
     @State private var numberText = ""
     @State private var uuidText = ""
     @State private var isDismissAlertPresented = false
+
+    @Namespace private var namespace
+    private let zoomId = "Zoooooom"
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -56,6 +60,46 @@ struct ExampleFullScreen: View {
                             )
                         )
                     }
+                    if #available(iOS 18.0, *) {
+                        ListTileView(title: "Present with zoom animation") {
+                            navigator.present(.init(view:
+                                .fullScreenCoverExamples(
+                                    Int.random(in: 0...1000),
+                                    transition: .init(zoom: namespace, id: zoomId)
+                                ),
+                                presentation: .fullScreenCover
+                            ))
+                        }
+                        .matchedTransitionSource(id: zoomId, in: namespace)
+                        ListTileView(title: "Present stack with zoom animation") {
+                            navigator.present(.init(root:
+                                .fullScreenCoverExamples(
+                                    Int.random(in: 0...1000),
+                                    transition: .init(zoom: namespace, id: zoomId)
+                                ),
+                                presentation: .fullScreenCover
+                            ))
+                        }
+                        .matchedTransitionSource(id: zoomId, in: namespace)
+                        ListTileView(title: "Present tabs with zoom animation") {
+                            navigator.present(
+                                .tab(
+                                    tabs: [
+                                        .view(
+                                            Destination.fullScreenCoverExamples(
+                                                Int.random(in: 0...1000),
+                                                transition: .init(zoom: namespace, id: zoomId)
+                                            ),
+                                            tabItem: TabTag.first
+                                        ),
+                                        .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
+                                    ],
+                                    presentation: .fullScreenCover
+                                )
+                            )
+                        }
+                        .matchedTransitionSource(id: zoomId, in: namespace)
+                    }
                 }
 
                 Section("Dismiss") {
@@ -93,7 +137,7 @@ struct ExampleFullScreen: View {
                             .keyboardType(.numberPad)
                         Button("Get parent destination number") {
                             switch navigator.parent?.root {
-                            case let .fullScreenCoverExamples(number):
+                            case let .fullScreenCoverExamples(number, _):
                                 numberText = "\(number)"
                             default:
                                 break
@@ -126,7 +170,7 @@ struct ExampleFullScreen: View {
                     ) {
                         if !navigator.dismiss(predicate: {
                             switch $0 {
-                            case let .fullScreenCoverExamples(number):
+                            case let .fullScreenCoverExamples(number, _):
                                 return number == Int(numberText)
                             default:
                                 return false
@@ -143,7 +187,7 @@ struct ExampleFullScreen: View {
                         if !navigator.dismiss(
                             predicate: {
                                 switch $0 {
-                                case let .fullScreenCoverExamples(number):
+                                case let .fullScreenCoverExamples(number, _):
                                     return number == Int(numberText)
                                 default:
                                     return false

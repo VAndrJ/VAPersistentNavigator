@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 struct Tab1ScreenView: View {
     @Environment(\.navigator) private var navigator
@@ -17,7 +18,7 @@ struct Tab1ScreenView: View {
                 navigator.push(destination: .tab1)
             }
             Button("Switch to tab 2") {
-                navigator.currentTab = TabTag.second
+                navigator.currentTab = .second
             }
             Button("Replace with main menu") {
                 navigator.onReplaceInitialNavigator?(.init(root: .main))
@@ -37,7 +38,7 @@ struct Tab2ScreenView: View {
                 navigator.push(destination: .tab2)
             }
             Button("Switch to tab 1") {
-                navigator.currentTab = TabTag.first
+                navigator.currentTab = .first
             }
             Button("Replace with main menu") {
                 navigator.onReplaceInitialNavigator?(.init(root: .main))

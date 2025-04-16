@@ -87,8 +87,10 @@ public struct NavigatorScreenFactoryView<
         switch navigator.kind {
         case .singleView:
             rootView
+                .with(transition: root)
                 .animation(rootReplaceAnimation(root), value: root)
                 .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
+#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
                 .synchronize(
                     $isFullScreenCoverPresented,
                     with: navigator.childSubj,
@@ -96,6 +98,7 @@ public struct NavigatorScreenFactoryView<
                     isFullScreen: true,
                     animated: isAnimatedSubj
                 )
+#endif
                 .synchronize(
                     $isSheetPresented,
                     with: navigator.childSubj,
@@ -105,31 +108,10 @@ public struct NavigatorScreenFactoryView<
                 )
                 .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
                 .onAppear(perform: checkFirstAppearance)
-#if os(iOS) || os(watchOS) || os(tvOS)
-                .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
-                    if let child = navigator.childSubj.value {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                    }
-                }
+#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+                .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
 #endif
-                .sheet(isPresented: $isSheetPresented) {
-                    if let child = navigator.childSubj.value {
-                        NavigatorScreenFactoryView(
-                            navigator: child,
-                            buildView: buildView,
-                            buildTab: buildTab,
-                            getDetents: getDetents,
-                            getRootReplaceAnimation: rootReplaceAnimation
-                        )
-                        .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
-                    }
-                }
+                .sheet(isPresented: $isSheetPresented, content: getSheet)
                 .with(navigator: navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
@@ -147,14 +129,17 @@ public struct NavigatorScreenFactoryView<
                     .tag(tab.tabItem)
                 }
             }
+            .with(transition: navigator.tabs.first?.root)
             .with(navigator: navigator)
         case .flow:
             NavigationStack(path: $destinations) {
                 rootStackView
             }
+            .with(transition: root)
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
             .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
+#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
@@ -162,6 +147,7 @@ public struct NavigatorScreenFactoryView<
                 isFullScreen: true,
                 animated: isAnimatedSubj
             )
+#endif
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
@@ -171,31 +157,10 @@ public struct NavigatorScreenFactoryView<
             )
             .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
             .onAppear(perform: checkFirstAppearance)
-#if os(iOS) || os(watchOS) || os(tvOS)
-            .fullScreenCover(isPresented: $isFullScreenCoverPresented) {
-                if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
-                        navigator: child,
-                        buildView: buildView,
-                        buildTab: buildTab,
-                        getDetents: getDetents,
-                        getRootReplaceAnimation: rootReplaceAnimation
-                    )
-                }
-            }
+#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
 #endif
-            .sheet(isPresented: $isSheetPresented) {
-                if let child = navigator.childSubj.value {
-                    NavigatorScreenFactoryView(
-                        navigator: child,
-                        buildView: buildView,
-                        buildTab: buildTab,
-                        getDetents: getDetents,
-                        getRootReplaceAnimation: rootReplaceAnimation
-                    )
-                    .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
-                }
-            }
+            .sheet(isPresented: $isSheetPresented, content: getSheet)
             .with(navigator: navigator)
         }
     }
@@ -238,11 +203,36 @@ public struct NavigatorScreenFactoryView<
     }
 
     @ViewBuilder
+    private func getSheet() -> some View {
+        if let child = navigator.childSubj.value {
+            NavigatorScreenFactoryView(
+                navigator: child,
+                buildView: buildView,
+                buildTab: buildTab,
+                getDetents: getDetents,
+                getRootReplaceAnimation: rootReplaceAnimation
+            )
+            .withDetentsIfNeeded(getDetents(child.presentation.sheetTag))
+        }
+    }
+
+    @ViewBuilder
+    private func getFullScreenCover() -> some View {
+        if let child = navigator.childSubj.value {
+            NavigatorScreenFactoryView(
+                navigator: child,
+                buildView: buildView,
+                buildTab: buildTab,
+                getDetents: getDetents,
+                getRootReplaceAnimation: rootReplaceAnimation
+            )
+        }
+    }
+
+    @ViewBuilder
     private var rootView: some View {
         if let root {
             buildView(root, navigator)
-        } else {
-            EmptyView()
         }
     }
 
@@ -252,9 +242,8 @@ public struct NavigatorScreenFactoryView<
             buildView(root, navigator)
                 .navigationDestination(for: Navigator.Destination.self) {
                     buildView($0, navigator)
+                        .with(transition: $0)
                 }
-        } else {
-            EmptyView()
         }
     }
 }

@@ -30,11 +30,11 @@ struct WindowView: View {
                     switch destination {
                     case .main:
                         MainScreen()
-                    case let .navigationStackExamples(number):
+                    case let .navigationStackExamples(number, _):
                         ExamplePushScreen(number: number)
                     case let .sheetExamples(number):
                         ExampleSheetScreen(number: number)
-                    case let .fullScreenCoverExamples(number):
+                    case let .fullScreenCoverExamples(number, _):
                         ExampleFullScreen(number: number)
                     case let .feature(destination):
                         FeatureScreenFactoryView(destination: destination)
@@ -48,6 +48,8 @@ struct WindowView: View {
                         Tab1ScreenView()
                     case .tab2:
                         Tab2ScreenView()
+                    case let .url(url):
+                        ExampleSafariView(url: url)
                     case .shortcutExample:
                         Text("Shortcut example \(Int.random(in: 0...1000))")
                     case let .notificationExample(title, body):

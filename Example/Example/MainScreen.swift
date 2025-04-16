@@ -34,8 +34,8 @@ struct MainScreen: View {
                     }
                     ListTileView(title: "TabView examples") {
                         navigator.onReplaceInitialNavigator?(.init(tabs: [
-                            .init(root: .tab1, tabItem: TabTag.first),
-                            .init(root: .tab2, tabItem: TabTag.second),
+                            .init(root: .tab1, tabItem: .first),
+                            .init(root: .tab2, tabItem: .second),
                         ]))
                     }
                 }
@@ -53,6 +53,9 @@ struct MainScreen: View {
                 Section {
                     ListTileView(title: "Open URL", style: .apple) {
                         navigator.open(url: .apple)
+                    }
+                    ListTileView(title: "Open URL (sheet)", style: .apple) {
+                        navigator.present(.init(view: .url(.apple)))
                     }
                     ListTileView(title: "Open App settings", style: .settings) {
                         navigator.open(url: .settings)
