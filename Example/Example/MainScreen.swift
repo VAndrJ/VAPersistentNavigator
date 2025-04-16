@@ -54,6 +54,9 @@ struct MainScreen: View {
                     ListTileView(title: "Open URL", style: .apple) {
                         navigator.open(url: .apple)
                     }
+                    ListTileView(title: "Open URL (sheet)", style: .apple) {
+                        navigator.present(.init(view: .url(.apple)))
+                    }
                     ListTileView(title: "Open App settings", style: .settings) {
                         navigator.open(url: .settings)
                     }

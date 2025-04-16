@@ -22,6 +22,7 @@ enum Destination: PersistentDestination {
     case notificationExample(title: String, body: String)
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)
+    case url(URL)
 }
 
 enum TabTag: PersistentTabItemTag {

@@ -48,6 +48,8 @@ struct WindowView: View {
                         Tab1ScreenView()
                     case .tab2:
                         Tab2ScreenView()
+                    case let .url(url):
+                        ExampleSafariView(url: url)
                     case .shortcutExample:
                         Text("Shortcut example \(Int.random(in: 0...1000))")
                     case let .notificationExample(title, body):
