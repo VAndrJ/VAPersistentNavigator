@@ -87,6 +87,7 @@ public struct NavigatorScreenFactoryView<
         switch navigator.kind {
         case .singleView:
             rootView
+                .with(transition: root)
                 .animation(rootReplaceAnimation(root), value: root)
                 .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
@@ -112,7 +113,6 @@ public struct NavigatorScreenFactoryView<
 #endif
                 .sheet(isPresented: $isSheetPresented, content: getSheet)
                 .with(navigator: navigator)
-                .with(transition: root)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -129,12 +129,13 @@ public struct NavigatorScreenFactoryView<
                     .tag(tab.tabItem)
                 }
             }
-            .with(navigator: navigator)
             .with(transition: navigator.tabs.first?.root)
+            .with(navigator: navigator)
         case .flow:
             NavigationStack(path: $destinations) {
                 rootStackView
             }
+            .with(transition: root)
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
             .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
@@ -161,7 +162,6 @@ public struct NavigatorScreenFactoryView<
 #endif
             .sheet(isPresented: $isSheetPresented, content: getSheet)
             .with(navigator: navigator)
-            .with(transition: root)
         }
     }
 

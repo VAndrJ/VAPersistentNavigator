@@ -5,17 +5,17 @@
 //  Created by VAndrJ on 30.07.2024.
 //
 
-import Foundation
 import FeaturePackage
+import Foundation
 import VAPersistentNavigator
 
 typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
 
-enum Destination: PersistentDestination {
+enum Destination: PersistentDestination, TransitionalDestination {
     case main
-    case navigationStackExamples(Int)
+    case navigationStackExamples(Int, transition: NavigatorTransition? = nil)
     case sheetExamples(Int)
-    case fullScreenCoverExamples(Int)
+    case fullScreenCoverExamples(Int, transition: NavigatorTransition? = nil)
     case tab1
     case tab2
     case shortcutExample
@@ -23,6 +23,16 @@ enum Destination: PersistentDestination {
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)
     case url(URL)
+
+    var transition: NavigatorTransition? {
+        switch self {
+        case let .navigationStackExamples(_, transition),
+            let .fullScreenCoverExamples(_, transition):
+            transition
+        default:
+            nil
+        }
+    }
 }
 
 enum TabTag: PersistentTabItemTag {

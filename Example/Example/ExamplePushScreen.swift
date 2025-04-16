@@ -15,6 +15,9 @@ struct ExamplePushScreen: View {
     @State private var text = ""
     @State private var isPopAlertPresented = false
 
+    @Namespace private var namespace
+    private let zoomId = "Zoooooom"
+
     var body: some View {
         VStack(alignment: .leading) {
             Text("NavigationStack push/pop/root replacement with animation or without. \(number)")
@@ -32,6 +35,17 @@ struct ExamplePushScreen: View {
                         "Push with NavigationLink",
                         value: Destination.navigationStackExamples(Int.random(in: 0..<1000))
                     )
+                    if #available(iOS 18.0, *) {
+                        ListTileView(title: "Push with zoom animation") {
+                            navigator.push(
+                                destination: .navigationStackExamples(
+                                    Int.random(in: 0..<1000),
+                                    transition: .init(zoom: namespace, id: zoomId)
+                                )
+                            )
+                        }
+                        .matchedTransitionSource(id: zoomId, in: namespace)
+                    }
                 }
 
                 Section("Replace root") {
@@ -99,7 +113,7 @@ struct ExamplePushScreen: View {
                     ) {
                         if !navigator.pop(predicate: {
                             switch $0 {
-                            case let .navigationStackExamples(number):
+                            case let .navigationStackExamples(number, _):
                                 return number == Int(text)
                             default:
                                 return false
@@ -116,7 +130,7 @@ struct ExamplePushScreen: View {
                         if !navigator.pop(
                             predicate: {
                                 switch $0 {
-                                case let .navigationStackExamples(number):
+                                case let .navigationStackExamples(number, _):
                                     return number == Int(text)
                                 default:
                                     return false
@@ -134,7 +148,7 @@ struct ExamplePushScreen: View {
                     ) {
                         if !navigator.close(predicate: {
                             switch $0 {
-                            case let .navigationStackExamples(number):
+                            case let .navigationStackExamples(number, _):
                                 return number == Int(text)
                             default:
                                 return false
@@ -151,7 +165,7 @@ struct ExamplePushScreen: View {
                         if !navigator.close(
                             predicate: {
                                 switch $0 {
-                                case let .navigationStackExamples(number):
+                                case let .navigationStackExamples(number, _):
                                     return number == Int(text)
                                 default:
                                     return false

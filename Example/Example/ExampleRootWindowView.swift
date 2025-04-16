@@ -30,11 +30,11 @@ struct WindowView: View {
                     switch destination {
                     case .main:
                         MainScreen()
-                    case let .navigationStackExamples(number):
+                    case let .navigationStackExamples(number, _):
                         ExamplePushScreen(number: number)
                     case let .sheetExamples(number):
                         ExampleSheetScreen(number: number)
-                    case let .fullScreenCoverExamples(number):
+                    case let .fullScreenCoverExamples(number, _):
                         ExampleFullScreen(number: number)
                     case let .feature(destination):
                         FeatureScreenFactoryView(destination: destination)

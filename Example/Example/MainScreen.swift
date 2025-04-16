@@ -34,8 +34,8 @@ struct MainScreen: View {
                     }
                     ListTileView(title: "TabView examples") {
                         navigator.onReplaceInitialNavigator?(.init(tabs: [
-                            .init(root: .tab1, tabItem: TabTag.first),
-                            .init(root: .tab2, tabItem: TabTag.second),
+                            .init(root: .tab1, tabItem: .first),
+                            .init(root: .tab2, tabItem: .second),
                         ]))
                     }
                 }
