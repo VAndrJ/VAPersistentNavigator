@@ -104,6 +104,9 @@ More detailed information can be found in the example project.
 - `dismiss(window:)`. Dismisses a window with the specified identifier.
 
 
+- `pass(action:)`. Dispatches an action to the environment. Sends the provided action, making it available to any view that has registered an external action handler via `.handle(_)` or `.handle<T>(_)`.
+
+
 ## Navigation using NavigationLink
 
 
