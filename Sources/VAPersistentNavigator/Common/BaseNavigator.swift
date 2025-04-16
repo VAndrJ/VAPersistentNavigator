@@ -596,6 +596,16 @@ public extension BaseNavigator {
         }
     }
 
+    /// Dispatches an action to the environment.
+    ///
+    /// This method sends the provided action, making it available to any view
+    /// that has registered an external action handler via `.handle(_)` or `.handle<T>(_)`.
+    ///
+    /// - Parameter action: The action to dispatch.
+    func pass(action: Any) {
+        environmentPubl.send(.external(action))
+    }
+
     func getNavigator(data: NavigatorData) -> Self? {
         switch data {
         case let .view(view, id, presentation, tabItem):

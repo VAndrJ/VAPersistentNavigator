@@ -210,6 +210,8 @@ public struct NavigatorScreenFactoryView<
             if #available(iOS 17.0, macOS 14.0, visionOS 1.0, *) {
                 environment.dismissWindow(id: id)
             }
+        case let .external(action):
+            environment.externalAction?(action)
         }
     }
 
