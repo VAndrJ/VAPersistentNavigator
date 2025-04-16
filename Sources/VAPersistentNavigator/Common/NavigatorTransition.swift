@@ -9,7 +9,7 @@ import SwiftUI
 
 /// A protocol that marks a navigation destination as eligible for zoom transitions.
 ///
-/// Conforming types provide optional `AnyNavigatorTransition`, which contains the necessary information
+/// Conforming types provide optional `NavigatorTransition`, which contains the necessary information
 /// to participate in transition, such as `id` and `namespace` for `zoom` transition.
 ///
 /// If `transition` is `nil`, the destination will not be included in transitions.
@@ -17,18 +17,18 @@ import SwiftUI
 /// - Note: Because `Namespace.ID` cannot be persisted, zoom transitions are not restorable
 ///         from persisted navigation state and only work during the current session.
 public protocol TransitionalDestination {
-    var transition: AnyNavigatorTransition? { get }
+    var transition: NavigatorTransition? { get }
 }
 
 /// A type-erased container for representing a transition during navigation.
 ///
-/// `AnyNavigatorTransition` currently encapsulates optional `ZoomData`, which holds the information
+/// `NavigatorTransition` currently encapsulates optional `ZoomData`, which holds the information
 /// required for performing a matched geometry effect, such as an `id` and a `Namespace.ID`.
 ///
 /// - Important: Since `Namespace.ID` is not `Codable`, zoom transitions contained in
-///   `AnyNavigatorTransition` are not persistable and will not be restored after app relaunch
+///   `NavigatorTransition` are not persistable and will not be restored after app relaunch
 ///   or state recreation.
-public struct AnyNavigatorTransition: Hashable, Codable {
+public struct NavigatorTransition: Hashable, Codable {
     public let wrapped: ZoomData?
 
     public init(zoom: Namespace.ID, id: some Hashable) {
