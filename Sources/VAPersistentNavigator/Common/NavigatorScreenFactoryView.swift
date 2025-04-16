@@ -230,8 +230,6 @@ public struct NavigatorScreenFactoryView<
     private var rootView: some View {
         if let root {
             buildView(root, navigator)
-        } else {
-            EmptyView()
         }
     }
 
@@ -242,8 +240,6 @@ public struct NavigatorScreenFactoryView<
                 .navigationDestination(for: Navigator.Destination.self) {
                     buildView($0, navigator)
                 }
-        } else {
-            EmptyView()
         }
     }
 }
