@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 struct ExamplePushScreen: View {
     let number: Int

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 struct ExampleFullScreen: View {
     let number: Int
