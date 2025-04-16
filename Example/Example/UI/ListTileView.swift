@@ -15,6 +15,7 @@ struct ListTileView: View {
         case apple = "apple.logo"
         case settings = "gear"
         case openWindow = "window.casement"
+        case review = "checkmark.message"
     }
 
     let title: String

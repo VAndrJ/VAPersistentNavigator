@@ -24,12 +24,15 @@ extension EnvironmentValues {
     @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
 
     static let emptyPersistentNavigator = EmptyPersistentNavigator()
+
+    @Entry var externalAction: ((Any) -> Void)?
 }
 
 public enum EnvironmentAction {
     case openURL(URL)
     case openWindow(id: String)
     case dismissWindow(id: String)
+    case external(Any)
 }
 
 /// Dummy class to get around the `Main actor-isolated default value in a nonisolated context` in `EnvironmentValues`.

@@ -15,9 +15,12 @@
 
 To save the current state in applications using SwiftUI, there are various mechanisms, for example, `@SceneStorage`. However, due to the tight coupling to `View`, this complicates the possibility of separating the logic of navigation and state saving. Additionally, due to SwiftUI bugs, the built-in mechanisms do not work in some cases and lead to various issues.
 
+
 For navigation, use `PersistentNavigator` with `NavigatorScreenFactoryView`, which synchronizes the state of the navigator and navigation.
 
+
 To store the current navigation state, simply use any storage that implements the `NavigatorStorage` protocol. It doesn't matter if it's UserDefaults, a file, or encrypted storage. 
+
 
 Wrap everything in a `NavigatorStoringView`, which will save the current navigation state whenever any changes occur.
 
@@ -71,29 +74,42 @@ More detailed information can be found in the example project.
 
 - `push`. Pushes a new `Destination` onto the `NavigationStack`.
 
+
 - `pop`. Pops the top-most view off the `NavigationStack`, returning to the previous view. This is equivalent to tapping the back button in a standard navigation interface.
+
 
 - `pop(to:)`. Pops to a specified `Destination` in the `NavigationStack`. Useful for skipping intermediate views and jumping directly to a particular destination.
 
+
 - `popToRoot`. Pops all views off the `NavigationStack` until the root view is reached. This resets the navigation stack to the initial state.
+
 
 - `replace(root:isPopToRoot:)`. Replaces the current root view in the `NavigationStack` with a new root `Destination`. Optionally, you can choose to pop to the root after replacement.
 
+
 - `present`. Presents a new view as a `sheet` or `fullScreenCover`. This is used to modally display views on top of the current screen.
+
 
 - `dismissTop`. Dismisses the top-most presented `sheet` or `fullScreenCover`, returning to the previous screen. This is commonly used to close modally presented views.
 
+
 - `dismiss(to:)`. Dismisses presented `sheets` or `fullScreenCovers` until a specified `Destination` or `id` is reached. This allows for more controlled dismissal in cases with multiple modal presentations.
+
 
 - `closeToInitial`. Dismisses all presented `sheets` and `fullScreenCovers`, and resets the initial `NavigationStack`'s navigation path to its root state. This is useful for completely resetting the navigation flow.
 
+
 - `close(to:)`. Attempts to navigate to and close all modally presented views, while navigating to a specified target `Destination`. This can be used to programmatically close views and move to a specific part of the navigation flow.
+
 
 - `close(where:)`. Similar to `close(to:)`, but allows for specifying a predicate to determine which `Destination` to navigate to and close. This offers more flexibility in choosing the navigation target.
 
+
 - `onReplaceInitialNavigator`. A callback that is triggered when the initial `Navigator` needs to be replaced with a new one. This allows for dynamic changes in the navigator setup.
 
+
 - `currentTab`. A variable that holds the current tab in a `TabView`. This allows for both getting and setting the active tab programmatically.
+
 
 - `open(url:)`. Opens a given URL.
 
@@ -102,6 +118,9 @@ More detailed information can be found in the example project.
 
 
 - `dismiss(window:)`. Dismisses a window with the specified identifier.
+
+
+- `pass(action:)`. Dispatches an action to the environment. Sends the provided action, making it available to any view that has registered an external action handler via `.handle(_)` or `.handle<T>(_)`.
 
 
 ## Navigation using NavigationLink
@@ -202,15 +221,6 @@ struct FeatureDetailsScreenView: View {
 
 
 More detailed information can be found in the example project.
-
-
-## TBD
-
-
-- Description.
-
-
-- Examples.
 
 
 ## Author

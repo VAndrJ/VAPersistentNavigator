@@ -57,6 +57,24 @@ extension View {
             animated: animated
         ))
     }
+
+    /// Registers a handler for external actions in the view hierarchy.
+    ///
+    /// - Parameter block: A closure that handles external actions. It receives an action of any type.
+    public func handle(_ block: @escaping (_ action: Any) -> Void) -> some View {
+        environment(\.externalAction, block)
+    }
+
+    /// Registers a type-specific handler for external actions in the view hierarchy.
+    ///
+    /// - Parameter block: A closure that handles external actions of type `T`.
+    public func handle<T>(_ block: @escaping (_ action: T) -> Void) -> some View {
+        environment(\.externalAction, {
+            guard let action = $0 as? T else { return }
+
+            block(action)
+        })
+    }
 }
 
 struct DetentsViewModifier: ViewModifier {

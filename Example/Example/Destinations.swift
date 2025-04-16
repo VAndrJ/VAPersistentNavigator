@@ -33,6 +33,10 @@ enum SheetTag: PersistentSheetTag {
     case first
 }
 
+enum MessageAction {
+    case review
+}
+
 extension String {
     static let auxiliaryWindowId = "auxiliary"
 }
