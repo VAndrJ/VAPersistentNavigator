@@ -11,6 +11,17 @@ import SwiftUI
 extension View {
 
     @ViewBuilder
+    public func with(transition destination: some Hashable) -> some View {
+        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+           let destination = destination as? any TransitionalDestination,
+           let data = destination.transition?.wrapped, let id = data.id, let namespace = data.namespace {
+            self.navigationTransition(.zoom(sourceID: id, in: namespace))
+        } else {
+            self
+        }
+    }
+
+    @ViewBuilder
     func with(navigator: any BaseNavigator) -> some View {
         switch navigator {
         case let navigator as any PersistentNavigator:

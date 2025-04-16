@@ -112,6 +112,7 @@ public struct NavigatorScreenFactoryView<
 #endif
                 .sheet(isPresented: $isSheetPresented, content: getSheet)
                 .with(navigator: navigator)
+                .with(transition: root)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -129,6 +130,7 @@ public struct NavigatorScreenFactoryView<
                 }
             }
             .with(navigator: navigator)
+            .with(transition: navigator.tabs.first?.root)
         case .flow:
             NavigationStack(path: $destinations) {
                 rootStackView
@@ -159,6 +161,7 @@ public struct NavigatorScreenFactoryView<
 #endif
             .sheet(isPresented: $isSheetPresented, content: getSheet)
             .with(navigator: navigator)
+            .with(transition: root)
         }
     }
 
@@ -239,6 +242,7 @@ public struct NavigatorScreenFactoryView<
             buildView(root, navigator)
                 .navigationDestination(for: Navigator.Destination.self) {
                     buildView($0, navigator)
+                        .with(transition: $0)
                 }
         }
     }
