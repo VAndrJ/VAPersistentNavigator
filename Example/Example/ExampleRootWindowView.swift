@@ -8,10 +8,13 @@
 import SwiftUI
 import VAPersistentNavigator
 import FeaturePackage
+import StoreKit
 
 struct WindowView: View {
     let navigatorStorage: DefaultsNavigatorStorage
     let navigator: Navigator
+
+    @Environment(\.self) private var environment
 
     var body: some View {
         NavigatorStoringView(navigator: navigator, storage: navigatorStorage, delay: .seconds(3)) {
@@ -69,6 +72,12 @@ struct WindowView: View {
                     }
                 }
             )
+            .handle { (action: MessageAction) in
+                switch action {
+                case .review:
+                    environment.requestReview()
+                }
+            }
         }
     }
 }

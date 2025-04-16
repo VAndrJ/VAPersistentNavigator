@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import VAPersistentNavigator
 
 struct MainScreen: View {
     @Environment(\.navigator) private var navigator
@@ -60,6 +61,9 @@ struct MainScreen: View {
                         ListTileView(title: "Open second window", style: .openWindow) {
                             navigator.open(window: .auxiliaryWindowId)
                         }
+                    }
+                    ListTileView(title: "Review", style: .review) {
+                        navigator.pass(action: MessageAction.review)
                     }
                 }
             }
