@@ -23,7 +23,7 @@ public struct NavigatorStoringView<
     private let delay: S.SchedulerTimeType.Stride
     private let scheduler: S
     private let options: S.SchedulerOptions?
-    @ViewBuilder private let content: () -> Content
+    private let content: () -> Content
 
     /// Init the view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
     ///

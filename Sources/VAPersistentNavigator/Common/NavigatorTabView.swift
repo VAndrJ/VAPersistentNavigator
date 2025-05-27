@@ -10,7 +10,7 @@ import Combine
 
 struct NavigatorTabView<Content: View, SelectionValue: Hashable>: View {
     private let selectedTabSubj: CurrentValueSubject<SelectionValue?, Never>
-    @ViewBuilder private let content: () -> Content
+    private let content: () -> Content
     @State private var selection: SelectionValue?
 
     init(
