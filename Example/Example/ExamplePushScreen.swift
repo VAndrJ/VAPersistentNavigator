@@ -49,7 +49,7 @@ struct ExamplePushScreen: View {
                 }
 
                 Section("Replace root") {
-                    ListTileView(title: "Replace animated", style: .replace) {
+                    ListTileView(title: "Replace animated (pop)", style: .replace) {
                         navigator.replace(.navigationStackExamples(Int.random(in: 0..<1000)))
                     }
                     ListTileView(title: "Replace without animation", style: .replace) {
