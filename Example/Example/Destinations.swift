@@ -19,6 +19,7 @@ enum Destination: PersistentDestination, TransitionalDestination {
     case tab1
     case tab2
     case shortcutExample
+    case urlExample(URL)
     case notificationExample(title: String, body: String)
     case feature(FeatureDestination)
     case featurePackage(FeaturePackageDestination)

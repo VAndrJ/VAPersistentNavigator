@@ -46,6 +46,9 @@ struct GroupView: View {
         .onReceive(notificationService.notificationPubl) {
             viewModel.handle(notification: $0)
         }
+        .onOpenURL {
+            viewModel.handle(url: $0)
+        }
     }
 }
 
@@ -85,6 +88,10 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
                 navigator.present(.init(view: .shortcutExample))
             }
         }
+    }
+
+    func handle(url: URL) {
+        navigator.present(.init(view: .urlExample(url)))
     }
 
     private func bindReplacement() {

@@ -58,6 +58,8 @@ struct WindowView: View {
                                 .font(.title)
                             Text(body)
                         }
+                    case let .urlExample(url):
+                        Text(url.absoluteString)
                     }
                 },
                 buildTab: { tag in
