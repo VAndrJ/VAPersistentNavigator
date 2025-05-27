@@ -50,7 +50,11 @@ extension View {
         with subject: CurrentValueSubject<T, Never>,
         animated: CurrentValueSubject<Bool, Never>
     ) -> some View {
-        modifier(AnimatedSynchronizingViewModifier(binding: binding, subject: subject, animated: animated))
+        modifier(AnimatedSynchronizingViewModifier(
+            binding: binding,
+            subject: subject,
+            animated: animated
+        ))
     }
 
     public func synchronize<Navigator: BaseNavigator>(

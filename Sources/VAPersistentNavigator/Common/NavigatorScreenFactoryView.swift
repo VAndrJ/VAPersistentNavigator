@@ -23,8 +23,8 @@ public struct NavigatorScreenFactoryView<
 >: View {
     private let navigator: Navigator
     private let rootReplaceAnimation: (Navigator.Destination?) -> Animation?
-    @ViewBuilder private let buildView: (Navigator.Destination, Navigator) -> Content
-    @ViewBuilder private let buildTab: (Navigator.TabItemTag?) -> TabContent
+    private let buildView: (Navigator.Destination, Navigator) -> Content
+    private let buildTab: (Navigator.TabItemTag?) -> TabContent
     private let getDetents: (Navigator.SheetTag?) -> (detents: Set<PresentationDetent>, dragIndicatorVisibility: Visibility)?
     @State private var isFirstAppearanceOccurred = false
     @State private var destinations: [Navigator.Destination]
