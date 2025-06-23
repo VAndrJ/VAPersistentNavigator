@@ -13,7 +13,7 @@ import Foundation
 /// including single views, navigation stacks, and tabbed interfaces.
 /// Each case holds all necessary data to represent its navigation form,
 /// and may include presentation style and optional tab item identification.
-public enum NavigatorData {
+public enum NavigatorData: @unchecked Sendable {
     /// A single view navigation node.
     ///
     /// - Parameters:
