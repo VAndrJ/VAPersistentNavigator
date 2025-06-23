@@ -5,7 +5,7 @@
 //  Created by VAndrJ on 4/3/25.
 //
 
-public enum NavigatorPresentation {
+public enum NavigatorPresentation: @unchecked Sendable {
     case sheet(tag: (any Hashable)? = nil)
     /// - Note: Available only on iOS 16.0, tvOS 16.0, and watchOS 9.0 and later. Not available on macOS.
     @available(iOS 16.0, tvOS 16.0, watchOS 9.0, *)
