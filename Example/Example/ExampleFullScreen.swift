@@ -20,240 +20,235 @@ struct ExampleFullScreen: View {
     private let zoomId = "Zoooooom"
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Sheet examples with animation or without. \(number)")
-                .padding()
-
-            List {
-                Section("Present") {
-                    ListTileView(title: "Present view animated") {
-                        navigator.present(.view(
+        List {
+            Section("Present") {
+                ListTileView(title: "Present view animated") {
+                    navigator.present(.view(
+                        Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                        presentation: .fullScreenCover
+                    ))
+                }
+                ListTileView(title: "Present view without animation") {
+                    navigator.present(
+                        .view(
                             Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
                             presentation: .fullScreenCover
+                        ),
+                        animated: false
+                    )
+                }
+                ListTileView(title: "Present stack animated") {
+                    navigator.present(
+                        .stack(
+                            root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                            presentation: .fullScreenCover
+                        )
+                    )
+                }
+                ListTileView(title: "Present tabs animated") {
+                    navigator.present(
+                        .tab(
+                            tabs: [
+                                .view(Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.first),
+                                .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
+                            ],
+                            presentation: .fullScreenCover
+                        )
+                    )
+                }
+                if #available(iOS 18.0, *) {
+                    ListTileView(title: "Present with zoom animation") {
+                        navigator.present(.init(view:
+                                .fullScreenCoverExamples(
+                                    Int.random(in: 0...1000),
+                                    transition: .init(zoom: namespace, id: zoomId)
+                                ),
+                                                presentation: .fullScreenCover
                         ))
                     }
-                    ListTileView(title: "Present view without animation") {
-                        navigator.present(
-                            .view(
-                                Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
-                                presentation: .fullScreenCover
-                            ),
-                            animated: false
-                        )
+                    .matchedTransitionSource(id: zoomId, in: namespace)
+                    ListTileView(title: "Present stack with zoom animation") {
+                        navigator.present(.init(root:
+                                .fullScreenCoverExamples(
+                                    Int.random(in: 0...1000),
+                                    transition: .init(zoom: namespace, id: zoomId)
+                                ),
+                                                presentation: .fullScreenCover
+                        ))
                     }
-                    ListTileView(title: "Present stack animated") {
-                        navigator.present(
-                            .stack(
-                                root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
-                                presentation: .fullScreenCover
-                            )
-                        )
-                    }
-                    ListTileView(title: "Present tabs animated") {
+                    .matchedTransitionSource(id: zoomId, in: namespace)
+                    ListTileView(title: "Present tabs with zoom animation") {
                         navigator.present(
                             .tab(
                                 tabs: [
-                                    .view(Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.first),
+                                    .view(
+                                        Destination.fullScreenCoverExamples(
+                                            Int.random(in: 0...1000),
+                                            transition: .init(zoom: namespace, id: zoomId)
+                                        ),
+                                        tabItem: TabTag.first
+                                    ),
                                     .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
                                 ],
                                 presentation: .fullScreenCover
                             )
                         )
                     }
-                    if #available(iOS 18.0, *) {
-                        ListTileView(title: "Present with zoom animation") {
-                            navigator.present(.init(view:
-                                .fullScreenCoverExamples(
-                                    Int.random(in: 0...1000),
-                                    transition: .init(zoom: namespace, id: zoomId)
-                                ),
-                                presentation: .fullScreenCover
-                            ))
+                    .matchedTransitionSource(id: zoomId, in: namespace)
+                }
+            }
+
+            Section("Dismiss") {
+                ListTileView(title: "Dismiss top animated", style: .backward) {
+                    navigator.dismissTop()
+                }
+                .disabled(!navigator.isPresented)
+                ListTileView(title: "Dismiss top without animation", style: .backward) {
+                    navigator.dismissTop(animated: false)
+                }
+                .disabled(!navigator.isPresented)
+                ListTileView(title: "Dismiss top tab view animated", style: .backward) {
+                    navigator.dismissTop(includingTabView: true)
+                }
+                .disabled(!navigator.isPresentedTab)
+                ListTileView(title: "Replace with main menu", style: .replace) {
+                    navigator.onReplaceInitialNavigator?(.init(root: .main))
+                }
+                .disabled(navigator.onReplaceInitialNavigator == nil)
+            }
+
+            Section("Close") {
+                ListTileView(title: "Close to initial animated", style: .backward) {
+                    navigator.closeToInitial()
+                }
+                ListTileView(title: "Close to initial without animation", style: .backward) {
+                    navigator.closeToInitial(animated: false)
+                }
+            }
+            .disabled(!(navigator.isPresented || navigator.isPresentedTab))
+
+            Section("Dismiss to specified destination") {
+                VStack {
+                    TextField("Enter number to dismiss to", text: $numberText)
+                        .keyboardType(.numberPad)
+                    Button("Get parent destination number") {
+                        switch navigator.parent?.root {
+                        case let .fullScreenCoverExamples(number, _):
+                            numberText = "\(number)"
+                        default:
+                            break
                         }
-                        .matchedTransitionSource(id: zoomId, in: namespace)
-                        ListTileView(title: "Present stack with zoom animation") {
-                            navigator.present(.init(root:
-                                .fullScreenCoverExamples(
-                                    Int.random(in: 0...1000),
-                                    transition: .init(zoom: namespace, id: zoomId)
-                                ),
-                                presentation: .fullScreenCover
-                            ))
-                        }
-                        .matchedTransitionSource(id: zoomId, in: namespace)
-                        ListTileView(title: "Present tabs with zoom animation") {
-                            navigator.present(
-                                .tab(
-                                    tabs: [
-                                        .view(
-                                            Destination.fullScreenCoverExamples(
-                                                Int.random(in: 0...1000),
-                                                transition: .init(zoom: namespace, id: zoomId)
-                                            ),
-                                            tabItem: TabTag.first
-                                        ),
-                                        .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
-                                    ],
-                                    presentation: .fullScreenCover
-                                )
-                            )
-                        }
-                        .matchedTransitionSource(id: zoomId, in: namespace)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .disabled(!navigator.isPresented)
+                ListTileView(
+                    title: "Dismiss to destination with entered number animated (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.dismiss(target: .fullScreenCoverExamples(Int(numberText) ?? -1)) {
+                        isDismissAlertPresented = true
                     }
                 }
-
-                Section("Dismiss") {
-                    ListTileView(title: "Dismiss top animated", style: .backward) {
-                        navigator.dismissTop()
-                    }
-                    .disabled(!navigator.isPresented)
-                    ListTileView(title: "Dismiss top without animation", style: .backward) {
-                        navigator.dismissTop(animated: false)
-                    }
-                    .disabled(!navigator.isPresented)
-                    ListTileView(title: "Dismiss top tab view animated", style: .backward) {
-                        navigator.dismissTop(includingTabView: true)
-                    }
-                    .disabled(!navigator.isPresentedTab)
-                    ListTileView(title: "Replace with main menu", style: .replace) {
-                        navigator.onReplaceInitialNavigator?(.init(root: .main))
-                    }
-                    .disabled(navigator.onReplaceInitialNavigator == nil)
-                }
-
-                Section("Close") {
-                    ListTileView(title: "Close to initial animated", style: .backward) {
-                        navigator.closeToInitial()
-                    }
-                    ListTileView(title: "Close to initial without animation", style: .backward) {
-                        navigator.closeToInitial(animated: false)
+                .disabled(Int(numberText) == nil)
+                ListTileView(
+                    title: "Dismiss to destination with entered number without animation (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.dismiss(target: .fullScreenCoverExamples(Int(numberText) ?? -1), animated: false) {
+                        isDismissAlertPresented = true
                     }
                 }
-                .disabled(!(navigator.isPresented || navigator.isPresentedTab))
-
-                Section("Dismiss to specified destination") {
-                    VStack {
-                        TextField("Enter number to dismiss to", text: $numberText)
-                            .keyboardType(.numberPad)
-                        Button("Get parent destination number") {
-                            switch navigator.parent?.root {
-                            case let .fullScreenCoverExamples(number, _):
-                                numberText = "\(number)"
-                            default:
-                                break
-                            }
+                .disabled(Int(numberText) == nil)
+                ListTileView(
+                    title: "Dismiss to destination using predicate with entered number animated (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.dismiss(predicate: {
+                        switch $0 {
+                        case let .fullScreenCoverExamples(number, _):
+                            return number == Int(numberText)
+                        default:
+                            return false
                         }
-                        .buttonStyle(.plain)
+                    }) {
+                        isDismissAlertPresented = true
                     }
-                    .disabled(!navigator.isPresented)
-                    ListTileView(
-                        title: "Dismiss to destination with entered number animated (if available)",
-                        style: .backward
-                    ) {
-                        if !navigator.dismiss(target: .fullScreenCoverExamples(Int(numberText) ?? -1)) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(Int(numberText) == nil)
-                    ListTileView(
-                        title: "Dismiss to destination with entered number without animation (if available)",
-                        style: .backward
-                    ) {
-                        if !navigator.dismiss(target: .fullScreenCoverExamples(Int(numberText) ?? -1), animated: false) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(Int(numberText) == nil)
-                    ListTileView(
-                        title: "Dismiss to destination using predicate with entered number animated (if available)",
-                        style: .backward
-                    ) {
-                        if !navigator.dismiss(predicate: {
+                }
+                .disabled(Int(numberText) == nil)
+                ListTileView(
+                    title: "Dismiss to destination using predicate with entered number without animation (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.dismiss(
+                        predicate: {
                             switch $0 {
                             case let .fullScreenCoverExamples(number, _):
                                 return number == Int(numberText)
                             default:
                                 return false
                             }
-                        }) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(Int(numberText) == nil)
-                    ListTileView(
-                        title: "Dismiss to destination using predicate with entered number without animation (if available)",
-                        style: .backward
+                        },
+                        animated: false
                     ) {
-                        if !navigator.dismiss(
-                            predicate: {
-                                switch $0 {
-                                case let .fullScreenCoverExamples(number, _):
-                                    return number == Int(numberText)
-                                default:
-                                    return false
-                                }
-                            },
-                            animated: false
-                        ) {
-                            isDismissAlertPresented = true
-                        }
+                        isDismissAlertPresented = true
                     }
-                    .disabled(Int(numberText) == nil)
-                    ListTileView(
-                        title: "Close to destination with entered number animated (if available)",
-                        style: .backward
-                    ) {
-                        if !navigator.close(target: .fullScreenCoverExamples(Int(numberText) ?? -1)) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(Int(numberText) == nil)
-                    ListTileView(
-                        title: "Close to destination with entered number without animation (if available)",
-                        style: .backward
-                    ) {
-                        if !navigator.close(target: .fullScreenCoverExamples(Int(numberText) ?? -1), animated: false) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(Int(numberText) == nil)
                 }
-
-                Section("Dismiss to specified UUID") {
-                    VStack {
-                        TextField("Enter UUID to dismiss to", text: $uuidText)
-                            .keyboardType(.numberPad)
-                        Button("Get parent destination UUID") {
-                            uuidText = navigator.orTabParent?.id.uuidString ?? ""
-                        }
-                        .buttonStyle(.plain)
+                .disabled(Int(numberText) == nil)
+                ListTileView(
+                    title: "Close to destination with entered number animated (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.close(target: .fullScreenCoverExamples(Int(numberText) ?? -1)) {
+                        isDismissAlertPresented = true
                     }
-                    .disabled(!(navigator.isPresented || navigator.isPresentedTab))
-                    ListTileView(
-                        title: "Dismiss to destination with entered UUID animated (if available)",
-                        style: .backward
-                    ) {
-                        if let uuid = UUID(uuidString: uuidText), !navigator.dismissTo(id: uuid) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(UUID(uuidString: uuidText) == nil)
-                    ListTileView(
-                        title: "Dismiss to destination with entered UUID without animation (if available)",
-                        style: .backward
-                    ) {
-                        if let uuid = UUID(uuidString: uuidText), !navigator.dismissTo(id: uuid, animated: false) {
-                            isDismissAlertPresented = true
-                        }
-                    }
-                    .disabled(UUID(uuidString: uuidText) == nil)
                 }
+                .disabled(Int(numberText) == nil)
+                ListTileView(
+                    title: "Close to destination with entered number without animation (if available)",
+                    style: .backward
+                ) {
+                    if !navigator.close(target: .fullScreenCoverExamples(Int(numberText) ?? -1), animated: false) {
+                        isDismissAlertPresented = true
+                    }
+                }
+                .disabled(Int(numberText) == nil)
             }
-            .alert("Dismiss was unsuccessful", isPresented: $isDismissAlertPresented) {
-                Button("OK") {}
+
+            Section("Dismiss to specified UUID") {
+                VStack {
+                    TextField("Enter UUID to dismiss to", text: $uuidText)
+                        .keyboardType(.numberPad)
+                    Button("Get parent destination UUID") {
+                        uuidText = navigator.orTabParent?.id.uuidString ?? ""
+                    }
+                    .buttonStyle(.plain)
+                }
+                .disabled(!(navigator.isPresented || navigator.isPresentedTab))
+                ListTileView(
+                    title: "Dismiss to destination with entered UUID animated (if available)",
+                    style: .backward
+                ) {
+                    if let uuid = UUID(uuidString: uuidText), !navigator.dismissTo(id: uuid) {
+                        isDismissAlertPresented = true
+                    }
+                }
+                .disabled(UUID(uuidString: uuidText) == nil)
+                ListTileView(
+                    title: "Dismiss to destination with entered UUID without animation (if available)",
+                    style: .backward
+                ) {
+                    if let uuid = UUID(uuidString: uuidText), !navigator.dismissTo(id: uuid, animated: false) {
+                        isDismissAlertPresented = true
+                    }
+                }
+                .disabled(UUID(uuidString: uuidText) == nil)
             }
         }
-        .navigationTitle("Examples \(number)")
+        .alert("Dismiss was unsuccessful", isPresented: $isDismissAlertPresented) {
+            Button("OK") {}
+        }
+        .navigationTitle("FullScreen view \(number)")
     }
 }
 
