@@ -13,8 +13,9 @@ extension View {
     @ViewBuilder
     public func with(transition destination: some Hashable) -> some View {
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
-           let destination = destination as? any TransitionalDestination,
-           let data = destination.transition?.wrapped, let id = data.id, let namespace = data.namespace {
+            let destination = destination as? any TransitionalDestination,
+            let data = destination.transition?.wrapped, let id = data.id, let namespace = data.namespace
+        {
             self.navigationTransition(.zoom(sourceID: id, in: namespace))
         } else {
             self
@@ -50,11 +51,13 @@ extension View {
         with subject: CurrentValueSubject<T, Never>,
         animated: CurrentValueSubject<Bool, Never>
     ) -> some View {
-        modifier(AnimatedSynchronizingViewModifier(
-            binding: binding,
-            subject: subject,
-            animated: animated
-        ))
+        modifier(
+            AnimatedSynchronizingViewModifier(
+                binding: binding,
+                subject: subject,
+                animated: animated
+            )
+        )
     }
 
     public func synchronize<Navigator: BaseNavigator>(
@@ -64,13 +67,15 @@ extension View {
         isFullScreen: Bool,
         animated: CurrentValueSubject<Bool, Never>
     ) -> some View {
-        modifier(SynchronizingBaseNavigatorPresentationViewModifier(
-            binding: binding,
-            isFirstAppearanceOccured: isFirstAppearanceOccured,
-            subject: subject,
-            isFullScreen: isFullScreen,
-            animated: animated
-        ))
+        modifier(
+            SynchronizingBaseNavigatorPresentationViewModifier(
+                binding: binding,
+                isFirstAppearanceOccured: isFirstAppearanceOccured,
+                subject: subject,
+                isFullScreen: isFullScreen,
+                animated: animated
+            )
+        )
     }
 
     /// Registers a handler for external actions in the view hierarchy.
@@ -84,11 +89,14 @@ extension View {
     ///
     /// - Parameter block: A closure that handles external actions of type `T`.
     public func handle<T>(_ block: @escaping (_ action: T) -> Void) -> some View {
-        environment(\.externalAction, {
-            guard let action = $0 as? T else { return }
+        environment(
+            \.externalAction,
+            {
+                guard let action = $0 as? T else { return }
 
-            block(action)
-        })
+                block(action)
+            }
+        )
     }
 }
 
@@ -241,7 +249,7 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
             }
         } else {
             guard binding else { return }
-            
+
             binding = false
         }
     }

@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 8/5/24.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 struct NavigatorTabView<Content: View, SelectionValue: Hashable>: View {
     private let selectedTabSubj: CurrentValueSubject<SelectionValue?, Never>

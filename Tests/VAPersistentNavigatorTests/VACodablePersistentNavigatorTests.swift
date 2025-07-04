@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+
 @testable import VAPersistentNavigator
 
 @Suite("Codable Navigator push and pop")
@@ -194,20 +195,22 @@ struct CodablePersistentNavigatorPresentationTests {
     func navigator_closeToInitial_tab() {
         let sut = TestNavigator(root: .first)
         let navigarot: any PersistentNavigator = sut
-        navigarot.present(.tab(
-            tabs: [
-                .stack(
-                    root: MockDestination.first,
-                    destinations: [MockDestination.second, MockDestination.third],
-                    tabItem: MockTabTag.first
-                ),
-                .view(
-                    MockDestination.second,
-                    tabItem: MockTabTag.second
-                ),
-            ],
-            selectedTab: MockTabTag.second
-        ))
+        navigarot.present(
+            .tab(
+                tabs: [
+                    .stack(
+                        root: MockDestination.first,
+                        destinations: [MockDestination.second, MockDestination.third],
+                        tabItem: MockTabTag.first
+                    ),
+                    .view(
+                        MockDestination.second,
+                        tabItem: MockTabTag.second
+                    ),
+                ],
+                selectedTab: MockTabTag.second
+            )
+        )
 
         #expect(.tabView == sut.childSubj.value?.kind)
         #expect(MockTabTag.second == sut.childSubj.value?.selectedTabSubj.value)
@@ -249,7 +252,7 @@ struct CodablePersistentNavigatorChildrenTests {
         let sut = TestNavigator(tabs: [firstTab, secondTab], selectedTab: selectedTab)
         let presentedNavigator = TestNavigator(root: .second)
         sut.present(presentedNavigator)
-        
+
         #expect(presentedNavigator == sut.topNavigator)
 
         let expectedDestination: MockDestination = .fourth
@@ -413,10 +416,12 @@ struct CodablePersistentNavigatorClose {
     func navigator_closeToDestination_presentedTabs() {
         let expectedDestination: MockDestination = .second
         let sut = TestNavigator(view: .first)
-        sut.present(.init(tabs: [
-            .init(view: expectedDestination),
-            .init(view: .third),
-        ]))
+        sut.present(
+            .init(tabs: [
+                .init(view: expectedDestination),
+                .init(view: .third),
+            ])
+        )
         sut.present(.init(view: .fourth))
 
         #expect(.fourth == sut.topNavigator.root)
@@ -520,7 +525,7 @@ struct CodablePersistentNavigatorClose {
         sut.present(.init(view: .fourth))
 
         #expect(.fourth == sut.topNavigator.root)
-        
+
         let closeResult = sut.close {
             expectedDestination == $0 as? MockDestination
         }

@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 4/3/25.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 /// A placeholder type representing the absence of a specific tab item tag.
 ///
@@ -59,7 +59,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     ///   - child: A presented child navigator, if any.
     init(
         id: UUID,
-        root: Destination?, // ignored when kind == .tabView
+        root: Destination?,  // ignored when kind == .tabView
         destinations: [Destination],
         presentation: TypedNavigatorPresentation<SheetTag>,
         tabItem: TabItemTag?,
@@ -73,7 +73,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
 @MainActor
 let isAnimatedSubj = CurrentValueSubject<Bool, Never>(true)
 
-public extension BaseNavigator {
+extension BaseNavigator {
 
     /// Convenience initializer for creating a `.singleView` style navigator.
     ///
@@ -82,7 +82,7 @@ public extension BaseNavigator {
     ///   - view: The single view destination.
     ///   - presentation: Presentation options for this navigator (e.g., sheet).
     ///   - tabItem: Optional tab identifier if embedded in a tab view.
-    init(
+    public init(
         id: UUID = .init(),
         view: Destination,
         presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
@@ -109,7 +109,7 @@ public extension BaseNavigator {
     ///   - destinations: Additional destinations to push.
     ///   - presentation: Presentation options for this navigator.
     ///   - tabItem: Optional tab identifier if embedded in a tab view.
-    init(
+    public init(
         id: UUID = .init(),
         root: Destination,
         destinations: [Destination] = [],
@@ -136,7 +136,7 @@ public extension BaseNavigator {
     ///   - tabs: Child navigators representing each tab.
     ///   - presentation: Presentation options for the entire tab view.
     ///   - selectedTab: Initially selected tab.
-    init(
+    public init(
         id: UUID = .init(),
         tabs: [Self] = [],
         presentation: TypedNavigatorPresentation<SheetTag> = .sheet,
@@ -155,41 +155,41 @@ public extension BaseNavigator {
         )
     }
 
-    var root: Destination? { rootSubj.value }
-    var isRootView: Bool { destinationsSubj.value.isEmpty }
-    var orTabChild: Self { tabChild ?? self }
-    var tabChild: Self? {
+    public var root: Destination? { rootSubj.value }
+    public var isRootView: Bool { destinationsSubj.value.isEmpty }
+    public var orTabChild: Self { tabChild ?? self }
+    public var tabChild: Self? {
         tabs.first(where: { $0.tabItem == selectedTabSubj.value }) ?? tabs.first
     }
-    var isPresentedTab: Bool {
+    public var isPresentedTab: Bool {
         if isTab {
             return parent?.parent != nil
         } else {
             return false
         }
     }
-    var isPresented: Bool {
+    public var isPresented: Bool {
         if isTab {
             return false
         } else {
             return parent != nil
         }
     }
-    var isTab: Bool { parent?.tabs.isEmpty == false }
-    var orTabParent: Self? {
+    public var isTab: Bool { parent?.tabs.isEmpty == false }
+    public var orTabParent: Self? {
         if parent?.tabs.isEmpty == false {
             return parent?.parent
         } else {
             return parent
         }
     }
-    var topChild: Self? {
+    public var topChild: Self? {
         switch kind {
         case .tabView: tabChild
         case .flow, .singleView: childSubj.value
         }
     }
-    var topNavigator: Self {
+    public var topNavigator: Self {
         var navigator: Self! = self
         while navigator?.topChild != nil {
             navigator = navigator?.topChild
@@ -197,7 +197,7 @@ public extension BaseNavigator {
 
         return navigator
     }
-    var currentTab: TabItemTag? {
+    public var currentTab: TabItemTag? {
         get { kind.isTabView ? selectedTabSubj.value : parent?.currentTab }
         set {
             if kind.isTabView {
@@ -208,7 +208,7 @@ public extension BaseNavigator {
         }
     }
     /// A closure that is called when the initial navigator needs to be replaced.
-    var onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? {
+    public var onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
@@ -229,7 +229,7 @@ public extension BaseNavigator {
     /// Opens a given URL
     ///
     /// - Parameter url: The URL to open.
-    func open(url: URL) {
+    public func open(url: URL) {
         environmentPubl.send(.openURL(url))
     }
 
@@ -239,7 +239,7 @@ public extension BaseNavigator {
     @available(iOS 16.0, macOS 13.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func open(window: String) {
+    public func open(window: String) {
         environmentPubl.send(.openWindow(id: window))
     }
 
@@ -249,7 +249,7 @@ public extension BaseNavigator {
     @available(iOS 17.0, macOS 14.0, visionOS 1.0, *)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
-    func dismiss(window: String) {
+    public func dismiss(window: String) {
         environmentPubl.send(.dismissWindow(id: window))
     }
 
@@ -271,7 +271,7 @@ public extension BaseNavigator {
     ///
     /// - Note: This method is a no-op for `.singleView` and `.tabView` navigators.
     @discardableResult
-    func push(destination: Destination, animated: Bool = true) -> Bool {
+    public func push(destination: Destination, animated: Bool = true) -> Bool {
         navigatorLog?("push", "destination: \(destination)", "animated: \(animated)")
         let topNavigator = self.topNavigator.orTabChild
         switch topNavigator.kind {
@@ -293,7 +293,7 @@ public extension BaseNavigator {
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
-    func present(
+    public func present(
         _ data: NavigatorData,
         strategy: NavigatorPresentationStrategy = .onTop,
         animated: Bool = true
@@ -311,7 +311,7 @@ public extension BaseNavigator {
     ///   - child: The child navigator to present.
     ///   - strategy: Defines strategy for presenting a new navigator.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
-    func present(
+    public func present(
         _ child: Self?,
         strategy: NavigatorPresentationStrategy = .onTop,
         animated: Bool = true
@@ -341,7 +341,7 @@ public extension BaseNavigator {
     /// (`isRootView == true`), the operation is skipped and no changes are made.
     ///
     /// - Parameter animated: A Boolean indicating whether the pop transition should be animated. Defaults to `true`.
-    func pop(animated: Bool = true) {
+    public func pop(animated: Bool = true) {
         guard !isRootView else {
             navigatorLog?("pop", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
 
@@ -362,7 +362,7 @@ public extension BaseNavigator {
     /// a root view (i.e., `isRootView == true`), the operation is skipped.
     ///
     /// - Parameter animated: A Boolean indicating whether the pop transition should be animated. Defaults to `true`.
-    func popToRoot(animated: Bool = true) {
+    public func popToRoot(animated: Bool = true) {
         guard !isRootView else {
             navigatorLog?("popToRoot", "not possible, isRootView: \(isRootView)", "animated: \(animated)")
 
@@ -382,7 +382,7 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(target destination: Destination, animated: Bool = true, isFirst: Bool = true) -> Bool {
+    public func pop(target destination: Destination, animated: Bool = true, isFirst: Bool = true) -> Bool {
         return pop(predicate: { $0 == destination }, animated: animated, isFirst: isFirst)
     }
 
@@ -394,10 +394,12 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(predicate: (Destination) -> Bool, animated: Bool = true, isFirst: Bool = true) -> Bool {
+    public func pop(predicate: (Destination) -> Bool, animated: Bool = true, isFirst: Bool = true) -> Bool {
         var destinationsValue = destinationsSubj.value
 
-        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate), index + 1 < destinationsValue.count {
+        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate),
+            index + 1 < destinationsValue.count
+        {
             navigatorLog?("pop", "destination: \(destinationsValue[index])", "animated: \(animated)")
             destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
             isAnimatedSubj.send(animated)
@@ -424,7 +426,7 @@ public extension BaseNavigator {
     ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the navigator was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismissTo(id: UUID, animated: Bool = true) -> Bool {
+    public func dismissTo(id: UUID, animated: Bool = true) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if topNavigator?.id == id {
@@ -448,7 +450,7 @@ public extension BaseNavigator {
     ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(target destination: Destination, animated: Bool = true) -> Bool {
+    public func dismiss(target destination: Destination, animated: Bool = true) -> Bool {
         return dismiss(predicate: { $0 == destination }, animated: animated)
     }
 
@@ -459,7 +461,7 @@ public extension BaseNavigator {
     ///   - animated: A Boolean indicating whether the dismissal transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
+    public func dismiss(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         var topNavigator: Self? = self
         while topNavigator != nil {
             if let destination = topNavigator?.root, predicate(destination) {
@@ -482,7 +484,7 @@ public extension BaseNavigator {
     ///   - root: The new root destination.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
-    func replace(_ root: Destination, animated: Bool = true, isPopToRoot: Bool = true) {
+    public func replace(_ root: Destination, animated: Bool = true, isPopToRoot: Bool = true) {
         if isPopToRoot {
             navigatorLog?("replace root", "pop to root")
             popToRoot(animated: animated)
@@ -502,7 +504,7 @@ public extension BaseNavigator {
     ///   - includingTabView: If `true`, and the current navigator is inside a tab view,
     ///     the entire tab container will be dismissed from its parent. Defaults to `false`.
     ///   - animated: A Boolean indicating whether the dismissal should be animated. Defaults to `true`.
-    func dismissTop(includingTabView: Bool = false, animated: Bool = true) {
+    public func dismissTop(includingTabView: Bool = false, animated: Bool = true) {
         navigatorLog?("dismiss top", "animated: \(animated)")
         if parent?.tabs.isEmpty == false && includingTabView {
             parent?.parent?.present(nil, strategy: .fromCurrent, animated: animated)
@@ -519,7 +521,7 @@ public extension BaseNavigator {
     ///   - animated: A Boolean indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(target: Destination, animated: Bool = true) -> Bool {
+    public func close(target: Destination, animated: Bool = true) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: { $0 == target }, animated: animated) == true {
@@ -538,7 +540,7 @@ public extension BaseNavigator {
     ///   - predicate: A closure that takes a `Destination` as input and returns `true` if the destination matches the desired condition.
     ///   - animated: A Bool indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
+    public func close(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
             if navigator?.closeIn(where: predicate, animated: animated) == true {
@@ -576,7 +578,7 @@ public extension BaseNavigator {
     /// then dismisses any presented views and resets the navigation stack based on the kind of navigator.
     ///
     /// - Parameter animated: Indicates whether the transition should be animated. Defaults to `true`.
-    func closeToInitial(animated: Bool = true) {
+    public func closeToInitial(animated: Bool = true) {
         navigatorLog?("close to initial")
         var firstNavigator: Self! = self
         while firstNavigator.parent != nil {
@@ -602,11 +604,11 @@ public extension BaseNavigator {
     /// that has registered an external action handler via `.handle(_)` or `.handle<T>(_)`.
     ///
     /// - Parameter action: The action to dispatch.
-    func pass(action: Any) {
+    public func pass(action: Any) {
         environmentPubl.send(.external(action))
     }
 
-    func getNavigator(data: NavigatorData) -> Self? {
+    public func getNavigator(data: NavigatorData) -> Self? {
         switch data {
         case let .view(view, id, presentation, tabItem):
             guard let destination = view as? Destination else {
@@ -661,7 +663,7 @@ extension BaseNavigator {
 
 // MARK: - Hashable functions
 
-public extension BaseNavigator {
+extension BaseNavigator {
 
     /// Pushes a new destination onto the navigation stack.
     /// - Parameters:
@@ -669,7 +671,7 @@ public extension BaseNavigator {
     ///   - animated: A Bool value indicating whether the push transition should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
-    func push(_ destination: any Hashable, animated: Bool = true) -> Bool {
+    public func push(_ destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -687,7 +689,7 @@ public extension BaseNavigator {
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
     @discardableResult
-    func pop(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
+    public func pop(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -705,7 +707,7 @@ public extension BaseNavigator {
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     /// - Returns: `true` if the destination was correct, otherwise `false`.
     @discardableResult
-    func replace(root destination: any Hashable, animated: Bool = true, isPopToRoot: Bool = true) -> Bool {
+    public func replace(root destination: any Hashable, animated: Bool = true, isPopToRoot: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -724,7 +726,7 @@ public extension BaseNavigator {
     ///   - animated: A Bool value indicating whether the dismissals should be animated. Defaults to `true`.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(to destination: any Hashable, animated: Bool = true) -> Bool {
+    public func dismiss(to destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -742,7 +744,7 @@ public extension BaseNavigator {
     ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(to destination: any Hashable, animated: Bool = true) -> Bool {
+    public func close(to destination: any Hashable, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -760,7 +762,7 @@ public extension BaseNavigator {
     ///     and returns `true` if the destination should be closed to.
     ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(where predicate: (any Hashable) -> Bool, animated: Bool = true) -> Bool {
+    public func close(where predicate: (any Hashable) -> Bool, animated: Bool = true) -> Bool {
         return close(predicate: predicate, animated: animated)
     }
 }

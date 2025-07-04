@@ -6,6 +6,7 @@
 //
 
 import XCTest
+
 @testable import VAPersistentNavigator
 
 class VAPersistentNavigatorReplaceInitialTests: XCTestCase, MainActorIsolated {
