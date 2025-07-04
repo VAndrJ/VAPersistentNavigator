@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import VAPersistentNavigator
 
 typealias TestNavigator = PersistentViewNavigator<MockDestination, MockTabTag, SheetTag>
@@ -314,7 +315,7 @@ struct NavigatorStoring {
         let sut = TestNavigator(root: .first)
         storage.store(navigator: sut)
         let navigator = storage.getNavigator()
-        
+
         #expect(navigator == sut)
     }
 }

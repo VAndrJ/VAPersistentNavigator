@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 1/17/25.
 //
 
-import UIKit
 import Combine
+import UIKit
 
 enum ShortcutItemType: String {
     case presentOnTop = "com.example.presentOnTop"
@@ -24,10 +24,10 @@ final class ShortcutService {
     func handleShortcut(item: UIApplicationShortcutItem) -> Bool {
         if let shortcutItemType = ShortcutItemType(rawValue: item.type) {
             shortcutPubl.send(shortcutItemType)
-            
+
             return true
         } else {
-           return false
+            return false
         }
     }
 }

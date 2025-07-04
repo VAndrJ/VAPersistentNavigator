@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+
 @testable import VAPersistentNavigator
 
 enum MockDestination: Codable, Hashable, PersistentDestination {
@@ -54,7 +55,7 @@ class MockNavigatorStorage: NavigatorStorage {
     func store(navigator: PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>) {
         self.navigator = try! encoder.encode(navigator)
     }
-    
+
     func getNavigator() -> PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>? {
         navigator.flatMap { try! decoder.decode(PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>.self, from: $0) }
     }

@@ -5,8 +5,9 @@
 //  Created by VAndrJ on 4/3/25.
 //
 
-import Testing
 import Foundation
+import Testing
+
 @testable import VAPersistentNavigator
 
 @Suite("SimpleViewNavigator creation and functions tests")

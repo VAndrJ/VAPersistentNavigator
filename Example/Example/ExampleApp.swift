@@ -70,10 +70,14 @@ final class TestStateNavRestoreAppViewModel: ObservableObject {
     }
 
     func handle(notification: Notification) {
-        navigator.present(.init(view: .notificationExample(
-            title: notification.title,
-            body: notification.body
-        )))
+        navigator.present(
+            .init(
+                view: .notificationExample(
+                    title: notification.title,
+                    body: notification.body
+                )
+            )
+        )
     }
 
     func handle(shortcut: ShortcutItemType) {

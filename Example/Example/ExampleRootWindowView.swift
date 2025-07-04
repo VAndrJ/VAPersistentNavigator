@@ -5,10 +5,10 @@
 //  Created by VAndrJ on 4/6/25.
 //
 
-import SwiftUI
-import VAPersistentNavigator
 import FeaturePackage
 import StoreKit
+import SwiftUI
+import VAPersistentNavigator
 
 struct WindowView: View {
     let navigatorStorage: DefaultsNavigatorStorage

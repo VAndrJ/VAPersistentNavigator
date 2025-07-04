@@ -7,18 +7,19 @@
 
 import Foundation
 import Testing
+
 @testable import VAPersistentNavigator
 
 @Suite("Presentation Tag Tests")
 @MainActor
 struct VANavigatorPresentationTests {
-    
-#if os(iOS) || os(tvOS) || os(watchOS)
+
+    #if os(iOS) || os(tvOS) || os(watchOS)
     @Test("Full screen cover tag should be nil")
     func fullScreenCoverTag() {
         #expect(TypedNavigatorPresentation<String>.fullScreenCover.sheetTag == nil)
     }
-#endif
+    #endif
 
     @Test("Sheet tag")
     func sheetTag() {

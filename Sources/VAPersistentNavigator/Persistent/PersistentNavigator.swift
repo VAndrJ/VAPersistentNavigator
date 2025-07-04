@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 12/24/24.
 //
 
-import Foundation
 import Combine
+import Foundation
 
 /// A persistable navigation destination.
 ///
@@ -35,12 +35,12 @@ public protocol PersistentNavigator: BaseNavigator {
     var storeSubj: PassthroughSubject<Void, Never> { get }
 }
 
-public extension PersistentNavigator {
+extension PersistentNavigator {
 
     /// Pushes a new destination onto the navigation stack.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
-    func push(_ destination: any PersistentDestination, animated: Bool = true) -> Bool {
+    public func push(_ destination: any PersistentDestination, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Push only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -56,7 +56,7 @@ public extension PersistentNavigator {
     ///   - destination: The destination to pop to.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
     /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
-    func pop(to destination: any PersistentDestination, animated: Bool = true, isFirst: Bool = true) -> Bool {
+    public func pop(to destination: any PersistentDestination, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -73,7 +73,7 @@ public extension PersistentNavigator {
     ///   - isPopToRoot: If `true`, pops to the root before replacing it.
     /// - Returns: `true` if the destination was correct, otherwise `false`.
     @discardableResult
-    func replace(root destination: any PersistentDestination, animated: Bool = true, isPopToRoot: Bool = true) -> Bool {
+    public func replace(root destination: any PersistentDestination, animated: Bool = true, isPopToRoot: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Replace only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -90,7 +90,7 @@ public extension PersistentNavigator {
     /// - Parameter destination: The destination to dismiss to.
     /// - Returns: `true` if the destination was found and dismissed to, otherwise `false`.
     @discardableResult
-    func dismiss(to destination: any PersistentDestination, animated: Bool = true) -> Bool {
+    public func dismiss(to destination: any PersistentDestination, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Dismiss only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -106,7 +106,7 @@ public extension PersistentNavigator {
     /// - Parameter target: The destination to which the method attempts to navigate.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    func close(to destination: any PersistentDestination, animated: Bool = true) -> Bool {
+    public func close(to destination: any PersistentDestination, animated: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
@@ -121,7 +121,7 @@ public extension PersistentNavigator {
     ///
     /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    func close(where predicate: ((any PersistentDestination)?) -> Bool, animated: Bool = true) -> Bool {
+    public func close(where predicate: ((any PersistentDestination)?) -> Bool, animated: Bool = true) -> Bool {
         return close(predicate: { predicate($0 as? any PersistentDestination) }, animated: animated)
     }
 }

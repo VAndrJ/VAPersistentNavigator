@@ -10,12 +10,12 @@ import VAPersistentNavigator
 
 struct ExampleSheetScreen: View {
     let number: Int
-    
+
     @Environment(\.navigator) private var navigator
     @State private var numberText = ""
     @State private var uuidText = ""
     @State private var isDismissAlertPresented = false
-    
+
     var body: some View {
         List {
             Section("Present") {
@@ -23,10 +23,12 @@ struct ExampleSheetScreen: View {
                     navigator.present(.view(Destination.sheetExamples(Int.random(in: 0...1000))))
                 }
                 ListTileView(title: "Present view with detents animated") {
-                    navigator.present(.view(
-                        Destination.sheetExamples(Int.random(in: 0...1000)),
-                        presentation: .sheet(tag: SheetTag.first)
-                    ))
+                    navigator.present(
+                        .view(
+                            Destination.sheetExamples(Int.random(in: 0...1000)),
+                            presentation: .sheet(tag: SheetTag.first)
+                        )
+                    )
                 }
                 ListTileView(title: "Present view without animation") {
                     navigator.present(.view(Destination.sheetExamples(Int.random(in: 0...1000))), animated: false)
@@ -43,7 +45,7 @@ struct ExampleSheetScreen: View {
                     )
                 }
             }
-            
+
             Section("Dismiss") {
                 ListTileView(title: "Dismiss top animated", style: .backward) {
                     navigator.dismissTop()
@@ -62,7 +64,7 @@ struct ExampleSheetScreen: View {
                 }
                 .disabled(navigator.onReplaceInitialNavigator == nil)
             }
-            
+
             Section("Close") {
                 ListTileView(title: "Close to initial animated", style: .backward) {
                     navigator.closeToInitial()
@@ -72,7 +74,7 @@ struct ExampleSheetScreen: View {
                 }
             }
             .disabled(!(navigator.isPresented || navigator.isPresentedTab))
-            
+
             Section("Dismiss to specified destination") {
                 VStack {
                     TextField("Enter number to dismiss to", text: $numberText)
@@ -160,7 +162,7 @@ struct ExampleSheetScreen: View {
                 }
                 .disabled(Int(numberText) == nil)
             }
-            
+
             Section("Dismiss to specified UUID") {
                 VStack {
                     TextField("Enter UUID to dismiss to", text: $uuidText)

@@ -30,10 +30,12 @@ struct MainScreen: View {
                     )
                 }
                 ListTileView(title: "TabView examples") {
-                    navigator.onReplaceInitialNavigator?(.init(tabs: [
-                        .init(root: .tab1, tabItem: .first),
-                        .init(root: .tab2, tabItem: .second),
-                    ]))
+                    navigator.onReplaceInitialNavigator?(
+                        .init(tabs: [
+                            .init(root: .tab1, tabItem: .first),
+                            .init(root: .tab2, tabItem: .second),
+                        ])
+                    )
                 }
             }
             .disabled(navigator.onReplaceInitialNavigator == nil)

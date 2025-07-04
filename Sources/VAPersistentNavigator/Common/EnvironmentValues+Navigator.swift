@@ -5,8 +5,8 @@
 //  Created by VAndrJ on 4/3/25.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
 extension EnvironmentValues {
     /// The current `BaseNavigator` available in the environment.

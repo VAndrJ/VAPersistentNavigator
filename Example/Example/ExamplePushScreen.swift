@@ -182,7 +182,6 @@ struct ExamplePushScreen: View {
     }
 }
 
-
 #Preview {
     WindowView(
         navigatorStorage: .init(),
