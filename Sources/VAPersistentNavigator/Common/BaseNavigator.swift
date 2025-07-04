@@ -18,13 +18,17 @@ public struct EmptyTabItemTag: PersistentTabItemTag {}
 /// Used when no sheet differentiation is required.
 public struct EmptySheetTag: PersistentSheetTag {}
 
+#if compiler(<6.2)
+public typealias SendableMetatype = Any
+#endif
+
 /// A protocol defining a type-safe abstraction for handling navigation logic.
 ///
 /// `BaseNavigator` supports multiple navigation styles, including single views,
 /// navigation stacks, and tabbed views. It manages hierarchical relationships
 /// and tracks navigation state.
 @MainActor
-public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable, Equatable {
+public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable, Equatable, SendableMetatype {
     associatedtype Destination: Hashable
     associatedtype TabItemTag: Hashable
     associatedtype SheetTag: Hashable

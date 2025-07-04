@@ -18,8 +18,8 @@ import SwiftUI
 ///   - TabContent: The type of the view rendered for each tab item.
 public struct NavigatorScreenFactoryView<
     Navigator: BaseNavigator,
-    Content: View,
-    TabContent: View
+    Content: View & SendableMetatype,
+    TabContent: View & SendableMetatype
 >: View {
     private let navigator: Navigator
     private let rootReplaceAnimation: (Navigator.Destination?) -> Animation?
