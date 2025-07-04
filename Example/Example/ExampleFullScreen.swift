@@ -17,16 +17,20 @@ struct ExampleFullScreen: View {
     @State private var isDismissAlertPresented = false
 
     @Namespace private var namespace
-    private let zoomId = "Zoooooom"
+    private let zoomViewId = "ZoooooomView"
+    private let zoomStackId = "ZoooooomStack"
+    private let zoomTabsId = "ZoooooomTabs"
 
     var body: some View {
         List {
             Section("Present") {
                 ListTileView(title: "Present view animated") {
-                    navigator.present(.view(
-                        Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
-                        presentation: .fullScreenCover
-                    ))
+                    navigator.present(
+                        .view(
+                            Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                            presentation: .fullScreenCover
+                        )
+                    )
                 }
                 ListTileView(title: "Present view without animation") {
                     navigator.present(
@@ -49,8 +53,14 @@ struct ExampleFullScreen: View {
                     navigator.present(
                         .tab(
                             tabs: [
-                                .view(Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.first),
-                                .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
+                                .view(
+                                    Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                                    tabItem: TabTag.first
+                                ),
+                                .stack(
+                                    root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                                    tabItem: TabTag.second
+                                ),
                             ],
                             presentation: .fullScreenCover
                         )
@@ -58,25 +68,31 @@ struct ExampleFullScreen: View {
                 }
                 if #available(iOS 18.0, *) {
                     ListTileView(title: "Present with zoom animation") {
-                        navigator.present(.init(view:
-                                .fullScreenCoverExamples(
-                                    Int.random(in: 0...1000),
-                                    transition: .init(zoom: namespace, id: zoomId)
-                                ),
-                                                presentation: .fullScreenCover
-                        ))
+                        navigator.present(
+                            .init(
+                                view:
+                                    .fullScreenCoverExamples(
+                                        Int.random(in: 0...1000),
+                                        transition: .init(zoom: namespace, id: zoomViewId)
+                                    ),
+                                presentation: .fullScreenCover
+                            )
+                        )
                     }
-                    .matchedTransitionSource(id: zoomId, in: namespace)
+                    .matchedTransitionSource(id: zoomViewId, in: namespace)
                     ListTileView(title: "Present stack with zoom animation") {
-                        navigator.present(.init(root:
-                                .fullScreenCoverExamples(
-                                    Int.random(in: 0...1000),
-                                    transition: .init(zoom: namespace, id: zoomId)
-                                ),
-                                                presentation: .fullScreenCover
-                        ))
+                        navigator.present(
+                            .init(
+                                root:
+                                    .fullScreenCoverExamples(
+                                        Int.random(in: 0...1000),
+                                        transition: .init(zoom: namespace, id: zoomStackId)
+                                    ),
+                                presentation: .fullScreenCover
+                            )
+                        )
                     }
-                    .matchedTransitionSource(id: zoomId, in: namespace)
+                    .matchedTransitionSource(id: zoomStackId, in: namespace)
                     ListTileView(title: "Present tabs with zoom animation") {
                         navigator.present(
                             .tab(
@@ -84,17 +100,20 @@ struct ExampleFullScreen: View {
                                     .view(
                                         Destination.fullScreenCoverExamples(
                                             Int.random(in: 0...1000),
-                                            transition: .init(zoom: namespace, id: zoomId)
+                                            transition: .init(zoom: namespace, id: zoomTabsId)
                                         ),
                                         tabItem: TabTag.first
                                     ),
-                                    .stack(root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)), tabItem: TabTag.second),
+                                    .stack(
+                                        root: Destination.fullScreenCoverExamples(Int.random(in: 0...1000)),
+                                        tabItem: TabTag.second
+                                    ),
                                 ],
                                 presentation: .fullScreenCover
                             )
                         )
                     }
-                    .matchedTransitionSource(id: zoomId, in: namespace)
+                    .matchedTransitionSource(id: zoomTabsId, in: namespace)
                 }
             }
 
@@ -133,7 +152,7 @@ struct ExampleFullScreen: View {
                         .keyboardType(.numberPad)
                     Button("Get parent destination number") {
                         switch navigator.parent?.root {
-                        case let .fullScreenCoverExamples(number, _):
+                        case .fullScreenCoverExamples(let number, _):
                             numberText = "\(number)"
                         default:
                             break
@@ -166,7 +185,7 @@ struct ExampleFullScreen: View {
                 ) {
                     if !navigator.dismiss(predicate: {
                         switch $0 {
-                        case let .fullScreenCoverExamples(number, _):
+                        case .fullScreenCoverExamples(let number, _):
                             return number == Int(numberText)
                         default:
                             return false
@@ -177,13 +196,14 @@ struct ExampleFullScreen: View {
                 }
                 .disabled(Int(numberText) == nil)
                 ListTileView(
-                    title: "Dismiss to destination using predicate with entered number without animation (if available)",
+                    title:
+                        "Dismiss to destination using predicate with entered number without animation (if available)",
                     style: .backward
                 ) {
                     if !navigator.dismiss(
                         predicate: {
                             switch $0 {
-                            case let .fullScreenCoverExamples(number, _):
+                            case .fullScreenCoverExamples(let number, _):
                                 return number == Int(numberText)
                             default:
                                 return false
