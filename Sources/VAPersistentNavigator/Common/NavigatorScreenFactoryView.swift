@@ -90,7 +90,7 @@ public struct NavigatorScreenFactoryView<
                 .with(transition: root)
                 .animation(rootReplaceAnimation(root), value: root)
                 .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
-#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+                #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
                 .synchronize(
                     $isFullScreenCoverPresented,
                     with: navigator.childSubj,
@@ -98,7 +98,7 @@ public struct NavigatorScreenFactoryView<
                     isFullScreen: true,
                     animated: isAnimatedSubj
                 )
-#endif
+                #endif
                 .synchronize(
                     $isSheetPresented,
                     with: navigator.childSubj,
@@ -108,9 +108,9 @@ public struct NavigatorScreenFactoryView<
                 )
                 .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
                 .onAppear(perform: checkFirstAppearance)
-#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+                #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
                 .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
-#endif
+                #endif
                 .sheet(isPresented: $isSheetPresented, content: getSheet)
                 .with(navigator: navigator)
         case .tabView:
@@ -139,7 +139,7 @@ public struct NavigatorScreenFactoryView<
             .animation(rootReplaceAnimation(root), value: root)
             .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
             .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
-#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
@@ -147,7 +147,7 @@ public struct NavigatorScreenFactoryView<
                 isFullScreen: true,
                 animated: isAnimatedSubj
             )
-#endif
+            #endif
             .synchronize(
                 $isSheetPresented,
                 with: navigator.childSubj,
@@ -157,9 +157,9 @@ public struct NavigatorScreenFactoryView<
             )
             .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
             .onAppear(perform: checkFirstAppearance)
-#if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
+            #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
             .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
-#endif
+            #endif
             .sheet(isPresented: $isSheetPresented, content: getSheet)
             .with(navigator: navigator)
         }
@@ -183,7 +183,7 @@ public struct NavigatorScreenFactoryView<
     private func checkFirstAppearance() {
         guard !isFirstAppearanceOccurred else { return }
 
-#if os(iOS)
+        #if os(iOS)
         // Crutch to avoid iOS 16.0+ 💩 issue
         if navigator.childSubj.value != nil && UIView.areAnimationsEnabled {
             UIView.setAnimationsEnabled(false)
@@ -197,9 +197,9 @@ public struct NavigatorScreenFactoryView<
                 }
             }
         }
-#else
+        #else
         isFirstAppearanceOccurred = true
-#endif
+        #endif
     }
 
     @ViewBuilder

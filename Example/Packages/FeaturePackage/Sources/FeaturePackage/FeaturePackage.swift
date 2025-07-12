@@ -29,13 +29,17 @@ public struct FeaturePackageScreenFactoryView<
     public var body: some View {
         switch destination {
         case .root:
-            FeatureRootScreenView(context: .init(
-                next: { navigator.push(destination: getOuterDestination(.details)) }
-            ))
+            FeatureRootScreenView(
+                context: .init(
+                    next: { navigator.push(destination: getOuterDestination(.details)) }
+                )
+            )
         case .details:
-            FeatureDetailsScreenView(context: .init(
-                more: { navigator.present(.init(root: getOuterDestination(.more))) }
-            ))
+            FeatureDetailsScreenView(
+                context: .init(
+                    more: { navigator.present(.init(root: getOuterDestination(.more))) }
+                )
+            )
         case .more:
             FeatureMoreScreenView()
         }
