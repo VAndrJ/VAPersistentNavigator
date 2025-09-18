@@ -87,6 +87,8 @@ public final class TypedViewNavigator<
         bind()
     }
 
+
+    #if compiler(<6.2)
     deinit {
         guard Thread.isMainThread else { return }
 
@@ -95,6 +97,12 @@ public final class TypedViewNavigator<
             navigatorLog?(#function, debugDescription, id)
         }
     }
+    #else
+    isolated deinit {
+        onDeinit?()
+        navigatorLog?(#function, debugDescription, id)
+    }
+    #endif
 }
 
 extension TypedViewNavigator: PersistentNavigator, @preconcurrency Codable
