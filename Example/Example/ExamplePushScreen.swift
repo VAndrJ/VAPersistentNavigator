@@ -178,7 +178,7 @@ struct ExamplePushScreen: View {
         .alert("Pop was unsuccessful", isPresented: $isPopAlertPresented) {
             Button("OK") {}
         }
-        .navigationTitle("NavigationStack view \(number)")
+        .navigationTitle("Stack view \(number)")
     }
 }
 

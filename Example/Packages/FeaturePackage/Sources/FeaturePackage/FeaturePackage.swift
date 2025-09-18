@@ -59,6 +59,7 @@ struct FeatureRootScreenView: View {
                 .multilineTextAlignment(.center)
             Button("Next", action: context.next)
         }
+        .navigationTitle("Root")
     }
 }
 

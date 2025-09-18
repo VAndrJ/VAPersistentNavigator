@@ -47,6 +47,7 @@ struct FeatureRootScreenView: View {
                 navigator.dismissTop()
             }
         }
+        .navigationTitle("Root")
     }
 }
 
