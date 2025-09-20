@@ -14,7 +14,6 @@ enum ShortcutItemType: String {
     case pushOnTop = "com.example.push"
 }
 
-@MainActor
 final class ShortcutService {
     static let shared = ShortcutService()
 

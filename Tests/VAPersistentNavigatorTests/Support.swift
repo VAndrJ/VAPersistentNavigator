@@ -61,9 +61,6 @@ class MockNavigatorStorage: NavigatorStorage {
     }
 }
 
-@MainActor
-protocol MainActorIsolated {}
-
 extension Hashable {
     var anyHashable: AnyHashable { self }
 }

@@ -23,7 +23,7 @@ extension EnvironmentValues {
     /// without requiring direct injection of a concrete navigator.
     @Entry public var persistentNavigator: any PersistentNavigator = emptyPersistentNavigator
 
-    static let emptyPersistentNavigator = EmptyPersistentNavigator()
+    static let emptyPersistentNavigator = TypedViewNavigator<EmptyDestination, EmptyTabItemTag, EmptySheetTag>(view: EmptyDestination())
 
     @Entry var externalAction: ((Any) -> Void)?
 }
@@ -35,45 +35,4 @@ public enum EnvironmentAction {
     case external(Any)
 }
 
-/// Dummy class to get around the `Main actor-isolated default value in a nonisolated context` in `EnvironmentValues`.
-final class EmptyPersistentNavigator: PersistentNavigator, @preconcurrency Equatable {
-    typealias Destination = String
-    typealias TabItemTag = String
-    typealias SheetTag = String
-
-    static func == (lhs: EmptyPersistentNavigator, rhs: EmptyPersistentNavigator) -> Bool {
-        return lhs.id == rhs.id
-    }
-
-    var childCancellable: AnyCancellable?
-    var bag: Set<AnyCancellable> = []
-    var _onReplaceInitialNavigator: ((EmptyPersistentNavigator) -> Void)?
-    var storeSubj: PassthroughSubject<Void, Never> { .init() }
-    var destinationsSubj: CurrentValueSubject<[Destination], Never> { .init([]) }
-    var parent: EmptyPersistentNavigator?
-    var tabItem: TabItemTag?
-    var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { .init(nil) }
-    var rootSubj: CurrentValueSubject<Destination?, Never> { .init(nil) }
-    var childSubj: CurrentValueSubject<EmptyPersistentNavigator?, Never> { .init(nil) }
-    var tabs: [EmptyPersistentNavigator] { [] }
-    var kind: NavigatorKind { .singleView }
-    var presentation: TypedNavigatorPresentation<SheetTag> { .sheet }
-    let id = UUID()
-    var onDeinit: (() -> Void)?
-    nonisolated var debugDescription: String { "" }
-    var environmentPubl: PassthroughSubject<EnvironmentAction, Never> { .init() }
-
-    nonisolated init() {}
-
-    init(
-        id: UUID,
-        root: Destination?,
-        destinations: [Destination],
-        presentation: TypedNavigatorPresentation<SheetTag>,
-        tabItem: TabItemTag?,
-        kind: NavigatorKind,
-        tabs: [EmptyPersistentNavigator],
-        selectedTab: TabItemTag?,
-        child: EmptyPersistentNavigator?
-    ) {}
-}
+struct EmptyDestination: @MainActor PersistentDestination {}

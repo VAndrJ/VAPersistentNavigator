@@ -17,7 +17,11 @@ struct WindowView: View {
     @Environment(\.self) private var environment
 
     var body: some View {
-        NavigatorStoringView(navigator: navigator, storage: navigatorStorage, delay: .seconds(3)) {
+        NavigatorStoringView(
+            navigator: navigator,
+            storage: navigatorStorage,
+            delay: .seconds(3)
+        ) {
             NavigatorScreenFactoryView(
                 navigator: navigator,
                 buildView: { destination, navigator in

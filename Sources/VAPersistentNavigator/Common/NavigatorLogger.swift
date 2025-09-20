@@ -9,7 +9,7 @@ import Foundation
 import OSLog
 
 #if DEBUG
-nonisolated(unsafe) public var navigatorLog: ((_ items: Any...) -> Void)? = navigatorLogger.log(_:)
+public var navigatorLog: (@MainActor (_ items: Any...) -> Void)? = navigatorLogger.log(_:)
 
 private let navigatorLogger = Logger.navigator
 
@@ -21,5 +21,5 @@ extension Logger {
     }
 }
 #else
-nonisolated(unsafe) public var navigatorLog: ((_ items: Any...) -> Void)?
+public var navigatorLog: (@MainActor (_ items: Any...) -> Void)?
 #endif

@@ -11,24 +11,19 @@ import Foundation
 /// A placeholder type representing the absence of a specific tab item tag.
 ///
 /// Used when no tab item identification is needed.
-public struct EmptyTabItemTag: PersistentTabItemTag {}
+public struct EmptyTabItemTag: @MainActor PersistentTabItemTag {}
 
 /// A placeholder type representing the absence of a specific sheet tag.
 ///
 /// Used when no sheet differentiation is required.
-public struct EmptySheetTag: PersistentSheetTag {}
-
-#if compiler(<6.2)
-public typealias SendableMetatype = Any
-#endif
+public struct EmptySheetTag: @MainActor PersistentSheetTag {}
 
 /// A protocol defining a type-safe abstraction for handling navigation logic.
 ///
 /// `BaseNavigator` supports multiple navigation styles, including single views,
 /// navigation stacks, and tabbed views. It manages hierarchical relationships
 /// and tracks navigation state.
-@MainActor
-public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable, Equatable, SendableMetatype {
+public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifiable, Equatable {
     associatedtype Destination: Hashable
     associatedtype TabItemTag: Hashable
     associatedtype SheetTag: Hashable
@@ -74,7 +69,6 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     )
 }
 
-@MainActor
 let isAnimatedSubj = CurrentValueSubject<Bool, Never>(true)
 
 extension BaseNavigator {
@@ -167,24 +161,24 @@ extension BaseNavigator {
     }
     public var isPresentedTab: Bool {
         if isTab {
-            return parent?.parent != nil
+            parent?.parent != nil
         } else {
-            return false
+            false
         }
     }
     public var isPresented: Bool {
         if isTab {
-            return false
+            false
         } else {
-            return parent != nil
+            parent != nil
         }
     }
     public var isTab: Bool { parent?.tabs.isEmpty == false }
     public var orTabParent: Self? {
         if parent?.tabs.isEmpty == false {
-            return parent?.parent
+            parent?.parent
         } else {
-            return parent
+            parent
         }
     }
     public var topChild: Self? {
@@ -531,6 +525,7 @@ extension BaseNavigator {
             if navigator?.closeIn(where: { $0 == target }, animated: animated) == true {
                 return true
             }
+            
             navigator = navigator?.parent
         }
 
