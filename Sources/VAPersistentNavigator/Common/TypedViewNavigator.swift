@@ -22,7 +22,7 @@ public final class TypedViewNavigator<
     Destination: Hashable,
     TabItemTag: Hashable,
     SheetTag: Hashable
->: BaseNavigator, Identifiable, @preconcurrency Equatable, @preconcurrency CustomDebugStringConvertible {
+>: @MainActor BaseNavigator, Identifiable, Equatable, CustomDebugStringConvertible {
     public static func == (lhs: TypedViewNavigator, rhs: TypedViewNavigator) -> Bool {
         return lhs.id == rhs.id
     }
@@ -87,25 +87,13 @@ public final class TypedViewNavigator<
         bind()
     }
 
-
-    #if compiler(<6.2)
-    deinit {
-        guard Thread.isMainThread else { return }
-
-        MainActor.assumeIsolated {
-            onDeinit?()
-            navigatorLog?(#function, debugDescription, id)
-        }
-    }
-    #else
     isolated deinit {
         onDeinit?()
         navigatorLog?(#function, debugDescription, id)
     }
-    #endif
 }
 
-extension TypedViewNavigator: PersistentNavigator, @preconcurrency Codable
+extension TypedViewNavigator: @MainActor PersistentNavigator, Codable
 where Destination: PersistentDestination, TabItemTag: PersistentTabItemTag, SheetTag: PersistentSheetTag {
     public var storeSubj: PassthroughSubject<Void, Never> { _storeSubj }
 

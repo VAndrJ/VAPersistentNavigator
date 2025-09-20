@@ -5,43 +5,42 @@
 //  Created by VAndrJ on 8/12/24.
 //
 
-import XCTest
+import Foundation
+import Testing
 
 @testable import VAPersistentNavigator
 
-class VAPersistentNavigatorReplaceInitialTests: XCTestCase, MainActorIsolated {
+@Suite("Codable Navigator push and pop")
+struct VAPersistentNavigatorReplaceInitialTests {
 
-    func test_navigator_onReplaceInitialNavigator() {
+    @Test
+    func test_navigator_onReplaceInitialNavigator() async {
         let sut = TestNavigator(root: .first)
         let expected = TestNavigator(root: .second)
         var replaced: TestNavigator?
-        let expectation = expectation(description: "Replace initial")
         sut.onReplaceInitialNavigator = {
             replaced = $0
-            expectation.fulfill()
         }
         sut.onReplaceInitialNavigator?(expected)
-        wait(for: [expectation])
+        try? await Task.sleep(for: .seconds(1))
 
-        XCTAssertNotNil(sut.onReplaceInitialNavigator)
-        XCTAssertEqual(expected, replaced)
+        #expect(sut.onReplaceInitialNavigator != nil)
+        #expect(expected == replaced)
     }
 
-    func test_navigator_onReplaceInitialNavigator_parent() {
+    func test_navigator_onReplaceInitialNavigator_parent() async {
         let sut = TestNavigator(root: .first)
         let top = TestNavigator(root: .second)
         sut.present(top)
         let expected = TestNavigator(root: .third)
         var replaced: TestNavigator?
-        let expectation = expectation(description: "Replace initial")
         top.onReplaceInitialNavigator = {
             replaced = $0
-            expectation.fulfill()
         }
         top.onReplaceInitialNavigator?(expected)
-        wait(for: [expectation])
+        try? await Task.sleep(for: .seconds(1))
 
-        XCTAssertNotNil(sut.onReplaceInitialNavigator)
-        XCTAssertEqual(expected, replaced)
+        #expect(sut.onReplaceInitialNavigator != nil)
+        #expect(expected == replaced)
     }
 }

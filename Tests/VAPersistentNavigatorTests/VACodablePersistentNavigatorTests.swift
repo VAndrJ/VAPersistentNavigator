@@ -11,7 +11,6 @@ import Testing
 @testable import VAPersistentNavigator
 
 @Suite("Codable Navigator push and pop")
-@MainActor
 struct CodablePersistentNavigatorStack {
 
     @Test("Destination should be appended after push")
@@ -124,7 +123,6 @@ struct CodablePersistentNavigatorStack {
 }
 
 @Suite("Codable Navigator presentation")
-@MainActor
 struct CodablePersistentNavigatorPresentationTests {
 
     @Test("Present sheet")
@@ -218,7 +216,6 @@ struct CodablePersistentNavigatorPresentationTests {
 }
 
 @Suite("Codable Navigator top / child navigators")
-@MainActor
 struct CodablePersistentNavigatorChildrenTests {
 
     @Test("TabNavigator topmost tab child navigator without selection")
@@ -352,7 +349,6 @@ struct CodablePersistentNavigatorChildrenTests {
 }
 
 @Suite("Codable Navigator close to destination")
-@MainActor
 struct CodablePersistentNavigatorClose {
 
     @Test("Close to destination with presented views")

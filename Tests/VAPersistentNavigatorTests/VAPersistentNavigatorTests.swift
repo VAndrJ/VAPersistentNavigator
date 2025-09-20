@@ -6,7 +6,6 @@ import Testing
 typealias TestNavigator = PersistentViewNavigator<MockDestination, MockTabTag, SheetTag>
 
 @Suite("Navigator initial")
-@MainActor
 struct NavigatorInitial {
 
     @Test("Initial state")
@@ -38,7 +37,6 @@ struct NavigatorInitial {
 }
 
 @Suite("Navigator push and pop")
-@MainActor
 struct NavigatorStack {
 
     @Test("Destination should be appended after push")
@@ -130,7 +128,6 @@ struct NavigatorStack {
 }
 
 @Suite("Navigator tabs")
-@MainActor
 struct NavigatorTabs {
 
     @Test("Tab item")
@@ -186,7 +183,6 @@ struct NavigatorTabs {
 }
 
 @Suite("Navigator presentation")
-@MainActor
 struct NavigatorPresentationTests {
 
     @Test("Present sheet")
@@ -306,7 +302,6 @@ struct NavigatorPresentationTests {
 }
 
 @Suite("Navigator storing")
-@MainActor
 struct NavigatorStoring {
 
     @Test("Close to initial tab")

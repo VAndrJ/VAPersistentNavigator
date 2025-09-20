@@ -11,7 +11,6 @@ import Testing
 @testable import VAPersistentNavigator
 
 @Suite("SimpleViewNavigator creation and functions tests")
-@MainActor
 struct SimpleViewNavigatorTests {
 
     @Test("Test navigator creation from data")

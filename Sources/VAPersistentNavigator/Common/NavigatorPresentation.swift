@@ -12,7 +12,7 @@ public enum NavigatorPresentation: @unchecked Sendable {
     @available(macOS, unavailable)
     case fullScreenCover
 
-    public static var sheet: NavigatorPresentation { .sheet() }
+    nonisolated public static var sheet: NavigatorPresentation { .sheet() }
 
     public var sheetTag: (any Hashable)? {
         switch self {

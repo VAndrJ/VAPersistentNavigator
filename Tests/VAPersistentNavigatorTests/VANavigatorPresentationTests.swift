@@ -11,7 +11,6 @@ import Testing
 @testable import VAPersistentNavigator
 
 @Suite("Presentation Tag Tests")
-@MainActor
 struct VANavigatorPresentationTests {
 
     #if os(iOS) || os(tvOS) || os(watchOS)
