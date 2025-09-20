@@ -5,6 +5,8 @@ import PackageDescription
 let settings: [SwiftSetting] = [
     .defaultIsolation(MainActor.self),
     .strictMemorySafety(),
+    .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+    .enableUpcomingFeature("InferIsolatedConformances"),
 ]
 
 let package = Package(
