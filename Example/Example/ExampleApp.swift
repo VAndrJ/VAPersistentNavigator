@@ -52,7 +52,6 @@ struct GroupView: View {
     }
 }
 
-@MainActor
 final class TestStateNavRestoreAppViewModel: ObservableObject {
     let navigatorStorage: DefaultsNavigatorStorage
     @Published var navigator: Navigator

@@ -13,7 +13,6 @@ struct Notification {
     let body: String
 }
 
-@MainActor
 final class NotificationService {
     static let shared = NotificationService()
 
