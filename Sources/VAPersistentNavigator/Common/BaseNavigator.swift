@@ -317,22 +317,30 @@ extension BaseNavigator {
         }
     }
 
-    /// Presents a child navigator.
+    /// Presents a navigator from type-erased data.
     ///
     /// - Parameters:
-    ///   - child: The child navigator to present.
+    ///   - data: The type-erased navigator data to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
+    /// - Returns: `true` if the data could be converted to this navigator's type; otherwise `false`.
+    @discardableResult
     public func present(
         _ data: NavigatorData,
         strategy: NavigatorPresentationStrategy = .onTop,
         animated: Bool = true
-    ) {
+    ) -> Bool {
+        guard let navigator = getNavigator(data: data) else {
+            return false
+        }
+
         present(
-            getNavigator(data: data),
+            navigator,
             strategy: strategy,
             animated: animated
         )
+
+        return true
     }
 
     /// Presents a child navigator.

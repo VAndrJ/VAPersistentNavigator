@@ -135,6 +135,19 @@ struct CodablePersistentNavigatorPresentationTests {
         #expect(expectedDestination == sut.childSubj.value?.root)
     }
 
+    @Test("Invalid present should keep current child")
+    func navigator_present_invalidDataKeepsCurrentChild() {
+        let sut = TestNavigator(root: .first)
+        let expectedDestination: MockDestination = .second
+        let navigator: any PersistentNavigator = sut
+        navigator.present(.stack(root: expectedDestination))
+
+        let result = navigator.present(.stack(root: IncorrectDestination.empty))
+
+        #expect(false == result)
+        #expect(expectedDestination == sut.childSubj.value?.root)
+    }
+
     @Test("Dismiss top presented sheet")
     func navigator_dismiss_topSheet() {
         let sut = TestNavigator(root: .first)
