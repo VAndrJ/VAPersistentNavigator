@@ -35,6 +35,7 @@ public final class TypedViewNavigator<
     public let tabs: [TypedViewNavigator]
     public let destinationsSubj: CurrentValueSubject<[Destination], Never>
     public let childSubj: CurrentValueSubject<TypedViewNavigator?, Never>
+    public let isAnimatedSubj: CurrentValueSubject<Bool, Never> = .init(true)
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
     public weak var parent: TypedViewNavigator?

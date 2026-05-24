@@ -37,6 +37,7 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var childSubj: CurrentValueSubject<Self?, Never> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
+    var isAnimatedSubj: CurrentValueSubject<Bool, Never> { get }
     var parent: Self? { get set }
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
     var childCancellable: AnyCancellable? { get set }
@@ -69,7 +70,38 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     )
 }
 
-let isAnimatedSubj = CurrentValueSubject<Bool, Never>(true)
+private final class NavigatorAnimationState {
+    weak var navigator: AnyObject?
+    let subject = CurrentValueSubject<Bool, Never>(true)
+
+    init(navigator: AnyObject) {
+        self.navigator = navigator
+    }
+}
+
+private enum NavigatorAnimationStateStore {
+    static var states: [ObjectIdentifier: NavigatorAnimationState] = [:]
+
+    static func subject(for navigator: AnyObject) -> CurrentValueSubject<Bool, Never> {
+        states = states.filter { $0.value.navigator != nil }
+        let id = ObjectIdentifier(navigator)
+        if let state = states[id] {
+            return state.subject
+        }
+
+        let state = NavigatorAnimationState(navigator: navigator)
+        states[id] = state
+
+        return state.subject
+    }
+}
+
+extension BaseNavigator {
+
+    public var isAnimatedSubj: CurrentValueSubject<Bool, Never> {
+        NavigatorAnimationStateStore.subject(for: self)
+    }
+}
 
 extension BaseNavigator {
 
@@ -276,7 +308,7 @@ extension BaseNavigator {
         case .flow:
             var destinationsValue = topNavigator.destinationsSubj.value
             destinationsValue.append(destination)
-            isAnimatedSubj.send(animated)
+            topNavigator.isAnimatedSubj.send(animated)
             topNavigator.destinationsSubj.send(destinationsValue)
 
             return true
@@ -285,22 +317,30 @@ extension BaseNavigator {
         }
     }
 
-    /// Presents a child navigator.
+    /// Presents a navigator from type-erased data.
     ///
     /// - Parameters:
-    ///   - child: The child navigator to present.
+    ///   - data: The type-erased navigator data to present.
     ///   - strategy: Defines strategy for presenting a new navigator. Defaults to `.onTop`
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
+    /// - Returns: `true` if the data could be converted to this navigator's type; otherwise `false`.
+    @discardableResult
     public func present(
         _ data: NavigatorData,
         strategy: NavigatorPresentationStrategy = .onTop,
         animated: Bool = true
-    ) {
+    ) -> Bool {
+        guard let navigator = getNavigator(data: data) else {
+            return false
+        }
+
         present(
-            getNavigator(data: data),
+            navigator,
             strategy: strategy,
             animated: animated
         )
+
+        return true
     }
 
     /// Presents a child navigator.
@@ -315,20 +355,27 @@ extension BaseNavigator {
         animated: Bool = true
     ) {
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
-        isAnimatedSubj.send(animated)
         switch strategy {
         case .onTop:
-            topNavigator.childSubj.send(child)
+            let navigator = topNavigator
+            navigator.isAnimatedSubj.send(animated)
+            navigator.childSubj.send(child)
         case .replaceCurrent:
-            let subj = orTabChild.childSubj
+            let navigator = orTabChild
+            let subj = navigator.childSubj
+            let animatedSubj = navigator.isAnimatedSubj
+            animatedSubj.send(animated)
             subj.send(nil)
             //: To avoid presented iOS 16 issue
-            Task { @MainActor [subj] in
+            Task { @MainActor [animatedSubj, subj] in
                 try? await Task.sleep(for: .milliseconds(100))
+                animatedSubj.send(animated)
                 subj.send(child)
             }
         case .fromCurrent:
-            orTabChild.childSubj.send(child)
+            let navigator = orTabChild
+            navigator.isAnimatedSubj.send(animated)
+            navigator.childSubj.send(child)
         }
     }
 
