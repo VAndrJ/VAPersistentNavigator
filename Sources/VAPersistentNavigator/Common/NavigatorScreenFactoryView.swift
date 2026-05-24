@@ -89,14 +89,14 @@ public struct NavigatorScreenFactoryView<
             rootView
                 .with(transition: root)
                 .animation(rootReplaceAnimation(root), value: root)
-                .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
+                .synchronize($root, with: navigator.rootSubj, animated: navigator.isAnimatedSubj)
                 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
                 .synchronize(
                     $isFullScreenCoverPresented,
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                     isFullScreen: true,
-                    animated: isAnimatedSubj
+                    animated: navigator.isAnimatedSubj
                 )
                 #endif
                 .synchronize(
@@ -104,7 +104,7 @@ public struct NavigatorScreenFactoryView<
                     with: navigator.childSubj,
                     isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                     isFullScreen: false,
-                    animated: isAnimatedSubj
+                    animated: navigator.isAnimatedSubj
                 )
                 .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
                 .onAppear(perform: checkFirstAppearance)
@@ -137,15 +137,15 @@ public struct NavigatorScreenFactoryView<
             }
             .with(transition: root)
             .animation(rootReplaceAnimation(root), value: root)
-            .synchronize($root, with: navigator.rootSubj, animated: isAnimatedSubj)
-            .synchronize($destinations, with: navigator.destinationsSubj, animated: isAnimatedSubj)
+            .synchronize($root, with: navigator.rootSubj, animated: navigator.isAnimatedSubj)
+            .synchronize($destinations, with: navigator.destinationsSubj, animated: navigator.isAnimatedSubj)
             #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
             .synchronize(
                 $isFullScreenCoverPresented,
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: true,
-                animated: isAnimatedSubj
+                animated: navigator.isAnimatedSubj
             )
             #endif
             .synchronize(
@@ -153,7 +153,7 @@ public struct NavigatorScreenFactoryView<
                 with: navigator.childSubj,
                 isFirstAppearanceOccured: $isFirstAppearanceOccurred,
                 isFullScreen: false,
-                animated: isAnimatedSubj
+                animated: navigator.isAnimatedSubj
             )
             .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
             .onAppear(perform: checkFirstAppearance)

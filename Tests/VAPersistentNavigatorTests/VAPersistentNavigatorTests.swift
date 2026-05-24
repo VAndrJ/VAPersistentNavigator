@@ -127,6 +127,33 @@ struct NavigatorStack {
     }
 }
 
+@Suite("Navigator animation")
+struct NavigatorAnimationTests {
+
+    @Test("Animation state is scoped to target navigator")
+    func navigator_animationState_scopedToTargetNavigator() {
+        let sut = TestNavigator(root: .first)
+        let presented = TestNavigator(root: .second)
+        let unrelated = TestNavigator(root: .third)
+        sut.present(presented)
+
+        #expect(true == sut.push(destination: .fourth, animated: false))
+        #expect(true == sut.isAnimatedSubj.value)
+        #expect(false == presented.isAnimatedSubj.value)
+        #expect(true == unrelated.isAnimatedSubj.value)
+    }
+
+    @Test("Presentation animation state is scoped")
+    func navigator_animationState_scopedToPresentationTarget() {
+        let sut = TestNavigator(root: .first)
+        let unrelated = TestNavigator(root: .third)
+        sut.present(TestNavigator(root: .second), animated: false)
+
+        #expect(false == sut.isAnimatedSubj.value)
+        #expect(true == unrelated.isAnimatedSubj.value)
+    }
+}
+
 @Suite("Navigator tabs")
 struct NavigatorTabs {
 
