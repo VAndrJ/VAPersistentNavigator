@@ -104,9 +104,14 @@ struct DetentsViewModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if let detents {
-            content
-                .presentationDetents(detents.detents)
-                .presentationDragIndicator(detents.dragIndicatorVisibility)
+            if detents.detents.isEmpty {
+                content
+                    .presentationDragIndicator(detents.dragIndicatorVisibility)
+            } else {
+                content
+                    .presentationDetents(detents.detents)
+                    .presentationDragIndicator(detents.dragIndicatorVisibility)
+            }
         } else {
             content
         }
