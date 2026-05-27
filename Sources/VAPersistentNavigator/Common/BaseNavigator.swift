@@ -97,14 +97,12 @@ private enum NavigatorAnimationStateStore {
 }
 
 extension BaseNavigator {
-
     public var isAnimatedSubj: CurrentValueSubject<Bool, Never> {
         NavigatorAnimationStateStore.subject(for: self)
     }
 }
 
 extension BaseNavigator {
-
     /// Convenience initializer for creating a `.singleView` style navigator.
     ///
     /// - Parameters:
@@ -425,10 +423,20 @@ extension BaseNavigator {
     ///   - destination: The destination to pop to.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
-    public func pop(target destination: Destination, animated: Bool = true, isFirst: Bool = true) -> Bool {
-        return pop(predicate: { $0 == destination }, animated: animated, isFirst: isFirst)
+    public func pop(
+        target destination: Destination,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
+        return pop(
+            predicate: {
+                $0 == destination
+            },
+            animated: animated,
+            isFirst: isFirst
+        )
     }
 
     /// Pops the navigation stack to a specific destination using predicate.
@@ -437,18 +445,22 @@ extension BaseNavigator {
     ///   - predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
-    public func pop(predicate: (Destination) -> Bool, animated: Bool = true, isFirst: Bool = true) -> Bool {
+    public func pop(
+        predicate: (Destination) -> Bool,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
         var destinationsValue = destinationsSubj.value
 
-        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate),
-            index + 1 < destinationsValue.count
-        {
+        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate) {
             navigatorLog?("pop", "destination: \(destinationsValue[index])", "animated: \(animated)")
-            destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
-            isAnimatedSubj.send(animated)
-            destinationsSubj.send(destinationsValue)
+            if index + 1 < destinationsValue.count {
+                destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+                isAnimatedSubj.send(animated)
+                destinationsSubj.send(destinationsValue)
+            }
 
             return true
         } else {
@@ -564,12 +576,17 @@ extension BaseNavigator {
     /// - Parameters:
     ///   - target: The destination to close to. Must match exactly with an existing destination in the hierarchy.
     ///   - animated: A Boolean indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    public func close(target: Destination, animated: Bool = true) -> Bool {
+    public func close(
+        target: Destination,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
-            if navigator?.closeIn(where: { $0 == target }, animated: animated) == true {
+            if navigator?.closeIn(where: { $0 == target }, animated: animated, isFirst: isFirst) == true {
                 return true
             }
             
@@ -585,11 +602,16 @@ extension BaseNavigator {
     /// - Parameters:
     ///   - predicate: A closure that takes a `Destination` as input and returns `true` if the destination matches the desired condition.
     ///   - animated: A Bool indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    public func close(predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
+    public func close(
+        predicate: (Destination) -> Bool,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
         var navigator: Self? = topNavigator
         while navigator != nil {
-            if navigator?.closeIn(where: predicate, animated: animated) == true {
+            if navigator?.closeIn(where: predicate, animated: animated, isFirst: isFirst) == true {
                 return true
             }
 
@@ -599,14 +621,23 @@ extension BaseNavigator {
         return false
     }
 
-    private func closeIn(where predicate: (Destination) -> Bool, animated: Bool = true) -> Bool {
-        for destination in destinationsSubj.value.reversed() {
-            if predicate(destination) {
-                present(nil, strategy: .fromCurrent, animated: animated)
-                pop(predicate: predicate, animated: animated)
+    private func closeIn(
+        where predicate: (Destination) -> Bool,
+        animated: Bool,
+        isFirst: Bool
+    ) -> Bool {
+        var destinationsValue = destinationsSubj.value
 
-                return true
+        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate) {
+            present(nil, strategy: .fromCurrent, animated: animated)
+            if index + 1 < destinationsValue.count {
+                navigatorLog?("close", "destination: \(destinationsValue[index])", "animated: \(animated)")
+                destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+                isAnimatedSubj.send(animated)
+                destinationsSubj.send(destinationsValue)
             }
+
+            return true
         }
         if let destination = root, predicate(destination) {
             present(nil, strategy: .fromCurrent, animated: animated)
@@ -695,7 +726,6 @@ extension BaseNavigator {
 }
 
 extension BaseNavigator {
-
     func bind() {
         tabs.forEach { $0.parent = self }
         childSubj
@@ -710,7 +740,6 @@ extension BaseNavigator {
 // MARK: - Hashable functions
 
 extension BaseNavigator {
-
     /// Pushes a new destination onto the navigation stack.
     /// - Parameters:
     ///   - destination: The destination to push onto the navigation stack. Must conform to the navigator’s `Destination` type.
@@ -733,7 +762,7 @@ extension BaseNavigator {
     ///   - destination: The destination to pop to.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
     public func pop(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
@@ -788,16 +817,17 @@ extension BaseNavigator {
     /// - Parameters:
     ///   - destination: The target destination to navigate back to. Must be of the same type as the navigator's `Destination`.
     ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    public func close(to destination: any Hashable, animated: Bool = true) -> Bool {
+    public func close(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return close(target: destination, animated: animated)
+        return close(target: destination, animated: animated, isFirst: isFirst)
     }
 
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
@@ -807,8 +837,17 @@ extension BaseNavigator {
     ///   - predicate: A closure that takes a `Destination` (of type `any Hashable`)
     ///     and returns `true` if the destination should be closed to.
     ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    public func close(where predicate: (any Hashable) -> Bool, animated: Bool = true) -> Bool {
-        return close(predicate: predicate, animated: animated)
+    public func close(
+        where predicate: (any Hashable) -> Bool,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
+        return close(
+            predicate: predicate,
+            animated: animated,
+            isFirst: isFirst
+        )
     }
 }

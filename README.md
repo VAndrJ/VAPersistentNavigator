@@ -78,7 +78,7 @@ More detailed information can be found in the example project.
 - `pop`. Pops the top-most view off the `NavigationStack`, returning to the previous view. This is equivalent to tapping the back button in a standard navigation interface.
 
 
-- `pop(to:)`. Pops to a specified `Destination` in the `NavigationStack`. Useful for skipping intermediate views and jumping directly to a particular destination.
+- `pop(to:isFirst:)`. Pops to a specified `Destination` in the `NavigationStack`. Useful for skipping intermediate views and jumping directly to a particular destination. When the same destination appears multiple times, `isFirst` controls whether the first matching pushed destination is used (`true`, default) or the last matching pushed destination is used (`false`).
 
 
 - `popToRoot`. Pops all views off the `NavigationStack` until the root view is reached. This resets the navigation stack to the initial state.
@@ -99,10 +99,10 @@ More detailed information can be found in the example project.
 - `closeToInitial`. Dismisses all presented `sheets` and `fullScreenCovers`, and resets the initial `NavigationStack`'s navigation path to its root state. This is useful for completely resetting the navigation flow.
 
 
-- `close(to:)`. Attempts to navigate to and close all modally presented views, while navigating to a specified target `Destination`. This can be used to programmatically close views and move to a specific part of the navigation flow.
+- `close(to:isFirst:)`. Attempts to navigate to and close all modally presented views, while navigating to a specified target `Destination`. When the same destination appears multiple times in the matched navigation stack, `isFirst` controls whether the first matching pushed destination is used (`true`, default) or the last matching pushed destination is used (`false`).
 
 
-- `close(where:)`. Similar to `close(to:)`, but allows for specifying a predicate to determine which `Destination` to navigate to and close. This offers more flexibility in choosing the navigation target.
+- `close(where:isFirst:)`. Similar to `close(to:isFirst:)`, but allows for specifying a predicate to determine which `Destination` to navigate to and close. This offers more flexibility in choosing the navigation target.
 
 
 - `onReplaceInitialNavigator`. A callback that is triggered when the initial `Navigator` needs to be replaced with a new one. This allows for dynamic changes in the navigator setup.

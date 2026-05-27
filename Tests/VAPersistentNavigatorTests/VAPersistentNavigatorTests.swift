@@ -93,6 +93,16 @@ struct NavigatorStack {
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
+    @Test("Pop to top destination should return true without changing destinations")
+    func navigator_popToDestinationTop_destinationsArray() {
+        let expectedDestinations: [MockDestination] = [.second, .third]
+        let sut = TestNavigator(root: .first, destinations: expectedDestinations)
+        let result = sut.pop(to: MockDestination.third)
+
+        #expect(true == result)
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
+
     @Test("Destinations should be unchanged")
     func navigator_popToDestination_notExisting_destinationsArray() {
         let expectedDestination: MockDestination = .second

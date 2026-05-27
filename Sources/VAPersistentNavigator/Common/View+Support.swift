@@ -9,7 +9,6 @@ import Combine
 import SwiftUI
 
 extension View {
-
     @ViewBuilder
     public func with(transition destination: some Hashable) -> some View {
         if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
@@ -105,9 +104,14 @@ struct DetentsViewModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if let detents {
-            content
-                .presentationDetents(detents.detents)
-                .presentationDragIndicator(detents.dragIndicatorVisibility)
+            if detents.detents.isEmpty {
+                content
+                    .presentationDragIndicator(detents.dragIndicatorVisibility)
+            } else {
+                content
+                    .presentationDetents(detents.detents)
+                    .presentationDragIndicator(detents.dragIndicatorVisibility)
+            }
         } else {
             content
         }
