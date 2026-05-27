@@ -34,5 +34,6 @@ let package = Package(
             dependencies: ["VAPersistentNavigator"],
             swiftSettings: settings
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v6]
 )
