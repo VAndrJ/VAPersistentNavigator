@@ -75,6 +75,18 @@ struct CodablePersistentNavigatorStack {
         #expect(expectedDestinations == sut.destinationsSubj.value)
     }
 
+    @Test("Pop to top destination should return true without changing destinations")
+    func navigator_popToDestinationTop_destinationsArray() {
+        let expectedDestinations: [MockDestination] = [.second, .third]
+        let sut = TestNavigator(root: .first, destinations: expectedDestinations)
+        let navigator: any PersistentNavigator = sut
+
+        #expect(true == navigator.pop(to: MockDestination.third))
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+        #expect(true == navigator.pop(to: MockDestination.third as any Hashable))
+        #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
+
     @Test("Destinations should be unchanged")
     func navigator_popToDestination_notExisting_destinationsArray() {
         let expectedDestination: MockDestination = .second

@@ -54,7 +54,7 @@ extension PersistentNavigator {
     /// - Parameters:
     ///   - destination: The destination to pop to.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     public func pop(to destination: any PersistentDestination, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Pop only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")

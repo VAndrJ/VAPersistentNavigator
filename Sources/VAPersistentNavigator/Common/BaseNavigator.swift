@@ -423,7 +423,7 @@ extension BaseNavigator {
     ///   - destination: The destination to pop to.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
     public func pop(
         target destination: Destination,
@@ -445,7 +445,7 @@ extension BaseNavigator {
     ///   - predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
     public func pop(
         predicate: (Destination) -> Bool,
@@ -454,13 +454,13 @@ extension BaseNavigator {
     ) -> Bool {
         var destinationsValue = destinationsSubj.value
 
-        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate),
-            index + 1 < destinationsValue.count
-        {
+        if let index = isFirst ? destinationsValue.firstIndex(where: predicate) : destinationsValue.lastIndex(where: predicate) {
             navigatorLog?("pop", "destination: \(destinationsValue[index])", "animated: \(animated)")
-            destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
-            isAnimatedSubj.send(animated)
-            destinationsSubj.send(destinationsValue)
+            if index + 1 < destinationsValue.count {
+                destinationsValue.removeSubrange(index + 1..<destinationsValue.count)
+                isAnimatedSubj.send(animated)
+                destinationsSubj.send(destinationsValue)
+            }
 
             return true
         } else {
@@ -762,7 +762,7 @@ extension BaseNavigator {
     ///   - destination: The destination to pop to.
     ///   - animated: A Bool value indicating whether the push should be animated. Defaults to `true`.
     ///   - isFirst: If `true`, pops to the first occurrence of the destination; otherwise, pops to the last occurrence.
-    /// - Returns: `true` if the destination was found and popped to, otherwise `false`.
+    /// - Returns: `true` if the destination was found, including when it is already the top destination; otherwise `false`.
     @discardableResult
     public func pop(to destination: any Hashable, animated: Bool = true, isFirst: Bool = true) -> Bool {
         guard let destination = destination as? Destination else {
