@@ -36,7 +36,6 @@ public protocol PersistentNavigator: BaseNavigator {
 }
 
 extension PersistentNavigator {
-
     /// Pushes a new destination onto the navigation stack.
     /// - Returns: `true` if the destination matches base type, otherwise `false`.
     @discardableResult
@@ -103,31 +102,50 @@ extension PersistentNavigator {
     /// Attempts to navigate to a specified target destination by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter target: The destination to which the method attempts to navigate.
+    /// - Parameters:
+    ///   - destination: The destination to which the method attempts to navigate.
+    ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if navigation to the target destination is successful, `false` otherwise.
     @discardableResult
-    public func close(to destination: any PersistentDestination, animated: Bool = true) -> Bool {
+    public func close(
+        to destination: any PersistentDestination,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
         guard let destination = destination as? Destination else {
             navigatorLog?("Close only the specified `Destination` type. Found: \(type(of: destination)). Destination: \(Destination.self)")
 
             return false
         }
 
-        return close(target: destination, animated: animated)
+        return close(target: destination, animated: animated, isFirst: isFirst)
     }
 
     /// Attempts to navigate to a destination that satisfies the given predicate by traversing
     /// up the hierarchy of navigators.
     ///
-    /// - Parameter predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    /// - Parameters:
+    ///   - predicate: A closure that takes a `Destination` as its argument and returns `true` if the destination satisfies the condition.
+    ///   - animated: A Bool value indicating whether the closing transition should be animated. Defaults to `true`.
+    ///   - isFirst: If `true`, closes to the first matching pushed destination; otherwise, closes to the last matching pushed destination.
     /// - Returns: `true` if a destination satisfying the predicate is found and navigation is successfully performed, `false` otherwise.
-    public func close(where predicate: ((any PersistentDestination)?) -> Bool, animated: Bool = true) -> Bool {
-        return close(predicate: { predicate($0 as? any PersistentDestination) }, animated: animated)
+    public func close(
+        where predicate: ((any PersistentDestination)?) -> Bool,
+        animated: Bool = true,
+        isFirst: Bool = true
+    ) -> Bool {
+        return close(
+            predicate: {
+                predicate($0 as? any PersistentDestination)
+            },
+            animated: animated,
+            isFirst: isFirst
+        )
     }
 }
 
 extension PersistentNavigator {
-
     func bindStoring() {
         Publishers
             .Merge3(

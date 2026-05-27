@@ -472,6 +472,25 @@ struct CodablePersistentNavigatorClose {
         #expect(expectedDestination == sut.topNavigator.destinationsSubj.value.first)
     }
 
+    @Test("Close to duplicate destination can choose first or last")
+    func navigator_closeToDestination_duplicateSelection() {
+        let firstMatchNavigator = TestNavigator(root: .first, destinations: [.second, .third, .second, .fourth])
+
+        #expect(true == firstMatchNavigator.close(target: .second, animated: false))
+        #expect([.second] == firstMatchNavigator.destinationsSubj.value)
+
+        let lastMatchNavigator = TestNavigator(root: .first, destinations: [.second, .third, .second, .fourth])
+
+        #expect(true == lastMatchNavigator.close(target: .second, animated: false, isFirst: false))
+        #expect([.second, .third, .second] == lastMatchNavigator.destinationsSubj.value)
+
+        let existentialNavigator = TestNavigator(root: .first, destinations: [.second, .third, .second, .fourth])
+        let persistentNavigator: any PersistentNavigator = existentialNavigator
+
+        #expect(true == persistentNavigator.close(to: MockDestination.second, animated: false, isFirst: false))
+        #expect([.second, .third, .second] == existentialNavigator.destinationsSubj.value)
+    }
+
     @Test("Close to destination predicate with presented views")
     func navigator_closeToDestination_predicate_presentedViews() {
         let expectedDestination: MockDestination = .second
