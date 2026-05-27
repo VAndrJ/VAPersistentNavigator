@@ -24,6 +24,7 @@ public struct NavigatorStoringView<
     private let scheduler: S
     private let options: S.SchedulerOptions?
     private let content: () -> Content
+    @Environment(\.scenePhase) private var scenePhase
 
     /// Init the view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
     ///
@@ -75,8 +76,32 @@ public struct NavigatorStoringView<
                     .prepend(())
                     .debounce(for: delay, scheduler: scheduler, options: options)
             ) {
-                navigatorLog?("Navigation storing...")
-                storage.store(navigator: navigator)
+                storeNow()
             }
+            .onScenePhaseChange(scenePhase) { value in
+                guard value == .background else { return }
+
+                storeNow()
+            }
+    }
+
+    private func storeNow() {
+        navigatorLog?("Navigation storing...")
+        storage.store(navigator: navigator)
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func onScenePhaseChange(_ scenePhase: ScenePhase, perform action: @escaping (ScenePhase) -> Void) -> some View {
+        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
+            onChange(of: scenePhase) { _, value in
+                action(value)
+            }
+        } else {
+            onChange(of: scenePhase) { value in
+                action(value)
+            }
+        }
     }
 }
