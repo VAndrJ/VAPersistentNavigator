@@ -370,7 +370,9 @@ struct CodablePersistentNavigatorChildrenTests {
         let expectedTag: MockTabTag = .first
 
         #expect(expectedTag == NavigatorPresentation.sheet(tag: expectedTag).sheetTag as? MockTabTag)
+        #if !os(macOS)
         #expect(nil == NavigatorPresentation.fullScreenCover.sheetTag)
+        #endif
     }
 }
 

@@ -34,9 +34,11 @@ struct VANavigatorPresentationTests {
 
     @Test("NavigatorPresentation mapping")
     func presentationMapping() {
+        #if !os(macOS)
         let persistentPresentationCover: NavigatorPresentation = .fullScreenCover
         let navigatorPresentationCover = TypedNavigatorPresentation<SheetTag>(presentation: persistentPresentationCover)
         #expect(.fullScreenCover == navigatorPresentationCover)
+        #endif
         let persistentPresentationSheet: NavigatorPresentation = .sheet
         let navigatorPresentationSheet = TypedNavigatorPresentation<SheetTag>(presentation: persistentPresentationSheet)
         #expect(.sheet == navigatorPresentationSheet)
