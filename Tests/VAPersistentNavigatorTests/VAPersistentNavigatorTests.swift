@@ -269,6 +269,38 @@ struct NavigatorPresentationTests {
         #expect(current.parent === sut)
     }
 
+    @Test("Dismissing cancels a pending replacement")
+    func navigator_replaceCurrent_cancelledByDismissal() async {
+        let sut = TestNavigator(root: .first)
+        let current = TestNavigator(root: .second)
+        let replacement = TestNavigator(root: .third)
+        sut.present(current)
+
+        sut.present(replacement, strategy: .replaceCurrent)
+        sut.present(nil, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(nil == sut.childSubj.value)
+        #expect(nil == replacement.parent)
+    }
+
+    @Test("A newer presentation cancels a pending replacement")
+    func navigator_replaceCurrent_cancelledByNewPresentation() async {
+        let sut = TestNavigator(root: .first)
+        let current = TestNavigator(root: .second)
+        let replacement = TestNavigator(root: .third)
+        let latest = TestNavigator(root: .fourth)
+        sut.present(current)
+
+        sut.present(replacement, strategy: .replaceCurrent)
+        sut.present(latest, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(sut.childSubj.value === latest)
+        #expect(latest.parent === sut)
+        #expect(nil == replacement.parent)
+    }
+
     @Test("Presenting a navigator from itself is rejected")
     func navigator_present_rejectsSelfCycle() {
         let sut = TestNavigator(root: .first)

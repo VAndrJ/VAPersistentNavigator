@@ -104,6 +104,39 @@ private enum NavigatorAnimationStateStore {
     }
 }
 
+private final class PendingNavigatorPresentationState {
+    weak var navigator: AnyObject?
+    var generation = 0
+    var task: Task<Void, Never>?
+
+    init(navigator: AnyObject) {
+        self.navigator = navigator
+    }
+
+    func cancel() {
+        generation &+= 1
+        task?.cancel()
+        task = nil
+    }
+}
+
+private enum PendingNavigatorPresentationStateStore {
+    static var states: [ObjectIdentifier: PendingNavigatorPresentationState] = [:]
+
+    static func state(for navigator: AnyObject) -> PendingNavigatorPresentationState {
+        states = states.filter { $0.value.navigator != nil }
+        let id = ObjectIdentifier(navigator)
+        if let state = states[id] {
+            return state
+        }
+
+        let state = PendingNavigatorPresentationState(navigator: navigator)
+        states[id] = state
+
+        return state
+    }
+}
+
 extension BaseNavigator {
     public var isAnimatedSubj: CurrentValueSubject<Bool, Never> {
         NavigatorAnimationStateStore.subject(for: self)
@@ -383,20 +416,38 @@ extension BaseNavigator {
 
         switch strategy {
         case .onTop:
+            PendingNavigatorPresentationStateStore.state(for: navigator).cancel()
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         case .replaceCurrent:
             let subj = navigator.childSubj
             let animatedSubj = navigator.isAnimatedSubj
+            let pendingPresentationState = PendingNavigatorPresentationStateStore.state(for: navigator)
+            pendingPresentationState.cancel()
+            let generation = pendingPresentationState.generation
             animatedSubj.send(animated)
             subj.send(nil)
             //: To avoid presented iOS 16 issue
-            Task { @MainActor [animatedSubj, subj] in
-                try? await Task.sleep(for: .milliseconds(100))
+            pendingPresentationState.task = Task { @MainActor [animatedSubj, subj, weak pendingPresentationState] in
+                do {
+                    try await Task.sleep(for: .milliseconds(100))
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled,
+                    let pendingPresentationState,
+                    pendingPresentationState.navigator != nil,
+                    pendingPresentationState.generation == generation
+                else {
+                    return
+                }
+
+                pendingPresentationState.task = nil
                 animatedSubj.send(animated)
                 subj.send(child)
             }
         case .fromCurrent:
+            PendingNavigatorPresentationStateStore.state(for: navigator).cancel()
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         }
