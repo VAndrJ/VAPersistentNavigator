@@ -169,12 +169,17 @@ public struct NavigatorScreenFactoryView<
         switch action {
         case let .openURL(url):
             environment.openURL(url)
+        #if os(tvOS) || os(watchOS)
+        case .openWindow, .dismissWindow:
+            break
+        #else
         case let .openWindow(id):
             environment.openWindow(id: id)
         case let .dismissWindow(id):
             if #available(iOS 17.0, macOS 14.0, visionOS 1.0, *) {
                 environment.dismissWindow(id: id)
             }
+        #endif
         case let .external(action):
             environment.externalAction?(action)
         }

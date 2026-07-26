@@ -11,7 +11,10 @@ import SwiftUI
 extension View {
     @ViewBuilder
     public func with(transition destination: some Hashable) -> some View {
-        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+        #if os(macOS)
+        self
+        #else
+        if #available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
             let destination = destination as? any TransitionalDestination,
             let data = destination.transition?.wrapped, let id = data.id, let namespace = data.namespace
         {
@@ -19,6 +22,7 @@ extension View {
         } else {
             self
         }
+        #endif
     }
 
     @ViewBuilder

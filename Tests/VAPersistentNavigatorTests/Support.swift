@@ -10,7 +10,7 @@ import Testing
 
 @testable import VAPersistentNavigator
 
-enum MockDestination: Codable, Hashable, PersistentDestination {
+enum MockDestination: @MainActor PersistentDestination {
     case empty
     case first
     case second
@@ -18,16 +18,16 @@ enum MockDestination: Codable, Hashable, PersistentDestination {
     case fourth
 }
 
-enum IncorrectDestination: Codable, Hashable, PersistentDestination {
+enum IncorrectDestination: @MainActor PersistentDestination {
     case empty
 }
 
-enum MockTabTag: Codable, Hashable, PersistentTabItemTag {
+enum MockTabTag: @MainActor PersistentTabItemTag {
     case first
     case second
 }
 
-enum SheetTag: Codable, Hashable, PersistentSheetTag {
+enum SheetTag: @MainActor PersistentSheetTag {
     case first
     case second
 }
@@ -42,7 +42,7 @@ extension Array {
     }
 }
 
-class MockNavigatorStorage: NavigatorStorage {
+class MockNavigatorStorage: @MainActor NavigatorStorage {
     typealias Destination = MockDestination
     typealias TabItemTag = MockTabTag
     typealias SheetItemTag = SheetTag
