@@ -227,7 +227,10 @@ extension BaseNavigator {
     }
     public var topNavigator: Self {
         var navigator: Self! = self
-        while navigator?.topChild != nil {
+        var visited: Set<ObjectIdentifier> = []
+        while navigator?.topChild != nil,
+            visited.insert(ObjectIdentifier(navigator)).inserted
+        {
             navigator = navigator?.topChild
         }
 
@@ -361,13 +364,28 @@ extension BaseNavigator {
         animated: Bool = true
     ) {
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
+        let navigator: Self
         switch strategy {
         case .onTop:
-            let navigator = topNavigator
+            navigator = topNavigator
+        case .replaceCurrent, .fromCurrent:
+            navigator = orTabChild
+        }
+        guard navigator.canAttach(child: child) else {
+            navigatorLog?(
+                "present rejected navigation cycle",
+                "parent id: \(navigator.id)",
+                "child id: \(child?.id.uuidString ?? "nil")"
+            )
+
+            return
+        }
+
+        switch strategy {
+        case .onTop:
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         case .replaceCurrent:
-            let navigator = orTabChild
             let subj = navigator.childSubj
             let animatedSubj = navigator.isAnimatedSubj
             animatedSubj.send(animated)
@@ -379,7 +397,6 @@ extension BaseNavigator {
                 subj.send(child)
             }
         case .fromCurrent:
-            let navigator = orTabChild
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         }
@@ -734,6 +751,28 @@ extension BaseNavigator {
 }
 
 extension BaseNavigator {
+    fileprivate func canAttach(child: Self?) -> Bool {
+        guard let child else { return true }
+
+        var pending = [child]
+        var visited: Set<ObjectIdentifier> = []
+        while let navigator = pending.popLast() {
+            guard visited.insert(ObjectIdentifier(navigator)).inserted else {
+                continue
+            }
+            guard navigator !== self else {
+                return false
+            }
+
+            pending.append(contentsOf: navigator.tabs)
+            if let child = navigator.childSubj.value {
+                pending.append(child)
+            }
+        }
+
+        return true
+    }
+
     func bind() {
         tabs.forEach { $0.parent = self }
         let previousChild = WeakNavigatorReference<Self>()

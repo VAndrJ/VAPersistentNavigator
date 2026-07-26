@@ -38,7 +38,23 @@ public final class TypedViewNavigator<
     public let isAnimatedSubj: CurrentValueSubject<Bool, Never> = .init(true)
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
-    public weak var parent: TypedViewNavigator?
+    private weak var _parent: TypedViewNavigator?
+    public var parent: TypedViewNavigator? {
+        get { _parent }
+        set {
+            guard Self.canSet(parent: newValue, for: self) else {
+                navigatorLog?(
+                    "parent update rejected navigation cycle",
+                    "navigator id: \(id)",
+                    "parent id: \(newValue?.id.uuidString ?? "nil")"
+                )
+
+                return
+            }
+
+            _parent = newValue
+        }
+    }
     public var debugDescription: String {
         let root = if let root { String(describing: root) } else { "nil" }
         let tabItem = if let tabItem { String(describing: tabItem) } else { "nil" }
@@ -51,6 +67,22 @@ public final class TypedViewNavigator<
     public let environmentPubl: PassthroughSubject<EnvironmentAction, Never> = .init()
 
     private let _storeSubj = PassthroughSubject<Void, Never>()
+
+    private static func canSet(parent: TypedViewNavigator?, for navigator: TypedViewNavigator) -> Bool {
+        var parent = parent
+        var visited: Set<ObjectIdentifier> = []
+        while let candidate = parent {
+            guard visited.insert(ObjectIdentifier(candidate)).inserted,
+                candidate !== navigator
+            else {
+                return false
+            }
+
+            parent = candidate._parent
+        }
+
+        return true
+    }
 
     /// Initializes a new instance of `TypedViewNavigator` with all required state for navigation.
     ///

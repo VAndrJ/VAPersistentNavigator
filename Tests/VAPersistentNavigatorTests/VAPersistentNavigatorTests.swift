@@ -269,6 +269,42 @@ struct NavigatorPresentationTests {
         #expect(current.parent === sut)
     }
 
+    @Test("Presenting a navigator from itself is rejected")
+    func navigator_present_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.present(sut)
+
+        #expect(nil == sut.childSubj.value)
+        #expect(sut.topNavigator === sut)
+    }
+
+    @Test("A self-referencing parent update is rejected")
+    func navigator_parentUpdate_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.parent = sut
+
+        #expect(nil == sut.parent)
+    }
+
+    @Test("Ancestor navigation cycles are rejected without replacing the current child")
+    func navigator_present_rejectsAncestorCycle() {
+        let sut = TestNavigator(root: .first)
+        let presented = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(presented)
+        presented.present(current)
+
+        presented.present(sut, strategy: .replaceCurrent)
+        sut.parent = presented
+
+        #expect(presented.childSubj.value === current)
+        #expect(nil == sut.parent)
+        #expect(presented.parent === sut)
+        #expect(sut.topNavigator === current)
+    }
+
     @Test("Dismiss to specified Destination")
     func navigator_dismiss_toDestination() {
         let expectedDestination: MockDestination = .first
