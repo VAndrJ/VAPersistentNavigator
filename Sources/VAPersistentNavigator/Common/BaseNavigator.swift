@@ -404,15 +404,7 @@ extension BaseNavigator {
         case .replaceCurrent, .fromCurrent:
             navigator = orTabChild
         }
-        guard navigator.canAttach(child: child) else {
-            navigatorLog?(
-                "present rejected navigation cycle",
-                "parent id: \(navigator.id)",
-                "child id: \(child?.id.uuidString ?? "nil")"
-            )
-
-            return
-        }
+        guard navigator.canAttach(child: child) else { return }
 
         switch strategy {
         case .onTop:
@@ -428,7 +420,8 @@ extension BaseNavigator {
             animatedSubj.send(animated)
             subj.send(nil)
             //: To avoid presented iOS 16 issue
-            pendingPresentationState.task = Task { @MainActor [animatedSubj, subj, weak pendingPresentationState] in
+            pendingPresentationState.task = Task {
+                @MainActor [animatedSubj, subj, weak navigator, weak pendingPresentationState] in
                 do {
                     try await Task.sleep(for: .milliseconds(100))
                 } catch {
@@ -437,12 +430,15 @@ extension BaseNavigator {
                 guard !Task.isCancelled,
                     let pendingPresentationState,
                     pendingPresentationState.navigator != nil,
-                    pendingPresentationState.generation == generation
+                    pendingPresentationState.generation == generation,
+                    let navigator
                 else {
                     return
                 }
 
                 pendingPresentationState.task = nil
+                guard navigator.canAttach(child: child) else { return }
+
                 animatedSubj.send(animated)
                 subj.send(child)
             }
@@ -805,6 +801,19 @@ extension BaseNavigator {
     fileprivate func canAttach(child: Self?) -> Bool {
         guard let child else { return true }
 
+        if let owner = child.parent,
+            owner !== self || childSubj.value !== child
+        {
+            navigatorLog?(
+                "present rejected child with existing owner",
+                "parent id: \(id)",
+                "child id: \(child.id)",
+                "owner id: \(owner.id)"
+            )
+
+            return false
+        }
+
         var pending = [child]
         var visited: Set<ObjectIdentifier> = []
         while let navigator = pending.popLast() {
@@ -812,6 +821,12 @@ extension BaseNavigator {
                 continue
             }
             guard navigator !== self else {
+                navigatorLog?(
+                    "present rejected navigation cycle",
+                    "parent id: \(id)",
+                    "child id: \(child.id)"
+                )
+
                 return false
             }
 

@@ -269,6 +269,42 @@ struct NavigatorPresentationTests {
         #expect(current.parent === sut)
     }
 
+    @Test("A child already owned by another navigator is rejected")
+    func navigator_present_rejectsChildWithExistingOwner() {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+        firstParent.present(child)
+
+        secondParent.present(child, strategy: .fromCurrent)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(nil == secondParent.childSubj.value)
+        #expect(child.parent === firstParent)
+
+        child.dismissTop()
+
+        #expect(nil == firstParent.childSubj.value)
+        #expect(nil == child.parent)
+    }
+
+    @Test("A delayed replacement revalidates child ownership")
+    func navigator_replaceCurrent_revalidatesChildOwnership() async {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        let replacement = TestNavigator(root: .fourth)
+        firstParent.present(current)
+
+        firstParent.present(replacement, strategy: .replaceCurrent)
+        secondParent.present(replacement, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(nil == firstParent.childSubj.value)
+        #expect(secondParent.childSubj.value === replacement)
+        #expect(replacement.parent === secondParent)
+    }
+
     @Test("Dismissing cancels a pending replacement")
     func navigator_replaceCurrent_cancelledByDismissal() async {
         let sut = TestNavigator(root: .first)
