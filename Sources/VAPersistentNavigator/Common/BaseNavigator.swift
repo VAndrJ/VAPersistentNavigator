@@ -79,6 +79,14 @@ private final class NavigatorAnimationState {
     }
 }
 
+private final class WeakNavigatorReference<Navigator: AnyObject> {
+    weak var value: Navigator?
+
+    init(_ value: Navigator? = nil) {
+        self.value = value
+    }
+}
+
 private enum NavigatorAnimationStateStore {
     static var states: [ObjectIdentifier: NavigatorAnimationState] = [:]
 
@@ -728,9 +736,19 @@ extension BaseNavigator {
 extension BaseNavigator {
     func bind() {
         tabs.forEach { $0.parent = self }
+        let previousChild = WeakNavigatorReference<Self>()
         childSubj
-            .sink { [weak self] in
-                $0?.parent = self
+            .sink { [weak self, previousChild] child in
+                guard let self else { return }
+
+                if let previous = previousChild.value,
+                    previous !== child,
+                    previous.parent === self
+                {
+                    previous.parent = nil
+                }
+                child?.parent = self
+                previousChild.value = child
             }
             .store(in: &bag)
         (self as? any PersistentNavigator)?.bindStoring()

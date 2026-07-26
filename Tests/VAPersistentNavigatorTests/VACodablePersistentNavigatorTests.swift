@@ -183,8 +183,9 @@ struct CodablePersistentNavigatorPresentationTests {
         #expect(nil == sut.childSubj.value)
 
         navigator.present(.stack(root: MockDestination.second))
+        let hashablePresentedNavigator: (any PersistentNavigator)? = sut.childSubj.value
 
-        #expect(true == presentedNavigator?.dismiss(to: expectedDestination as any Hashable))
+        #expect(true == hashablePresentedNavigator?.dismiss(to: expectedDestination as any Hashable))
 
         let incorrectDestination: IncorrectDestination = .empty
 

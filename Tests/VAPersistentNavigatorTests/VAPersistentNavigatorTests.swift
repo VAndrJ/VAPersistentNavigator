@@ -241,6 +241,34 @@ struct NavigatorPresentationTests {
         #expect(nil == sut.childSubj.value)
     }
 
+    @Test("Dismissed navigator detaches from its parent")
+    func navigator_dismissTop_detachesParent() {
+        let sut = TestNavigator(root: .first)
+        let dismissed = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(dismissed)
+
+        dismissed.dismissTop()
+        sut.present(current)
+        dismissed.dismissTop()
+
+        #expect(nil == dismissed.parent)
+        #expect(sut.childSubj.value === current)
+    }
+
+    @Test("Replacing a child detaches the previous navigator")
+    func navigator_presentFromCurrent_detachesPreviousChild() {
+        let sut = TestNavigator(root: .first)
+        let previous = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(previous)
+
+        sut.present(current, strategy: .fromCurrent)
+
+        #expect(nil == previous.parent)
+        #expect(current.parent === sut)
+    }
+
     @Test("Dismiss to specified Destination")
     func navigator_dismiss_toDestination() {
         let expectedDestination: MockDestination = .first
