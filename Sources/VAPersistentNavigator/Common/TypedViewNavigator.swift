@@ -68,8 +68,9 @@ public final class TypedViewNavigator<
 
     private static func canSet(parent: TypedViewNavigator?, for navigator: TypedViewNavigator) -> Bool {
         if let parent {
-            guard parent.childSubj.value === navigator
-                || parent.tabs.contains(where: { $0 === navigator })
+            guard
+                parent.childSubj.value === navigator
+                    || parent.tabs.contains(where: { $0 === navigator })
             else {
                 return false
             }
@@ -104,11 +105,13 @@ public final class TypedViewNavigator<
         var visited: Set<ObjectIdentifier> = []
         var validatedTabs = tabs
         for tab in tabs {
-            guard isValidHierarchy(
-                rootedAt: tab,
-                expectedParent: nil,
-                visited: &visited
-            ) else {
+            guard
+                isValidHierarchy(
+                    rootedAt: tab,
+                    expectedParent: nil,
+                    visited: &visited
+                )
+            else {
                 navigatorLog?(
                     "initial tabs rejected invalid ownership",
                     "parent id: \(parentID)",
@@ -153,20 +156,24 @@ public final class TypedViewNavigator<
         }
 
         for tab in navigator.tabs {
-            guard isValidHierarchy(
-                rootedAt: tab,
-                expectedParent: navigator,
-                visited: &visited
-            ) else {
+            guard
+                isValidHierarchy(
+                    rootedAt: tab,
+                    expectedParent: navigator,
+                    visited: &visited
+                )
+            else {
                 return false
             }
         }
         if let child = navigator.childSubj.value {
-            guard isValidHierarchy(
-                rootedAt: child,
-                expectedParent: navigator,
-                visited: &visited
-            ) else {
+            guard
+                isValidHierarchy(
+                    rootedAt: child,
+                    expectedParent: navigator,
+                    visited: &visited
+                )
+            else {
                 return false
             }
         }

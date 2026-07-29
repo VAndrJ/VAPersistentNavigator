@@ -695,7 +695,7 @@ extension BaseNavigator {
             if navigator?.closeIn(where: { $0 == target }, animated: animated, isFirst: isFirst) == true {
                 return true
             }
-            
+
             navigator = navigator?.parent
         }
 
@@ -769,9 +769,9 @@ extension BaseNavigator {
         }
         switch firstNavigator.kind {
         case .tabView:
-            firstNavigator.tabs.forEach {
-                $0.present(nil, strategy: .fromCurrent, animated: animated)
-                $0.popToRoot(animated: animated)
+            for tab in firstNavigator.tabs {
+                tab.present(nil, strategy: .fromCurrent, animated: animated)
+                tab.popToRoot(animated: animated)
             }
         case .flow:
             firstNavigator.present(nil, strategy: .fromCurrent, animated: animated)
@@ -874,7 +874,9 @@ extension BaseNavigator {
     }
 
     func bind() {
-        tabs.forEach { $0.parent = self }
+        for tab in tabs {
+            tab.parent = self
+        }
         childSubj.validateUpdates { [weak self] child in
             self?.canAttach(child: child) ?? (child == nil)
         }

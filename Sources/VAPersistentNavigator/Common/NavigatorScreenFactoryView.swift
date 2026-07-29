@@ -91,13 +91,13 @@ public struct NavigatorScreenFactoryView<
                 .animation(rootReplaceAnimation(root), value: root)
                 .synchronize($root, with: navigator.rootSubj, animated: navigator.isAnimatedSubj)
                 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-                .synchronize(
-                    $isFullScreenCoverPresented,
-                    with: navigator.childSubj,
-                    isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: true,
-                    animated: navigator.isAnimatedSubj
-                )
+            .synchronize(
+                $isFullScreenCoverPresented,
+                with: navigator.childSubj,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                isFullScreen: true,
+                animated: navigator.isAnimatedSubj
+            )
                 #endif
                 .synchronize(
                     $isSheetPresented,
@@ -109,10 +109,10 @@ public struct NavigatorScreenFactoryView<
                 .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
                 .onAppear(perform: checkFirstAppearance)
                 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-                .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
-                #endif
-                .sheet(isPresented: $isSheetPresented, content: getSheet)
-                .with(navigator: navigator)
+            .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
+            #endif
+            .sheet(isPresented: $isSheetPresented, content: getSheet)
+            .with(navigator: navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in

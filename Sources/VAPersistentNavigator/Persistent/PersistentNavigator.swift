@@ -159,7 +159,7 @@ extension PersistentNavigator {
             )
             .sink(receiveValue: storeSubj.send)
             .store(in: &bindingState.bag)
-        tabs.forEach { child in
+        for child in tabs {
             child.storeSubj
                 .sink(receiveValue: storeSubj.send)
                 .store(in: &bindingState.bag)
