@@ -28,6 +28,11 @@ Wrap everything in a `NavigatorStoringView`, which will save the current navigat
 ## Example
 
 
+Navigator state is main-actor isolated. With Swift 6, use isolated-conformance syntax
+for destinations and tags (for example, `enum Destination: @MainActor PersistentDestination`)
+and for storage implementations (`final class Storage: @MainActor NavigatorStorage`).
+
+
 ```swift
 typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
 

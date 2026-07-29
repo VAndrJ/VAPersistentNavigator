@@ -1,9 +1,27 @@
+import Combine
 import Foundation
 import Testing
 
 @testable import VAPersistentNavigator
 
 typealias TestNavigator = PersistentViewNavigator<MockDestination, MockTabTag, SheetTag>
+
+private func makeTestNavigator(
+    root: MockDestination,
+    child: TestNavigator?
+) -> TestNavigator {
+    TestNavigator(
+        id: UUID(),
+        root: root,
+        destinations: [],
+        presentation: .sheet,
+        tabItem: nil,
+        kind: .flow,
+        tabs: [],
+        selectedTab: nil,
+        child: child
+    )
+}
 
 @Suite("Navigator initial")
 struct NavigatorInitial {
@@ -33,6 +51,17 @@ struct NavigatorInitial {
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
+
+    @Test("Initial child cannot be stolen from another navigator")
+    func navigator_initialChild_rejectsExistingOwner() {
+        let child = TestNavigator(view: .third)
+        let firstParent = makeTestNavigator(root: .first, child: child)
+        let secondParent = makeTestNavigator(root: .second, child: child)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(secondParent.childSubj.value == nil)
+        #expect(child.parent === firstParent)
     }
 }
 
@@ -217,6 +246,27 @@ struct NavigatorTabs {
 
         #expect(expecgedTab == sut.currentTab)
     }
+
+    @Test("Initial tab cannot be stolen from another navigator")
+    func navigator_initialTab_rejectsExistingOwner() {
+        let tab = TestNavigator(root: .first, tabItem: .first)
+        let firstParent = TestNavigator(tabs: [tab], selectedTab: .first)
+        let secondParent = TestNavigator(tabs: [tab], selectedTab: .first)
+
+        #expect(firstParent.tabs.first === tab)
+        #expect(secondParent.tabs.isEmpty)
+        #expect(tab.parent === firstParent)
+        #expect(firstParent.topNavigator.parent === firstParent)
+    }
+
+    @Test("Duplicate initial tab references are rejected")
+    func navigator_initialTabs_rejectDuplicateReference() {
+        let tab = TestNavigator(root: .first, tabItem: .first)
+        let sut = TestNavigator(tabs: [tab, tab], selectedTab: .first)
+
+        #expect(sut.tabs.isEmpty)
+        #expect(tab.parent == nil)
+    }
 }
 
 @Suite("Navigator presentation")
@@ -239,6 +289,205 @@ struct NavigatorPresentationTests {
         expected.dismissTop()
 
         #expect(nil == sut.childSubj.value)
+    }
+
+    @Test("Dismissed navigator detaches from its parent")
+    func navigator_dismissTop_detachesParent() {
+        let sut = TestNavigator(root: .first)
+        let dismissed = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(dismissed)
+
+        dismissed.dismissTop()
+        sut.present(current)
+        dismissed.dismissTop()
+
+        #expect(nil == dismissed.parent)
+        #expect(sut.childSubj.value === current)
+    }
+
+    @Test("Replacing a child detaches the previous navigator")
+    func navigator_presentFromCurrent_detachesPreviousChild() {
+        let sut = TestNavigator(root: .first)
+        let previous = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(previous)
+
+        sut.present(current, strategy: .fromCurrent)
+
+        #expect(nil == previous.parent)
+        #expect(current.parent === sut)
+    }
+
+    @Test("A child already owned by another navigator is rejected")
+    func navigator_present_rejectsChildWithExistingOwner() {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+        firstParent.present(child)
+
+        secondParent.present(child, strategy: .fromCurrent)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(nil == secondParent.childSubj.value)
+        #expect(child.parent === firstParent)
+
+        child.dismissTop()
+
+        #expect(nil == firstParent.childSubj.value)
+        #expect(nil == child.parent)
+    }
+
+    @Test("Direct child state rejects a child with an existing owner")
+    func navigator_childSubject_rejectsChildWithExistingOwner() {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+        firstParent.present(child)
+        var receivedInvalidUpdate = false
+        let cancellable = secondParent.childSubj
+            .dropFirst()
+            .sink { _ in
+                receivedInvalidUpdate = true
+            }
+
+        secondParent.childSubj.send(child)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(nil == secondParent.childSubj.value)
+        #expect(child.parent === firstParent)
+        #expect(!receivedInvalidUpdate)
+        withExtendedLifetime(cancellable) {}
+    }
+
+    @Test("Direct child state attaches and detaches an unowned child")
+    func navigator_childSubject_validUpdateMaintainsOwnership() {
+        let parent = TestNavigator(root: .first)
+        let child = TestNavigator(root: .second)
+
+        parent.childSubj.send(child)
+
+        #expect(parent.childSubj.value === child)
+        #expect(child.parent === parent)
+
+        parent.childSubj.send(nil)
+
+        #expect(nil == parent.childSubj.value)
+        #expect(nil == child.parent)
+    }
+
+    @Test("Direct parent updates require a reciprocal hierarchy link")
+    func navigator_parentUpdate_requiresReciprocalLink() {
+        let parent = TestNavigator(root: .first)
+        let unrelatedParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+
+        child.parent = unrelatedParent
+
+        #expect(nil == child.parent)
+
+        parent.childSubj.send(child)
+        child.parent = nil
+        child.parent = unrelatedParent
+
+        #expect(child.parent === parent)
+        #expect(parent.childSubj.value === child)
+        #expect(nil == unrelatedParent.childSubj.value)
+    }
+
+    @Test("Direct child state rejects navigation cycles")
+    func navigator_childSubject_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.childSubj.send(sut)
+
+        #expect(nil == sut.childSubj.value)
+        #expect(nil == sut.parent)
+    }
+
+    @Test("A delayed replacement revalidates child ownership")
+    func navigator_replaceCurrent_revalidatesChildOwnership() async {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        let replacement = TestNavigator(root: .fourth)
+        firstParent.present(current)
+
+        firstParent.present(replacement, strategy: .replaceCurrent)
+        secondParent.present(replacement, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(nil == firstParent.childSubj.value)
+        #expect(secondParent.childSubj.value === replacement)
+        #expect(replacement.parent === secondParent)
+    }
+
+    @Test("Dismissing cancels a pending replacement")
+    func navigator_replaceCurrent_cancelledByDismissal() async {
+        let sut = TestNavigator(root: .first)
+        let current = TestNavigator(root: .second)
+        let replacement = TestNavigator(root: .third)
+        sut.present(current)
+
+        sut.present(replacement, strategy: .replaceCurrent)
+        sut.present(nil, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(nil == sut.childSubj.value)
+        #expect(nil == replacement.parent)
+    }
+
+    @Test("A newer presentation cancels a pending replacement")
+    func navigator_replaceCurrent_cancelledByNewPresentation() async {
+        let sut = TestNavigator(root: .first)
+        let current = TestNavigator(root: .second)
+        let replacement = TestNavigator(root: .third)
+        let latest = TestNavigator(root: .fourth)
+        sut.present(current)
+
+        sut.present(replacement, strategy: .replaceCurrent)
+        sut.present(latest, strategy: .fromCurrent)
+        try? await Task.sleep(for: .milliseconds(200))
+
+        #expect(sut.childSubj.value === latest)
+        #expect(latest.parent === sut)
+        #expect(nil == replacement.parent)
+    }
+
+    @Test("Presenting a navigator from itself is rejected")
+    func navigator_present_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.present(sut)
+
+        #expect(nil == sut.childSubj.value)
+        #expect(sut.topNavigator === sut)
+    }
+
+    @Test("A self-referencing parent update is rejected")
+    func navigator_parentUpdate_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.parent = sut
+
+        #expect(nil == sut.parent)
+    }
+
+    @Test("Ancestor navigation cycles are rejected without replacing the current child")
+    func navigator_present_rejectsAncestorCycle() {
+        let sut = TestNavigator(root: .first)
+        let presented = TestNavigator(root: .second)
+        let current = TestNavigator(root: .third)
+        sut.present(presented)
+        presented.present(current)
+
+        presented.present(sut, strategy: .replaceCurrent)
+        sut.parent = presented
+
+        #expect(presented.childSubj.value === current)
+        #expect(nil == sut.parent)
+        #expect(presented.parent === sut)
+        #expect(sut.topNavigator === current)
     }
 
     @Test("Dismiss to specified Destination")

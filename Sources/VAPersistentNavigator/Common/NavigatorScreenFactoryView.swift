@@ -91,13 +91,13 @@ public struct NavigatorScreenFactoryView<
                 .animation(rootReplaceAnimation(root), value: root)
                 .synchronize($root, with: navigator.rootSubj, animated: navigator.isAnimatedSubj)
                 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-                .synchronize(
-                    $isFullScreenCoverPresented,
-                    with: navigator.childSubj,
-                    isFirstAppearanceOccured: $isFirstAppearanceOccurred,
-                    isFullScreen: true,
-                    animated: navigator.isAnimatedSubj
-                )
+            .synchronize(
+                $isFullScreenCoverPresented,
+                with: navigator.childSubj,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                isFullScreen: true,
+                animated: navigator.isAnimatedSubj
+            )
                 #endif
                 .synchronize(
                     $isSheetPresented,
@@ -109,10 +109,10 @@ public struct NavigatorScreenFactoryView<
                 .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
                 .onAppear(perform: checkFirstAppearance)
                 #if os(iOS) || os(watchOS) || os(tvOS) || os(visionOS)
-                .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
-                #endif
-                .sheet(isPresented: $isSheetPresented, content: getSheet)
-                .with(navigator: navigator)
+            .fullScreenCover(isPresented: $isFullScreenCoverPresented, content: getFullScreenCover)
+            #endif
+            .sheet(isPresented: $isSheetPresented, content: getSheet)
+            .with(navigator: navigator)
         case .tabView:
             NavigatorTabView(selectedTabSubj: navigator.selectedTabSubj) {
                 ForEach(navigator.tabs) { tab in
@@ -130,6 +130,7 @@ public struct NavigatorScreenFactoryView<
                 }
             }
             .with(transition: navigator.tabs.first?.root)
+            .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
             .with(navigator: navigator)
         case .flow:
             NavigationStack(path: $destinations) {
@@ -169,12 +170,17 @@ public struct NavigatorScreenFactoryView<
         switch action {
         case let .openURL(url):
             environment.openURL(url)
+        #if os(tvOS) || os(watchOS)
+        case .openWindow, .dismissWindow:
+            break
+        #else
         case let .openWindow(id):
             environment.openWindow(id: id)
         case let .dismissWindow(id):
             if #available(iOS 17.0, macOS 14.0, visionOS 1.0, *) {
                 environment.dismissWindow(id: id)
             }
+        #endif
         case let .external(action):
             environment.externalAction?(action)
         }

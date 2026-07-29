@@ -11,7 +11,10 @@ import SwiftUI
 extension View {
     @ViewBuilder
     public func with(transition destination: some Hashable) -> some View {
-        if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+        #if os(macOS)
+        self
+        #else
+        if #available(iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
             let destination = destination as? any TransitionalDestination,
             let data = destination.transition?.wrapped, let id = data.id, let namespace = data.namespace
         {
@@ -19,6 +22,7 @@ extension View {
         } else {
             self
         }
+        #endif
     }
 
     @ViewBuilder
@@ -61,7 +65,7 @@ extension View {
 
     public func synchronize<Navigator: BaseNavigator>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator?, Never>,
+        with subject: NavigatorChildSubject<Navigator>,
         isFirstAppearanceOccured: Binding<Bool>,
         isFullScreen: Bool,
         animated: CurrentValueSubject<Bool, Never>
@@ -199,7 +203,7 @@ struct AnimatedSynchronizingViewModifier<T: Equatable>: ViewModifier {
 struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigator>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
-    let subject: CurrentValueSubject<Navigator?, Never>
+    let subject: NavigatorChildSubject<Navigator>
     let isFullScreen: Bool
     let animated: CurrentValueSubject<Bool, Never>
 
@@ -213,9 +217,7 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
                     update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { _, value in
-                    if !value {
-                        subject.send(nil)
-                    }
+                    handleBindingChange(value)
                 }
         } else {
             content
@@ -226,11 +228,19 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
                     update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { value in
-                    if !value {
-                        subject.send(nil)
-                    }
+                    handleBindingChange(value)
                 }
         }
+    }
+
+    private func handleBindingChange(_ value: Bool) {
+        guard !value,
+            getIsPresented(presentation: subject.value?.presentation)
+        else {
+            return
+        }
+
+        subject.send(nil)
     }
 
     private func update(value: Navigator?, isFirstAppearanceOccured: Bool) {

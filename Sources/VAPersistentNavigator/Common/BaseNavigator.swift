@@ -34,14 +34,12 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var presentation: TypedNavigatorPresentation<SheetTag> { get }
     var tabItem: TabItemTag? { get }
     var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { get }
-    var childSubj: CurrentValueSubject<Self?, Never> { get }
+    var childSubj: NavigatorChildSubject<Self> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
     var isAnimatedSubj: CurrentValueSubject<Bool, Never> { get }
     var parent: Self? { get set }
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
-    var childCancellable: AnyCancellable? { get set }
-    var bag: Set<AnyCancellable> { get set }
     var onDeinit: (() -> Void)? { get set }
     var environmentPubl: PassthroughSubject<EnvironmentAction, Never> { get }
 
@@ -79,6 +77,14 @@ private final class NavigatorAnimationState {
     }
 }
 
+private final class WeakNavigatorReference<Navigator: AnyObject> {
+    weak var value: Navigator?
+
+    init(_ value: Navigator? = nil) {
+        self.value = value
+    }
+}
+
 private enum NavigatorAnimationStateStore {
     static var states: [ObjectIdentifier: NavigatorAnimationState] = [:]
 
@@ -93,6 +99,70 @@ private enum NavigatorAnimationStateStore {
         states[id] = state
 
         return state.subject
+    }
+}
+
+private final class PendingNavigatorPresentationState {
+    weak var navigator: AnyObject?
+    var generation = 0
+    var task: Task<Void, Never>?
+
+    init(navigator: AnyObject) {
+        self.navigator = navigator
+    }
+
+    func cancel() {
+        generation &+= 1
+        task?.cancel()
+        task = nil
+    }
+}
+
+private enum PendingNavigatorPresentationStateStore {
+    static var states: [ObjectIdentifier: PendingNavigatorPresentationState] = [:]
+
+    static func state(for navigator: AnyObject) -> PendingNavigatorPresentationState {
+        states = states.filter { $0.value.navigator != nil }
+        let id = ObjectIdentifier(navigator)
+        if let state = states[id] {
+            return state
+        }
+
+        let state = PendingNavigatorPresentationState(navigator: navigator)
+        states[id] = state
+
+        return state
+    }
+}
+
+final class NavigatorBindingState {
+    weak var navigator: AnyObject?
+    var bag: Set<AnyCancellable> = []
+    var childCancellable: AnyCancellable?
+
+    init(navigator: AnyObject) {
+        self.navigator = navigator
+    }
+}
+
+enum NavigatorBindingStateStore {
+    private static var states: [ObjectIdentifier: NavigatorBindingState] = [:]
+
+    static func state(for navigator: AnyObject) -> NavigatorBindingState {
+        states = states.filter { $0.value.navigator != nil }
+        let id = ObjectIdentifier(navigator)
+        if let state = states[id] {
+            return state
+        }
+
+        let state = NavigatorBindingState(navigator: navigator)
+        states[id] = state
+
+        return state
+    }
+
+    static func remove(for navigator: AnyObject) {
+        states[ObjectIdentifier(navigator)] = nil
     }
 }
 
@@ -219,7 +289,10 @@ extension BaseNavigator {
     }
     public var topNavigator: Self {
         var navigator: Self! = self
-        while navigator?.topChild != nil {
+        var visited: Set<ObjectIdentifier> = []
+        while navigator?.topChild != nil,
+            visited.insert(ObjectIdentifier(navigator)).inserted
+        {
             navigator = navigator?.topChild
         }
 
@@ -240,12 +313,17 @@ extension BaseNavigator {
         get { parent == nil ? _onReplaceInitialNavigator : parent?.onReplaceInitialNavigator }
         set {
             if parent == nil {
+                guard let newValue else {
+                    _onReplaceInitialNavigator = nil
+
+                    return
+                }
                 _onReplaceInitialNavigator = { [weak self] navigator in
                     self?.closeToInitial()
                     //: To avoid presented TabView issue
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(100))
-                        newValue?(navigator)
+                        newValue(navigator)
                     }
                 }
             } else {
@@ -353,25 +431,53 @@ extension BaseNavigator {
         animated: Bool = true
     ) {
         navigatorLog?("present", "child: \(child?.debugDescription ?? "nil")", "strategy: \(strategy)")
+        let navigator: Self
         switch strategy {
         case .onTop:
-            let navigator = topNavigator
+            navigator = topNavigator
+        case .replaceCurrent, .fromCurrent:
+            navigator = orTabChild
+        }
+        guard navigator.canAttach(child: child) else { return }
+
+        switch strategy {
+        case .onTop:
+            PendingNavigatorPresentationStateStore.state(for: navigator).cancel()
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         case .replaceCurrent:
-            let navigator = orTabChild
             let subj = navigator.childSubj
             let animatedSubj = navigator.isAnimatedSubj
+            let pendingPresentationState = PendingNavigatorPresentationStateStore.state(for: navigator)
+            pendingPresentationState.cancel()
+            let generation = pendingPresentationState.generation
             animatedSubj.send(animated)
             subj.send(nil)
             //: To avoid presented iOS 16 issue
-            Task { @MainActor [animatedSubj, subj] in
-                try? await Task.sleep(for: .milliseconds(100))
+            pendingPresentationState.task = Task {
+                @MainActor [animatedSubj, subj, weak navigator, weak pendingPresentationState] in
+                do {
+                    try await Task.sleep(for: .milliseconds(100))
+                } catch {
+                    return
+                }
+                guard !Task.isCancelled,
+                    let pendingPresentationState,
+                    pendingPresentationState.navigator != nil,
+                    pendingPresentationState.generation == generation,
+                    let navigator
+                else {
+                    return
+                }
+
+                pendingPresentationState.task = nil
+                guard navigator.canAttach(child: child) else { return }
+
                 animatedSubj.send(animated)
                 subj.send(child)
             }
         case .fromCurrent:
-            let navigator = orTabChild
+            PendingNavigatorPresentationStateStore.state(for: navigator).cancel()
             navigator.isAnimatedSubj.send(animated)
             navigator.childSubj.send(child)
         }
@@ -589,7 +695,7 @@ extension BaseNavigator {
             if navigator?.closeIn(where: { $0 == target }, animated: animated, isFirst: isFirst) == true {
                 return true
             }
-            
+
             navigator = navigator?.parent
         }
 
@@ -663,9 +769,9 @@ extension BaseNavigator {
         }
         switch firstNavigator.kind {
         case .tabView:
-            firstNavigator.tabs.forEach {
-                $0.present(nil, strategy: .fromCurrent, animated: animated)
-                $0.popToRoot(animated: animated)
+            for tab in firstNavigator.tabs {
+                tab.present(nil, strategy: .fromCurrent, animated: animated)
+                tab.popToRoot(animated: animated)
             }
         case .flow:
             firstNavigator.present(nil, strategy: .fromCurrent, animated: animated)
@@ -726,13 +832,70 @@ extension BaseNavigator {
 }
 
 extension BaseNavigator {
-    func bind() {
-        tabs.forEach { $0.parent = self }
-        childSubj
-            .sink { [weak self] in
-                $0?.parent = self
+    fileprivate func canAttach(child: Self?) -> Bool {
+        guard let child else { return true }
+
+        if let owner = child.parent,
+            owner !== self || childSubj.value !== child
+        {
+            navigatorLog?(
+                "present rejected child with existing owner",
+                "parent id: \(id)",
+                "child id: \(child.id)",
+                "owner id: \(owner.id)"
+            )
+
+            return false
+        }
+
+        var pending = [child]
+        var visited: Set<ObjectIdentifier> = []
+        while let navigator = pending.popLast() {
+            guard visited.insert(ObjectIdentifier(navigator)).inserted else {
+                continue
             }
-            .store(in: &bag)
+            guard navigator !== self else {
+                navigatorLog?(
+                    "present rejected navigation cycle",
+                    "parent id: \(id)",
+                    "child id: \(child.id)"
+                )
+
+                return false
+            }
+
+            pending.append(contentsOf: navigator.tabs)
+            if let child = navigator.childSubj.value {
+                pending.append(child)
+            }
+        }
+
+        return true
+    }
+
+    func bind() {
+        for tab in tabs {
+            tab.parent = self
+        }
+        childSubj.validateUpdates { [weak self] child in
+            self?.canAttach(child: child) ?? (child == nil)
+        }
+        let bindingState = NavigatorBindingStateStore.state(for: self)
+        let previousChild = WeakNavigatorReference<Self>()
+        childSubj
+            .sink { [weak self, previousChild] child in
+                guard let self else { return }
+
+                if let previous = previousChild.value,
+                    previous !== child,
+                    previous.parent === self
+                {
+                    previous.parent = nil
+                }
+                child?.parent = self
+                previousChild.value = child
+            }
+            .store(in: &bindingState.bag)
         (self as? any PersistentNavigator)?.bindStoring()
     }
 }

@@ -11,7 +11,7 @@ import VAPersistentNavigator
 
 typealias Navigator = PersistentViewNavigator<Destination, TabTag, SheetTag>
 
-enum Destination: PersistentDestination, TransitionalDestination {
+enum Destination: @MainActor PersistentDestination, TransitionalDestination {
     case main
     case navigationStackExamples(Int, transition: NavigatorTransition? = nil)
     case sheetExamples(Int)
@@ -36,12 +36,12 @@ enum Destination: PersistentDestination, TransitionalDestination {
     }
 }
 
-enum TabTag: PersistentTabItemTag {
+enum TabTag: @MainActor PersistentTabItemTag {
     case first
     case second
 }
 
-enum SheetTag: PersistentSheetTag {
+enum SheetTag: @MainActor PersistentSheetTag {
     case first
 }
 
