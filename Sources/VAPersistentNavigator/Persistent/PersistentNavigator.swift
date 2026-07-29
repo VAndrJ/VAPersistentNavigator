@@ -147,6 +147,7 @@ extension PersistentNavigator {
 
 extension PersistentNavigator {
     func bindStoring() {
+        let bindingState = NavigatorBindingStateStore.state(for: self)
         Publishers
             .Merge3(
                 destinationsSubj
@@ -157,26 +158,27 @@ extension PersistentNavigator {
                     .map { _ in }
             )
             .sink(receiveValue: storeSubj.send)
-            .store(in: &bag)
+            .store(in: &bindingState.bag)
         tabs.forEach { child in
             child.storeSubj
                 .sink(receiveValue: storeSubj.send)
-                .store(in: &bag)
+                .store(in: &bindingState.bag)
         }
         childSubj
             .sink { [weak self] in
                 self?.bindChildStoring($0)
             }
-            .store(in: &bag)
+            .store(in: &bindingState.bag)
     }
 
     private func bindChildStoring(_ child: Self?) {
-        childCancellable?.cancel()
+        let bindingState = NavigatorBindingStateStore.state(for: self)
+        bindingState.childCancellable?.cancel()
         if let child {
-            childCancellable = child.storeSubj
+            bindingState.childCancellable = child.storeSubj
                 .sink(receiveValue: storeSubj.send)
         } else {
-            childCancellable = nil
+            bindingState.childCancellable = nil
         }
         storeSubj.send(())
     }

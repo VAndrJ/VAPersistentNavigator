@@ -34,14 +34,12 @@ public protocol BaseNavigator: AnyObject, CustomDebugStringConvertible, Identifi
     var presentation: TypedNavigatorPresentation<SheetTag> { get }
     var tabItem: TabItemTag? { get }
     var selectedTabSubj: CurrentValueSubject<TabItemTag?, Never> { get }
-    var childSubj: CurrentValueSubject<Self?, Never> { get }
+    var childSubj: NavigatorChildSubject<Self> { get }
     var rootSubj: CurrentValueSubject<Destination?, Never> { get }
     var destinationsSubj: CurrentValueSubject<[Destination], Never> { get }
     var isAnimatedSubj: CurrentValueSubject<Bool, Never> { get }
     var parent: Self? { get set }
     var _onReplaceInitialNavigator: ((_ newNavigator: Self) -> Void)? { get set }
-    var childCancellable: AnyCancellable? { get set }
-    var bag: Set<AnyCancellable> { get set }
     var onDeinit: (() -> Void)? { get set }
     var environmentPubl: PassthroughSubject<EnvironmentAction, Never> { get }
 
@@ -134,6 +132,37 @@ private enum PendingNavigatorPresentationStateStore {
         states[id] = state
 
         return state
+    }
+}
+
+final class NavigatorBindingState {
+    weak var navigator: AnyObject?
+    var bag: Set<AnyCancellable> = []
+    var childCancellable: AnyCancellable?
+
+    init(navigator: AnyObject) {
+        self.navigator = navigator
+    }
+}
+
+enum NavigatorBindingStateStore {
+    private static var states: [ObjectIdentifier: NavigatorBindingState] = [:]
+
+    static func state(for navigator: AnyObject) -> NavigatorBindingState {
+        states = states.filter { $0.value.navigator != nil }
+        let id = ObjectIdentifier(navigator)
+        if let state = states[id] {
+            return state
+        }
+
+        let state = NavigatorBindingState(navigator: navigator)
+        states[id] = state
+
+        return state
+    }
+
+    static func remove(for navigator: AnyObject) {
+        states[ObjectIdentifier(navigator)] = nil
     }
 }
 
@@ -846,6 +875,10 @@ extension BaseNavigator {
 
     func bind() {
         tabs.forEach { $0.parent = self }
+        childSubj.validateUpdates { [weak self] child in
+            self?.canAttach(child: child) ?? (child == nil)
+        }
+        let bindingState = NavigatorBindingStateStore.state(for: self)
         let previousChild = WeakNavigatorReference<Self>()
         childSubj
             .sink { [weak self, previousChild] child in
@@ -860,7 +893,7 @@ extension BaseNavigator {
                 child?.parent = self
                 previousChild.value = child
             }
-            .store(in: &bag)
+            .store(in: &bindingState.bag)
         (self as? any PersistentNavigator)?.bindStoring()
     }
 }

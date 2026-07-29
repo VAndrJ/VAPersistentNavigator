@@ -65,7 +65,7 @@ extension View {
 
     public func synchronize<Navigator: BaseNavigator>(
         _ binding: Binding<Bool>,
-        with subject: CurrentValueSubject<Navigator?, Never>,
+        with subject: NavigatorChildSubject<Navigator>,
         isFirstAppearanceOccured: Binding<Bool>,
         isFullScreen: Bool,
         animated: CurrentValueSubject<Bool, Never>
@@ -203,7 +203,7 @@ struct AnimatedSynchronizingViewModifier<T: Equatable>: ViewModifier {
 struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigator>: ViewModifier {
     @Binding var binding: Bool
     @Binding var isFirstAppearanceOccured: Bool
-    let subject: CurrentValueSubject<Navigator?, Never>
+    let subject: NavigatorChildSubject<Navigator>
     let isFullScreen: Bool
     let animated: CurrentValueSubject<Bool, Never>
 

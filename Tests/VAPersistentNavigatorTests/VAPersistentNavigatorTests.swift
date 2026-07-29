@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Testing
 
@@ -335,6 +336,73 @@ struct NavigatorPresentationTests {
 
         #expect(nil == firstParent.childSubj.value)
         #expect(nil == child.parent)
+    }
+
+    @Test("Direct child state rejects a child with an existing owner")
+    func navigator_childSubject_rejectsChildWithExistingOwner() {
+        let firstParent = TestNavigator(root: .first)
+        let secondParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+        firstParent.present(child)
+        var receivedInvalidUpdate = false
+        let cancellable = secondParent.childSubj
+            .dropFirst()
+            .sink { _ in
+                receivedInvalidUpdate = true
+            }
+
+        secondParent.childSubj.send(child)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(nil == secondParent.childSubj.value)
+        #expect(child.parent === firstParent)
+        #expect(!receivedInvalidUpdate)
+        withExtendedLifetime(cancellable) {}
+    }
+
+    @Test("Direct child state attaches and detaches an unowned child")
+    func navigator_childSubject_validUpdateMaintainsOwnership() {
+        let parent = TestNavigator(root: .first)
+        let child = TestNavigator(root: .second)
+
+        parent.childSubj.send(child)
+
+        #expect(parent.childSubj.value === child)
+        #expect(child.parent === parent)
+
+        parent.childSubj.send(nil)
+
+        #expect(nil == parent.childSubj.value)
+        #expect(nil == child.parent)
+    }
+
+    @Test("Direct parent updates require a reciprocal hierarchy link")
+    func navigator_parentUpdate_requiresReciprocalLink() {
+        let parent = TestNavigator(root: .first)
+        let unrelatedParent = TestNavigator(root: .second)
+        let child = TestNavigator(root: .third)
+
+        child.parent = unrelatedParent
+
+        #expect(nil == child.parent)
+
+        parent.childSubj.send(child)
+        child.parent = nil
+        child.parent = unrelatedParent
+
+        #expect(child.parent === parent)
+        #expect(parent.childSubj.value === child)
+        #expect(nil == unrelatedParent.childSubj.value)
+    }
+
+    @Test("Direct child state rejects navigation cycles")
+    func navigator_childSubject_rejectsSelfCycle() {
+        let sut = TestNavigator(root: .first)
+
+        sut.childSubj.send(sut)
+
+        #expect(nil == sut.childSubj.value)
+        #expect(nil == sut.parent)
     }
 
     @Test("A delayed replacement revalidates child ownership")

@@ -34,7 +34,7 @@ public final class TypedViewNavigator<
     public private(set) var tabItem: TabItemTag?
     public let tabs: [TypedViewNavigator]
     public let destinationsSubj: CurrentValueSubject<[Destination], Never>
-    public let childSubj: CurrentValueSubject<TypedViewNavigator?, Never>
+    public let childSubj: NavigatorChildSubject<TypedViewNavigator>
     public let isAnimatedSubj: CurrentValueSubject<Bool, Never> = .init(true)
     public let kind: NavigatorKind
     public let presentation: TypedNavigatorPresentation<SheetTag>
@@ -44,7 +44,7 @@ public final class TypedViewNavigator<
         set {
             guard Self.canSet(parent: newValue, for: self) else {
                 navigatorLog?(
-                    "parent update rejected navigation cycle",
+                    "parent update rejected invalid hierarchy",
                     "navigator id: \(id)",
                     "parent id: \(newValue?.id.uuidString ?? "nil")"
                 )
@@ -61,14 +61,26 @@ public final class TypedViewNavigator<
 
         return "\(Self.self), kind: \(kind), root: \(root), tabs: \(tabs), presentation: \(presentation), tabItem: \(tabItem)"
     }
-    public var childCancellable: AnyCancellable?
-    public var bag: Set<AnyCancellable> = []
     public var onDeinit: (() -> Void)?
     public let environmentPubl: PassthroughSubject<EnvironmentAction, Never> = .init()
 
     private let _storeSubj = PassthroughSubject<Void, Never>()
 
     private static func canSet(parent: TypedViewNavigator?, for navigator: TypedViewNavigator) -> Bool {
+        if let parent {
+            guard parent.childSubj.value === navigator
+                || parent.tabs.contains(where: { $0 === navigator })
+            else {
+                return false
+            }
+        } else if let currentParent = navigator._parent {
+            guard currentParent.childSubj.value !== navigator,
+                !currentParent.tabs.contains(where: { $0 === navigator })
+            else {
+                return false
+            }
+        }
+
         var parent = parent
         var visited: Set<ObjectIdentifier> = []
         while let candidate = parent {
@@ -207,6 +219,7 @@ public final class TypedViewNavigator<
     }
 
     isolated deinit {
+        NavigatorBindingStateStore.remove(for: self)
         onDeinit?()
         navigatorLog?(#function, debugDescription, id)
     }
