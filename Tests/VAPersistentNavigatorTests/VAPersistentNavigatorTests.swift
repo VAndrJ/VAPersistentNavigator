@@ -5,6 +5,23 @@ import Testing
 
 typealias TestNavigator = PersistentViewNavigator<MockDestination, MockTabTag, SheetTag>
 
+private func makeTestNavigator(
+    root: MockDestination,
+    child: TestNavigator?
+) -> TestNavigator {
+    TestNavigator(
+        id: UUID(),
+        root: root,
+        destinations: [],
+        presentation: .sheet,
+        tabItem: nil,
+        kind: .flow,
+        tabs: [],
+        selectedTab: nil,
+        child: child
+    )
+}
+
 @Suite("Navigator initial")
 struct NavigatorInitial {
 
@@ -33,6 +50,17 @@ struct NavigatorInitial {
         let sut = TestNavigator(root: .first, destinations: expectedDestinations)
 
         #expect(expectedDestinations == sut.destinationsSubj.value)
+    }
+
+    @Test("Initial child cannot be stolen from another navigator")
+    func navigator_initialChild_rejectsExistingOwner() {
+        let child = TestNavigator(view: .third)
+        let firstParent = makeTestNavigator(root: .first, child: child)
+        let secondParent = makeTestNavigator(root: .second, child: child)
+
+        #expect(firstParent.childSubj.value === child)
+        #expect(secondParent.childSubj.value == nil)
+        #expect(child.parent === firstParent)
     }
 }
 
@@ -216,6 +244,27 @@ struct NavigatorTabs {
         tab2Navigator.currentTab = expecgedTab
 
         #expect(expecgedTab == sut.currentTab)
+    }
+
+    @Test("Initial tab cannot be stolen from another navigator")
+    func navigator_initialTab_rejectsExistingOwner() {
+        let tab = TestNavigator(root: .first, tabItem: .first)
+        let firstParent = TestNavigator(tabs: [tab], selectedTab: .first)
+        let secondParent = TestNavigator(tabs: [tab], selectedTab: .first)
+
+        #expect(firstParent.tabs.first === tab)
+        #expect(secondParent.tabs.isEmpty)
+        #expect(tab.parent === firstParent)
+        #expect(firstParent.topNavigator.parent === firstParent)
+    }
+
+    @Test("Duplicate initial tab references are rejected")
+    func navigator_initialTabs_rejectDuplicateReference() {
+        let tab = TestNavigator(root: .first, tabItem: .first)
+        let sut = TestNavigator(tabs: [tab, tab], selectedTab: .first)
+
+        #expect(sut.tabs.isEmpty)
+        #expect(tab.parent == nil)
     }
 }
 

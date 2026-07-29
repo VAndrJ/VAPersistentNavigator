@@ -84,6 +84,84 @@ public final class TypedViewNavigator<
         return true
     }
 
+    private static func validatedInitialChildren(
+        tabs: [TypedViewNavigator],
+        child: TypedViewNavigator?,
+        parentID: UUID
+    ) -> (tabs: [TypedViewNavigator], child: TypedViewNavigator?) {
+        var visited: Set<ObjectIdentifier> = []
+        var validatedTabs = tabs
+        for tab in tabs {
+            guard isValidHierarchy(
+                rootedAt: tab,
+                expectedParent: nil,
+                visited: &visited
+            ) else {
+                navigatorLog?(
+                    "initial tabs rejected invalid ownership",
+                    "parent id: \(parentID)",
+                    "tab id: \(tab.id)"
+                )
+                validatedTabs = []
+                visited = []
+
+                break
+            }
+        }
+
+        var validatedChild: TypedViewNavigator?
+        if let child {
+            if isValidHierarchy(
+                rootedAt: child,
+                expectedParent: nil,
+                visited: &visited
+            ) {
+                validatedChild = child
+            } else {
+                navigatorLog?(
+                    "initial child rejected invalid ownership",
+                    "parent id: \(parentID)",
+                    "child id: \(child.id)"
+                )
+            }
+        }
+
+        return (validatedTabs, validatedChild)
+    }
+
+    private static func isValidHierarchy(
+        rootedAt navigator: TypedViewNavigator,
+        expectedParent: TypedViewNavigator?,
+        visited: inout Set<ObjectIdentifier>
+    ) -> Bool {
+        guard navigator.parent === expectedParent,
+            visited.insert(ObjectIdentifier(navigator)).inserted
+        else {
+            return false
+        }
+
+        for tab in navigator.tabs {
+            guard isValidHierarchy(
+                rootedAt: tab,
+                expectedParent: navigator,
+                visited: &visited
+            ) else {
+                return false
+            }
+        }
+        if let child = navigator.childSubj.value {
+            guard isValidHierarchy(
+                rootedAt: child,
+                expectedParent: navigator,
+                visited: &visited
+            ) else {
+                return false
+            }
+        }
+
+        return true
+    }
+
     /// Initializes a new instance of `TypedViewNavigator` with all required state for navigation.
     ///
     /// - Parameters:
@@ -96,6 +174,9 @@ public final class TypedViewNavigator<
     ///   - tabs: The list of child navigators used in a tab-based navigation setup.
     ///   - selectedTab: The currently selected tab identifier (if applicable).
     ///   - child: A reference to a currently presented child navigator (for modals or sheets).
+    /// - Important: Initial tabs and children must be unowned roots of internally consistent
+    ///   navigator hierarchies. An invalid tabs array is rejected as a whole, and an invalid
+    ///   child is ignored, so an existing hierarchy is never reparented.
     public required init(
         id: UUID,
         root: Destination?,
@@ -107,14 +188,19 @@ public final class TypedViewNavigator<
         selectedTab: TabItemTag?,
         child: TypedViewNavigator?
     ) {
+        let validatedChildren = Self.validatedInitialChildren(
+            tabs: tabs,
+            child: child,
+            parentID: id
+        )
         self.id = id
         self.rootSubj = .init(root)
         self.destinationsSubj = .init(destinations)
         self.tabItem = tabItem
         self.kind = kind
-        self.tabs = tabs
+        self.tabs = validatedChildren.tabs
         self.presentation = presentation
-        self.childSubj = .init(child)
+        self.childSubj = .init(validatedChildren.child)
         self.selectedTabSubj = .init(selectedTab)
 
         bind()

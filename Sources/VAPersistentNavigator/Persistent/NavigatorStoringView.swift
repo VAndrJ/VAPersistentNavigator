@@ -11,6 +11,7 @@ import SwiftUI
 /// A view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
 ///
 /// This view wraps content and automatically stores the navigator’s state after a specified debounce delay.
+/// Pending state is also flushed when the scene enters the background or the wrapper disappears.
 /// Useful for persisting navigation state across app launches.
 public struct NavigatorStoringView<
     Navigator: PersistentNavigator,
@@ -29,6 +30,7 @@ public struct NavigatorStoringView<
     /// Init the view that observes changes to a `PersistentNavigator` and persists its state using a `NavigatorStorage`.
     ///
     /// This view wraps content and automatically stores the navigator’s state after a specified debounce delay.
+    /// Pending state is also flushed when the scene enters the background or the wrapper disappears.
     /// Useful for persisting navigation state across app launches.
     ///
     /// - Parameters:
@@ -83,6 +85,7 @@ public struct NavigatorStoringView<
 
                 storeNow()
             }
+            .onDisappear(perform: storeNow)
     }
 
     private func storeNow() {

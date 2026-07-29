@@ -51,8 +51,10 @@ class MockNavigatorStorage: @MainActor NavigatorStorage {
     let decoder = JSONDecoder()
 
     var navigator: Data?
+    private(set) var storeCount = 0
 
     func store(navigator: PersistentViewNavigator<Destination, TabItemTag, SheetItemTag>) {
+        storeCount += 1
         self.navigator = try! encoder.encode(navigator)
     }
 
