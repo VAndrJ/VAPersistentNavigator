@@ -8,7 +8,7 @@
 import Foundation
 import VAPersistentNavigator
 
-final class DefaultsNavigatorStorage: NavigatorStorage {
+final class DefaultsNavigatorStorage: @MainActor NavigatorStorage {
     private static let key = "com.vandrj.navigator"
 
     private let encoder = JSONEncoder()

@@ -217,9 +217,7 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
                     update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { _, value in
-                    if !value {
-                        subject.send(nil)
-                    }
+                    handleBindingChange(value)
                 }
         } else {
             content
@@ -230,11 +228,19 @@ struct SynchronizingBaseNavigatorPresentationViewModifier<Navigator: BaseNavigat
                     update(value: subject.value, isFirstAppearanceOccured: value)
                 }
                 .onChange(of: binding) { value in
-                    if !value {
-                        subject.send(nil)
-                    }
+                    handleBindingChange(value)
                 }
         }
+    }
+
+    private func handleBindingChange(_ value: Bool) {
+        guard !value,
+            getIsPresented(presentation: subject.value?.presentation)
+        else {
+            return
+        }
+
+        subject.send(nil)
     }
 
     private func update(value: Navigator?, isFirstAppearanceOccured: Bool) {

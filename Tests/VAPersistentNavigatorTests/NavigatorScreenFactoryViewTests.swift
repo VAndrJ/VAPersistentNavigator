@@ -55,11 +55,66 @@ struct NavigatorScreenFactoryViewTests {
         window.contentViewController = nil
         #endif
     }
+
+    #if os(iOS)
+    @Test("Changing presentation style keeps the replacement navigator")
+    func presentationStyleChange_keepsReplacementNavigator() async throws {
+        let navigator = TestNavigator(root: .first)
+        let rootView = NavigatorPresentationSynchronizationHarness(navigator: navigator)
+        let hostingController = UIHostingController(rootView: rootView)
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        window.rootViewController = hostingController
+        window.makeKeyAndVisible()
+        try await settleNavigatorScreenFactoryViewUpdates()
+
+        let sheet = TestNavigator(view: .second, presentation: .sheet)
+        navigator.present(sheet, strategy: .fromCurrent)
+        try await settleNavigatorScreenFactoryViewUpdates()
+
+        let fullScreenCover = TestNavigator(view: .third, presentation: .fullScreenCover)
+        navigator.present(fullScreenCover, strategy: .fromCurrent)
+        try await settleNavigatorScreenFactoryViewUpdates()
+
+        #expect(navigator.childSubj.value === fullScreenCover)
+        #expect(sheet.parent == nil)
+        #expect(fullScreenCover.parent === navigator)
+
+        window.isHidden = true
+        window.rootViewController = nil
+    }
+    #endif
 }
 
 private struct NavigatorScreenFactoryTestAction: Equatable {
     let value: Int
 }
+
+#if os(iOS)
+private struct NavigatorPresentationSynchronizationHarness: View {
+    let navigator: TestNavigator
+    @State private var isFirstAppearanceOccurred = true
+    @State private var isFullScreenCoverPresented = false
+    @State private var isSheetPresented = false
+
+    var body: some View {
+        Color.clear
+            .synchronize(
+                $isFullScreenCoverPresented,
+                with: navigator.childSubj,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                isFullScreen: true,
+                animated: navigator.isAnimatedSubj
+            )
+            .synchronize(
+                $isSheetPresented,
+                with: navigator.childSubj,
+                isFirstAppearanceOccured: $isFirstAppearanceOccurred,
+                isFullScreen: false,
+                animated: navigator.isAnimatedSubj
+            )
+    }
+}
+#endif
 
 private func settleNavigatorScreenFactoryViewUpdates() async throws {
     await Task.yield()
