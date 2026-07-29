@@ -130,6 +130,7 @@ public struct NavigatorScreenFactoryView<
                 }
             }
             .with(transition: navigator.tabs.first?.root)
+            .onReceive(navigator.environmentPubl, perform: handleEnvironment(action:))
             .with(navigator: navigator)
         case .flow:
             NavigationStack(path: $destinations) {

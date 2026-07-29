@@ -28,6 +28,7 @@ struct VAPersistentNavigatorReplaceInitialTests {
         #expect(expected == replaced)
     }
 
+    @Test
     func test_navigator_onReplaceInitialNavigator_parent() async {
         let sut = TestNavigator(root: .first)
         let top = TestNavigator(root: .second)
@@ -42,5 +43,31 @@ struct VAPersistentNavigatorReplaceInitialTests {
 
         #expect(sut.onReplaceInitialNavigator != nil)
         #expect(expected == replaced)
+    }
+
+    @Test
+    func test_navigator_onReplaceInitialNavigator_clear() {
+        let sut = TestNavigator(root: .first)
+        sut.onReplaceInitialNavigator = { _ in }
+        #expect(sut.onReplaceInitialNavigator != nil)
+
+        sut.onReplaceInitialNavigator = nil
+
+        #expect(sut.onReplaceInitialNavigator == nil)
+    }
+
+    @Test
+    func test_navigator_onReplaceInitialNavigator_clearFromChild() {
+        let sut = TestNavigator(root: .first)
+        let top = TestNavigator(root: .second)
+        sut.present(top)
+        top.onReplaceInitialNavigator = { _ in }
+        #expect(sut.onReplaceInitialNavigator != nil)
+        #expect(top.onReplaceInitialNavigator != nil)
+
+        top.onReplaceInitialNavigator = nil
+
+        #expect(sut.onReplaceInitialNavigator == nil)
+        #expect(top.onReplaceInitialNavigator == nil)
     }
 }
